@@ -1,9 +1,9 @@
 import ReadableStream = NodeJS.ReadableStream
 import { subscribe, subscribeReadable } from 'node-streams'
-import { AsyncPushProducer, PushProducer, SOK, AsyncPullProducer } from './types'
+import { AsyncActiveProducer, ActiveProducer, SOK, AsyncPassiveProducer } from './types'
 import { doneAsyncIteratorResult, doneIteratorResult, iteratorResult } from './helpers'
 
-export const push = <T> (stream: ReadableStream): PushProducer<T> => (consumer) => {
+export const pushStream = <T> (stream: ReadableStream): ActiveProducer<T> => (consumer) => {
   const unsubscribe = subscribe({
     next (value) {
       consumer(iteratorResult(value)) === SOK || unsubscribe()
@@ -14,7 +14,7 @@ export const push = <T> (stream: ReadableStream): PushProducer<T> => (consumer) 
   })(stream)
 }
 
-export const pushAsync = <T> (stream: ReadableStream): AsyncPushProducer<T> => (consumer) =>
+export const pushStreamAsync = <T> (stream: ReadableStream): AsyncActiveProducer<T> => (consumer) =>
   new Promise((resolve, reject) => {
     const unsubscribe = subscribeReadable({
       async next ({ value }) {
@@ -31,7 +31,7 @@ export const pushAsync = <T> (stream: ReadableStream): AsyncPushProducer<T> => (
     })(stream)
   })
 
-export const pullAsync = <T> (stream: ReadableStream): AsyncPullProducer<T> => {
+export const pullAsync = <T> (stream: ReadableStream): AsyncPassiveProducer<T> => {
   const it = iterate(iterable)
   return () => Promise.resolve(it.next())
 }

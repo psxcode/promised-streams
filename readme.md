@@ -1,11 +1,10 @@
-# time-test
+# async-iterama
 
-setTimeout, setInterval, setImmediate, requestAnimationFrame
 
 ## Install
 
 ```sh
-npm install time-test
+npm install async-iterama
 ```
 
 ## `makeSetTimeout`
