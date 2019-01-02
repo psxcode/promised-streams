@@ -1,0 +1,19 @@
+{
+  "env": {
+    "production": {
+      "presets": [
+        ["@babel/preset-env", { "targets": { "node": "8" } }],
+        "@babel/preset-typescript"
+      ],
+    },
+    "test": {
+      "presets": [
+        ["@babel/preset-env", { "targets": { "node": "8" } }],
+        "@babel/preset-typescript"
+      ],
+      "plugins": [
+        "istanbul"
+      ]
+    }
+  }
+}

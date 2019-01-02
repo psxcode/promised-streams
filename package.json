@@ -1,0 +1,59 @@
+{
+  "name": "async-iterama",
+  "version": "0.0.0",
+  "main": "index.js",
+  "module": "index",
+  "typings": "index.d.ts",
+  "license": "MIT",
+  "author": "psxcode <psxcode@gmail.com> (https://github.com/psxcode)",
+  "homepage": "https://github.com/psxcode/async-iterama",
+  "scripts": {
+    "test": "NODE_ENV=test nyc mocha 'test/*.ts'",
+    "build": "NODE_ENV=production rimraf build && tsc -p tsconfig.build.json",
+    "copy": "cp ./{package.json,LICENSE,readme.md} ./build/",
+    "release": "yarn build && yarn copy && npm publish build"
+  },
+  "engines": {
+    "node": ">=8"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.2.2",
+    "@babel/preset-env": "^7.2.3",
+    "@babel/preset-typescript": "^7.1.0",
+    "@babel/register": "^7.0.0",
+    "@psxcode/wait": "^0.1.1",
+    "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "^10.12.18",
+    "babel-plugin-istanbul": "^5.1.0",
+    "chai": "^4.2.0",
+    "eslint": "^5.11.1",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-typescript": "^1.0.0-0",
+    "esm": "^3.0.84",
+    "mocha": "^5.2.0",
+    "nyc": "^13.1.0",
+    "rimraf": "^2.6.2",
+    "spyfn": "^0.1.1",
+    "typescript": "^3.2.2"
+  },
+  "nyc": {
+    "include": [
+      "src"
+    ],
+    "require": [
+      "./tshook.js",
+      "esm"
+    ],
+    "reporter": [
+      "lcov",
+      "text-summary"
+    ],
+    "sourceMap": false,
+    "instrument": false
+  },
+  "dependencies": {
+    "iterama": "^0.1.0",
+    "node-streams": "^0.1.0"
+  }
+}

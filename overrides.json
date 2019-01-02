@@ -1,0 +1,16 @@
+{
+  "rules": {
+    "no-undef": "off",
+    "no-unused-vars": "off",
+    "no-console": "off",
+    "no-irregular-whitespace": ["error", {
+      "skipStrings": true,
+      "skipComments": true,
+      "skipTemplates": true
+    }],
+    "import/order": ["error", {
+      "groups": ["builtin", "external", "parent", "sibling", "index"]
+    }],
+    "import/no-extraneous-dependencies": "error"
+  }
+}
