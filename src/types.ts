@@ -5,19 +5,19 @@ export type Signal = number & { __signal__: any }
 export const SOK = 0 as Signal
 export const SCANCEL = 1 as Signal
 
-export type PassiveConsumer <T> = (value: IteratorResult<T>) => Signal
-export type AsyncPassiveConsumer <T> = (value: AsyncIteratorResult<T>) => Promise<Signal>
+export type PushConsumer <T> = (value: IteratorResult<T>) => Signal
+export type AsyncPushConsumer <T> = (value: AsyncIteratorResult<T>) => Promise<Signal>
 
-export type ActiveProducer <T> = (consumer: PassiveConsumer<T>) => void
-export type AsyncActiveProducer <T> = (consumer: AsyncPassiveConsumer<T>) => Promise<void>
+export type PushProducer <T> = (consumer: PushConsumer<T>) => void
+export type AsyncPushProducer <T> = (consumer: AsyncPushConsumer<T>) => Promise<void>
 
-export type PassiveProducer <T> = () => IteratorResult<T>
-export type AsyncPassiveProducer <T> = () => AsyncIteratorResult<T>
+export type PullProducer <T> = () => IteratorResult<T>
+export type AsyncPullProducer <T> = () => AsyncIteratorResult<T>
 
-export type ActiveConsumer <T> = (producer: PassiveProducer<T>) => void
-export type AsyncActiveConsumer <T> = (producer: AsyncPassiveProducer<T>) => void
+export type PullConsumer <T> = (producer: PullProducer<T>) => void
+export type AsyncPullConsumer <T> = (producer: AsyncPullProducer<T>) => void
 
 export type IAsyncPool <T> = {
-  push: AsyncPassiveConsumer<T>
-  pull: AsyncPassiveProducer<T>
+  push: AsyncPushConsumer<T>
+  pull: AsyncPullProducer<T>
 }
