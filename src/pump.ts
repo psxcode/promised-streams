@@ -1,6 +1,17 @@
 import { AsyncIteratorResult, AsyncPullProducer, AsyncPushConsumer } from './types'
 
-export const pump = <T> (producer: AsyncPullProducer<T>) => async (consumer: AsyncPushConsumer<T>) => {
+const pump = <T> (producer: AsyncPullProducer<T>) => async (consumer: AsyncPushConsumer<T>): Promise<void> => {
   let air: AsyncIteratorResult<T>
-  while (await consumer(air = producer()) && !(await air).done);
+
+  try {
+    while (!(await (air = producer())).done) {
+      await consumer(air)
+    }
+    /* done */
+    await consumer(air)
+  } catch (e) {
+    return
+  }
 }
+
+export default pump

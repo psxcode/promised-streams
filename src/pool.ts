@@ -1,6 +1,6 @@
 import { AsyncIteratorResult, IAsyncPool } from './types'
 
-export const pool = <T> (): IAsyncPool<T> => {
+const pool = <T> (): IAsyncPool<T> => {
   const data: AsyncIteratorResult<T>[] = []
   let onData: (() => void) | undefined
   let pullPromise: AsyncIteratorResult<T> | undefined
@@ -10,11 +10,9 @@ export const pool = <T> (): IAsyncPool<T> => {
   }
 
   return {
-    push (value: AsyncIteratorResult<T>) {
+    async push (value: AsyncIteratorResult<T>) {
       data.push(value)
       onData && onData()
-
-      return Promise.resolve(true)
     },
     pull (): AsyncIteratorResult<T> {
       return pullPromise ||
@@ -27,3 +25,5 @@ export const pool = <T> (): IAsyncPool<T> => {
     },
   }
 }
+
+export default pool
