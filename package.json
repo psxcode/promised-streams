@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1",
+    "circularr": "^0.1.2",
     "iterama": "^0.1.0",
     "node-streams": "^0.2.0"
   },
