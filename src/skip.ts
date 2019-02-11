@@ -1,16 +1,16 @@
 import FixedArray from 'circularr'
-import { AsyncPushConsumer, AsyncIteratorResult } from './types'
+import { AsyncPushConsumer, AsyncIteratorResult, AsyncPullProducer } from './types'
 
 const pushSkipFirst = (numSkip: number) => <T> (consumer: AsyncPushConsumer<T>): AsyncPushConsumer<T> => {
   let i = 0
 
   return async (result) => {
+    let done = false
     try {
-      const ir = await result
-      if (ir.done) {
-        return consumer(result)
-      }
-    } catch {
+      done = (await result).done
+    } catch {}
+
+    if (done) {
       return consumer(result)
     }
 
@@ -22,28 +22,25 @@ const pushSkipFirst = (numSkip: number) => <T> (consumer: AsyncPushConsumer<T>):
 
 const pushSkipLast = (numSkip: number) => <T> (consumer: AsyncPushConsumer<T>): AsyncPushConsumer<T> => {
   const values = new FixedArray<AsyncIteratorResult<T>>(numSkip)
-  const errors = new Set<AsyncIteratorResult<T>>()
   let i = 0
 
   return async (result) => {
+    let done = false
     try {
-      const ir = await result
-      if (ir.done) {
-        (values as any).fill(undefined)
-        errors.clear()
+      done = (await result).done
+    } catch {}
 
-        return consumer(result)
-      }
-    } catch {
-      errors.add(result)
-    }
-    if (i++ < numSkip) {
-      values.shift(result)
+    if (done) {
+      values.clear()
 
-      return
+      return consumer(result)
     }
 
-    return consumer(values.shift(result))
+    const value = values.shift(result)
+
+    if (i++ >= numSkip) {
+      return consumer(value)
+    }
   }
 }
 
@@ -54,18 +51,53 @@ export const pushSkip = (numSkip: number) => (
 )
 
 const pullSkipFirst = (numSkip: number) => <T> (producer: AsyncPullProducer<T>): AsyncPullProducer<T> => {
+  let isInit = false
+
   return async () => {
-    for (let i = 0; i < numSkip; ++i) {
-      try {
-        await producer()
-      } catch {}
+    if (!isInit) {
+      isInit = true
+      for (let i = 0; i < numSkip; ++i) {
+        const air = producer()
+        let done = false
+        try {
+          done = (await air).done
+        } catch {}
+
+        if (done) {
+          return air
+        }
+      }
     }
+
+    return producer()
   }
 }
 
 const pullSkipLast = (numSkip: number) => <T> (producer: AsyncPullProducer<T>): AsyncPullProducer<T> => {
-  return async () => {
+  const last = new FixedArray<AsyncIteratorResult<T>>(numSkip)
+  let isInit = false
 
+  return async () => {
+    if (!isInit) {
+      isInit = true
+      for (let i = 0; i < numSkip; ++i) {
+        const air = producer()
+        let done = false
+        try {
+          done = (await air).done
+        } catch {}
+
+        if (done) {
+          last.clear()
+
+          return air
+        }
+
+        last.shift(air)
+      }
+    }
+
+    return last.shift(producer())
   }
 }
 
