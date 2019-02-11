@@ -16,14 +16,20 @@ export const pushReduce = <S, T> (reducer: (state?: S, value?: T) => Promise<S> 
         }
       }
 
-      const { done, value } = await result
+      let ir: IteratorResult<T>
+      try {
+        ir = await result
+      } catch {
+        return consumer(result as any)
+      }
 
-      if (done) {
+      if (ir.done) {
         await consumer(asyncIteratorResult(state))
+        state = undefined as any
         await consumer(doneAsyncIteratorResult())
       } else {
         try {
-          state = await (reducer(state, value))
+          state = await (reducer(state, ir.value))
         } catch (e) {
           return consumer(errorAsyncIteratorResult(e))
         }
@@ -38,29 +44,26 @@ export const pullReduce = <S, T> (reducer: (state?: S, value?: T) => Promise<S> 
     let state: S
 
     return async () => {
-      try {
-        if (isDone) {
-          return doneAsyncIteratorResult()
+      if (isDone) {
+        return doneAsyncIteratorResult()
+      }
+
+      if (!isInit) {
+        isInit = true
+        state = await reducer()
+      }
+
+      while (true) {
+        const { done, value } = await producer()
+
+        if (done) {
+          isDone = true
+          state = undefined as any
+
+          return asyncIteratorResult(state)
         }
 
-        if (!isInit) {
-          isInit = true
-          state = await reducer()
-        }
-
-        while (true) {
-          const { done, value } = await producer()
-
-          if (done) {
-            isDone = true
-
-            return asyncIteratorResult(state)
-          }
-
-          state = await reducer(state, value)
-        }
-      } catch (e) {
-        return errorAsyncIteratorResult(e)
+        state = await reducer(state, value)
       }
     }
   }

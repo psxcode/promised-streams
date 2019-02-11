@@ -9,26 +9,20 @@ export function pushZip<T0, T1, T2, T3> (p0: AsyncPullProducer<T0>, p1: AsyncPul
 
 export function pushZip (...producers: AsyncPullProducer<any>[]) {
   return async (consumer: AsyncPushConsumer<any[]>): Promise<void> => {
-    try {
-      while (true) {
-        let res: IteratorResult<any>[]
-        try {
-          res = await Promise.all(producers.map((p) => p()))
-        } catch (e) {
-          await consumer(errorAsyncIteratorResult(e))
-          continue
-        }
-
-        if (res.some((r) => r.done)) {
-          await consumer(doneAsyncIteratorResult())
-
-          return
-        }
-
-        await consumer(asyncIteratorResult(res.map((r) => r.value)))
+    while (true) {
+      let res: IteratorResult<any>[]
+      try {
+        res = await Promise.all(producers.map((p) => p()))
+      } catch (e) {
+        await consumer(errorAsyncIteratorResult(e))
+        continue
       }
-    } catch (e) {
-      return
+
+      if (res.some((r) => r.done)) {
+        return consumer(doneAsyncIteratorResult())
+      }
+
+      await consumer(asyncIteratorResult(res.map((r) => r.value)))
     }
   }
 }

@@ -1,33 +1,38 @@
 import { AsyncPushConsumer, AsyncPullProducer } from './types'
-import { doneAsyncIteratorResult, errorAsyncIteratorResult, asyncIteratorResult } from './helpers'
+import { errorAsyncIteratorResult, asyncIteratorResult } from './helpers'
 
 export const pushMap = <T, R> (xf: (arg: T) => Promise<R> | R) =>
-  (consumer: AsyncPushConsumer<R>): AsyncPushConsumer<T> => async (result) => {
-    const { done, value } = await result
+  (consumer: AsyncPushConsumer<R>): AsyncPushConsumer<T> =>
+    async (result) => {
+      let ir: IteratorResult<T>
+      try {
+        ir = await result
+      } catch {
+        return consumer(result as any)
+      }
 
-    if (done) {
-      return consumer(doneAsyncIteratorResult())
+      if (ir.done) {
+        return consumer(result as any)
+      }
+
+      let transformed: R
+      try {
+        transformed = await xf(ir.value)
+      } catch (e) {
+        return consumer(errorAsyncIteratorResult(e))
+      }
+
+      return consumer(asyncIteratorResult(transformed))
     }
-
-    let transformed: R
-    try {
-      transformed = await xf(value)
-    } catch (e) {
-      return consumer(errorAsyncIteratorResult(e))
-    }
-
-    return consumer(asyncIteratorResult(transformed))
-  }
 
 export const pullMap = <T, R> (xf: (arg: T) => Promise<R> | R) =>
-  (producer: AsyncPullProducer<T>): AsyncPullProducer<R> => async () => {
-    try {
-      const { done, value } = await producer()
+  (producer: AsyncPullProducer<T>): AsyncPullProducer<R> =>
+    async () => {
+      const ir = await producer()
 
-      return done
-        ? doneAsyncIteratorResult()
-        : asyncIteratorResult(await xf(value))
-    } catch (e) {
-      return errorAsyncIteratorResult(e)
+      if (ir.done) {
+        return ir as any
+      }
+
+      return asyncIteratorResult(await xf(ir.value))
     }
-  }

@@ -16,13 +16,20 @@ export const pushScan = <S, T> (reducer: (state?: S, value?: T) => Promise<S> | 
         }
       }
 
-      const { done, value } = await result
+      let ir: IteratorResult<T>
+      try {
+        ir = await result
+      } catch {
+        return consumer(result as any)
+      }
 
-      if (done) {
+      if (ir.done) {
+        state = undefined as any
+
         return consumer(doneAsyncIteratorResult())
       } else {
         try {
-          state = await (reducer(state, value))
+          state = await (reducer(state, ir.value))
         } catch (e) {
           return consumer(errorAsyncIteratorResult(e))
         }
@@ -38,23 +45,21 @@ export const pullScan = <S, T> (reducer: (state?: S, value?: T) => Promise<S> | 
     let state: S
 
     return async () => {
-      try {
-        if (!isInit) {
-          isInit = true
-          state = await reducer()
-        }
-
-        const { done, value } = await producer()
-
-        if (done) {
-          return doneAsyncIteratorResult()
-        }
-
-        state = await reducer(state, value)
-
-        return asyncIteratorResult(state)
-      } catch (e) {
-        return errorAsyncIteratorResult(e)
+      if (!isInit) {
+        isInit = true
+        state = await reducer()
       }
+
+      const { done, value } = await producer()
+
+      if (done) {
+        state = undefined as any
+
+        return doneAsyncIteratorResult()
+      }
+
+      state = await reducer(state, value)
+
+      return asyncIteratorResult(state)
     }
   }
