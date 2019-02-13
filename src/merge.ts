@@ -1,4 +1,4 @@
-import { AsyncPushConsumer, AsyncPullProducer, AsyncIteratorResult } from './types'
+import { AsyncPullProducer, AsyncIteratorResult, AsyncPushProducer } from './types'
 import { doneAsyncIteratorResult, errorAsyncIteratorResult, asyncIteratorResult } from './helpers'
 
 const race = <T>(promises: (Promise<IteratorResult<T>> | null)[]) => new Promise<[IteratorResult<T>, number]>((resolve, reject) => {
@@ -8,8 +8,8 @@ const race = <T>(promises: (Promise<IteratorResult<T>> | null)[]) => new Promise
   ))
 })
 
-export const pushMerge = <T> (...producers: AsyncPullProducer<T>[]) =>
-  async (consumer: AsyncPushConsumer<T>): Promise<void> => {
+export const pushMerge = <T> (...producers: AsyncPullProducer<T>[]): AsyncPushProducer<T> =>
+  async (consumer): Promise<void> => {
     try {
       const activeProducers: (AsyncPullProducer<T> | null)[] = producers.slice()
       const promises: (AsyncIteratorResult<T> | null)[] = producers.map(() => null)
