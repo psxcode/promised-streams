@@ -8,29 +8,27 @@ import {
 
 export const pushIterable = <T> (iterable: Iterable<T>): PushProducer<T> => (consumer) => {
   const it = iterate(iterable)
-  let ir: IteratorResult<T>
 
-  try {
-    while (!(ir = it.next()).done) {
-      consumer(ir)
-    }
-    /* done */
+  while (true) {
+    const ir = it.next()
     consumer(ir)
-  } catch (e) {
-    return
+
+    if (ir.done) {
+      return
+    }
   }
 }
 
 export const pushIterableAsync = <T> (iterable: Iterable<T>): AsyncPushProducer<T> => async (consumer) => {
   const it = iterate(iterable)
-  let ir: IteratorResult<T>
 
-  try {
-    while (!(ir = it.next()).done) {
-      await consumer(Promise.resolve(ir))
+  while (true) {
+    const ir = it.next()
+    await consumer(Promise.resolve(ir))
+
+    if (ir.done) {
+      return
     }
-  } catch (e) {
-    return
   }
 }
 
