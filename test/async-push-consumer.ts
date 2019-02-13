@@ -1,25 +1,29 @@
 import { waitTimePromise as wait } from '@psxcode/wait'
-import { Signal, SOK, AsyncPushConsumer, AsyncIteratorResult } from '../src/types'
+import { AsyncPushConsumer, AsyncIteratorResult } from '../src/types'
 import noop from './noop'
+import isPositiveNumber from './is-positive-number'
 
 export type AsyncPushConsumerOptions = {
   log?: typeof console.log,
   delay?: number
 }
 
-const asyncPushConsumer = ({ log = noop, delay = 0 }: AsyncPushConsumerOptions = {}) => (sink: (chunk: any) => void): AsyncPushConsumer<any> =>
-  async (result: AsyncIteratorResult<any>): Promise<Signal> => {
-    log('received value')
+const asyncPushConsumer = ({ log = noop, delay = 0 }: AsyncPushConsumerOptions = {}) =>
+  (sink: (chunk: any) => void): AsyncPushConsumer<any> =>
+    async (result: AsyncIteratorResult<any>): Promise<void> => {
+      log('received value')
 
-    const { value, done } = await result
+      const { value, done } = await result
 
-    if (!done) {
+      if (done) {
+        return
+      }
+
+      if (isPositiveNumber) {
+        await wait(delay)
+      }
+
       sink(value)
     }
-
-    await wait(delay)
-
-    return SOK
-  }
 
 export default asyncPushConsumer
