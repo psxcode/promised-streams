@@ -1,7 +1,7 @@
 import { AsyncPushConsumer, AsyncPullProducer } from './types'
 import { errorAsyncIteratorResult } from './helpers'
 
-export const pushDistinct = <T> (consumer: AsyncPushConsumer<T>): AsyncPushConsumer<T> => {
+export const pushDistinct = <T> (isEqual: (a: T, b: T) => boolean) => (consumer: AsyncPushConsumer<T>): AsyncPushConsumer<T> => {
   let last: any = consumer
 
   return async (result) => {
@@ -18,7 +18,14 @@ export const pushDistinct = <T> (consumer: AsyncPushConsumer<T>): AsyncPushConsu
       return consumer(result)
     }
 
-    if (last !== ir.value) {
+    let isAllowed: boolean
+    try {
+      isAllowed = !isEqual(last, ir.value)
+    } catch (e) {
+      return consumer(errorAsyncIteratorResult(e))
+    }
+
+    if (isAllowed) {
       last = ir.value
 
       return consumer(result)
@@ -26,22 +33,18 @@ export const pushDistinct = <T> (consumer: AsyncPushConsumer<T>): AsyncPushConsu
   }
 }
 
-export const pullDistinct = <T> (producer: AsyncPullProducer<T>): AsyncPullProducer<T> => {
+export const pullDistinct = <T> (isEqual: (a: T, b: T) => boolean) => (producer: AsyncPullProducer<T>): AsyncPullProducer<T> => {
   let last: any = producer
 
   return async () => {
-    try {
-      while (true) {
-        const ir = await producer()
+    while (true) {
+      const ir = await producer()
 
-        if (ir.done || last !== ir.value) {
-          last = ir.value
+      if (ir.done || !isEqual(last, ir.value)) {
+        last = ir.value
 
-          return ir
-        }
+        return ir
       }
-    } catch (e) {
-      return errorAsyncIteratorResult(e)
     }
   }
 }
