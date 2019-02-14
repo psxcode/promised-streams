@@ -1,64 +1,43 @@
-import { AsyncPushConsumer, AsyncPullProducer, AsyncIteratorResult } from './types'
-import { doneAsyncIteratorResult, errorAsyncIteratorResult } from './helpers'
+import { AsyncPullProducer, AsyncPushProducer } from './types'
+import { doneAsyncIteratorResult, doneIteratorResult } from './helpers'
 
-export const pushConcat = <T> (...producers: AsyncPullProducer<T>[]) =>
-  async (consumer: AsyncPushConsumer<T>): Promise<void> => {
-    let i = 0
-
-    try {
-      while (true) {
-        if (i >= producers.length) {
-          await consumer(doneAsyncIteratorResult())
-
-          return
-        }
-
-        let result: AsyncIteratorResult<T>
-        let done: boolean
+export const pushConcat = <T> (...producers: AsyncPushProducer<T>[]): AsyncPushProducer<T> =>
+  async (consumer) => {
+    for (const producer of producers) {
+      await producer(async (result) => {
+        let ir: IteratorResult<T>
         try {
-          result = producers[i]()
-          done = (await result).done
-        } catch (e) {
-          await consumer(errorAsyncIteratorResult(e))
-          ++i
-          continue
+          ir = await result
+        } catch {
+          return consumer(result)
         }
 
-        if (done) {
-          ++i
-          continue
+        if (!ir.done) {
+          return consumer(result)
         }
-
-        await consumer(result)
-      }
-    } catch (e) {
-      return
+      })
     }
+
+    return consumer(doneAsyncIteratorResult())
   }
 
 export const pullConcat = <T> (...producers: AsyncPullProducer<T>[]): AsyncPullProducer<T> => {
   let i = 0
 
   return async () => {
-    try {
+    while (i < producers.length) {
+      const producer = producers[i]
+      const air = producer()
+      const ir = await air
 
-      while (true) {
-        if (i >= producers.length) {
-          return doneAsyncIteratorResult()
-        }
-
-        const air = producers[i]()
-        const { done } = await air
-
-        if (done) {
-          ++i
-          continue
-        }
-
-        return air
+      if (ir.done) {
+        ++i
+        continue
       }
-    } catch (e) {
-      return errorAsyncIteratorResult(e)
+
+      return air
     }
+
+    return doneIteratorResult()
   }
 }

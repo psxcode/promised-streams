@@ -8,46 +8,31 @@ const race = <T>(promises: (Promise<IteratorResult<T>> | null)[]) => new Promise
   ))
 })
 
-export const pushMerge = <T> (...producers: AsyncPullProducer<T>[]): AsyncPushProducer<T> =>
-  async (consumer): Promise<void> => {
-    try {
-      const activeProducers: (AsyncPullProducer<T> | null)[] = producers.slice()
-      const promises: (AsyncIteratorResult<T> | null)[] = producers.map(() => null)
+export const pushMerge = <T> (...producers: AsyncPushProducer<T>[]): AsyncPushProducer<T> => {
+  const values: {air: AsyncIteratorResult<T>, consumed: () => void}[] = []
+  const inProgress = false
 
-      while (true) {
-        if (activeProducers.every((p) => p === null)) {
-          return
-        }
-
-        let result: IteratorResult<T>
-        let index: number
-        try {
-          for (let i = 0 ; i < producers.length; ++i) {
-            const producer = activeProducers[i]
-            if (promises[i] === null && producer !== null) {
-              promises[i] = producer()
-            }
-          }
-          [result, index] = await race(promises)
-          promises[index] = null
-        } catch ([e, index]) {
-          await consumer(errorAsyncIteratorResult(e))
-          activeProducers[index] = null
-          promises[index] = null
-          continue
-        }
-
-        if (result.done) {
-          activeProducers[index] = null
-          continue
-        }
-
-        await consumer(asyncIteratorResult(result.value))
+  return async (consumer) => {
+    const hasValue = async () => {
+      if (inProgress) {
+        return
       }
-    } catch (e) {
-      return
+
+      const { air, consumed } = values
+
+      await consumer
+    }
+
+    for (let i = 0; i < producers.length; ++i) {
+      producers[i]((result) => new Promise((resolve) => {
+        values.push({
+          air: result,
+          consumed: resolve,
+        })
+      }))
     }
   }
+}
 
 export const pullMerge = <T> (...producers: AsyncPullProducer<T>[]): AsyncPullProducer<T> => {
   return async () => {

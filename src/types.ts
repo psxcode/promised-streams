@@ -16,3 +16,6 @@ export type IAsyncPool <T> = {
   push: AsyncPushConsumer<T>
   pull: AsyncPullProducer<T>
 }
+
+export type WaitFn = (cb: () => void) => () => void
+export type UnsubFn = (() => void) | undefined
