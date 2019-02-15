@@ -1,5 +1,5 @@
 import { AsyncPullProducer, AsyncIteratorResult, AsyncPushProducer } from './types'
-import { doneAsyncIteratorResult, errorAsyncIteratorResult, asyncIteratorResult } from './helpers'
+import { errorAsyncIteratorResult, asyncIteratorResult, doneAsyncIteratorResult } from './helpers'
 
 const race = <T>(promises: (Promise<IteratorResult<T>> | null)[]) => new Promise<[IteratorResult<T>, number]>((resolve, reject) => {
   promises.forEach((p, i) => p && p.then(
@@ -8,8 +8,10 @@ const race = <T>(promises: (Promise<IteratorResult<T>> | null)[]) => new Promise
   ))
 })
 
+const isValid = (obj: any) => !!obj
+
 export const pushMerge = <T> (...producers: AsyncPushProducer<T>[]): AsyncPushProducer<T> => {
-  const values: {air: AsyncIteratorResult<T>, consumed: () => void}[] = []
+  const values: {result: AsyncIteratorResult<T>, resolve: () => void}[] = []
   const inProgress = false
 
   return async (consumer) => {
@@ -18,17 +20,14 @@ export const pushMerge = <T> (...producers: AsyncPushProducer<T>[]): AsyncPushPr
         return
       }
 
-      const { air, consumed } = values
+      const { result, resolve } = values.shift()
 
       await consumer
     }
 
     for (let i = 0; i < producers.length; ++i) {
       producers[i]((result) => new Promise((resolve) => {
-        values.push({
-          air: result,
-          consumed: resolve,
-        })
+        values.push({ result, resolve })
       }))
     }
   }
@@ -39,11 +38,7 @@ export const pullMerge = <T> (...producers: AsyncPullProducer<T>[]): AsyncPullPr
     const activeProducers: (AsyncPullProducer<T> | null)[] = producers.slice()
     const promises: (AsyncIteratorResult<T> | null)[] = producers.map(() => null)
 
-    while (true) {
-      if (activeProducers.every((p) => p === null)) {
-        return doneAsyncIteratorResult()
-      }
-
+    while (activeProducers.some(isValid)) {
       let result: IteratorResult<T>
       let index: number
       try {
@@ -69,5 +64,7 @@ export const pullMerge = <T> (...producers: AsyncPullProducer<T>[]): AsyncPullPr
 
       asyncIteratorResult(result.value)
     }
+
+    return doneAsyncIteratorResult()
   }
 }
