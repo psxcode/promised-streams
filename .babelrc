@@ -27,11 +27,13 @@
             }
           }
         ],
-        "@babel/preset-typescript"
+        "@babel/preset-typescript",
       ],
       "plugins": [
         "istanbul"
-      ]
+      ],
+      "sourceMaps": true,
+      "retainLines": true
     }
   }
 }

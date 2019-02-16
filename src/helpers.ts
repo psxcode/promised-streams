@@ -2,7 +2,7 @@ import { AsyncIteratorResult } from './types'
 
 export const iteratorResult = <T> (value: T): IteratorResult<T> => ({ value, done: false })
 
-export const doneIteratorResult = () => ({ done: true }) as IteratorResult<any>
+export const doneIteratorResult = () => ({ value: undefined, done: true }) as IteratorResult<any>
 
 export const asyncIteratorResult = <T> (value: T): AsyncIteratorResult<T> =>
   Promise.resolve({ value, done: false })

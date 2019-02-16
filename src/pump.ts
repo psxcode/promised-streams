@@ -1,6 +1,6 @@
-import { AsyncIteratorResult, AsyncPullProducer, AsyncPushConsumer } from './types'
+import { AsyncIteratorResult, PullProducer, PushConsumer } from './types'
 
-const pump = <T> (producer: AsyncPullProducer<T>) => async (consumer: AsyncPushConsumer<T>): Promise<void> => {
+const pump = <T> (producer: PullProducer<T>) => async (consumer: PushConsumer<T>): Promise<void> => {
   let air: AsyncIteratorResult<T>
 
   try {
