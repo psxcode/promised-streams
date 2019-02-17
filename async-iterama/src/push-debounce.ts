@@ -1,4 +1,5 @@
 import { WaitFn, PushConsumer, AsyncIteratorResult, UnsubFn } from './types'
+import noop from './noop'
 
 const pushDebounce = (wait: WaitFn) => <T> (consumer: PushConsumer<T>): PushConsumer<T> => {
   let last0: AsyncIteratorResult<T>
@@ -7,15 +8,18 @@ const pushDebounce = (wait: WaitFn) => <T> (consumer: PushConsumer<T>): PushCons
   let consumerPromise: Promise<void> | undefined
 
   return async (result) => {
+    result.catch(noop)
     last0 = last1
     last1 = result
 
-    try {
-      consumerPromise && await consumerPromise
-    } catch {
-      return consumerPromise
+    if (consumerPromise) {
+      try {
+        await consumerPromise
+      } catch {
+        return consumerPromise
+      }
+      consumerPromise = undefined
     }
-    consumerPromise = undefined
 
     unsub && unsub()
     unsub = wait(async () => {
@@ -25,22 +29,23 @@ const pushDebounce = (wait: WaitFn) => <T> (consumer: PushConsumer<T>): PushCons
       try {
         ir = await last1
       } catch {
-        // consumerPromise = consumer(last1)
+        try {
+          await (consumerPromise = consumer(last1))
+        } catch {}
 
         return
       }
 
       if (ir.done) {
         try {
-          consumerPromise = consumer(last0)
-          await consumerPromise
+          await (consumerPromise = consumer(last0))
         } catch {
           return
         }
       }
 
       try {
-        consumerPromise = consumer(last1)
+        await (consumerPromise = consumer(last1))
       } catch {}
     })
   }
