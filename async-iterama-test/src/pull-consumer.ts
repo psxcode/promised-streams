@@ -15,15 +15,18 @@ const pullConsumer = ({ log = noop, delay, continueOnError }: AsyncPullConsumerO
 
     return async (producer) => {
       while (true) {
+        log(`pulling value ${i}`)
         let air: AsyncIteratorResult<any>
         try {
           air = producer()
         } catch (e) {
           log(`producer crashed at step ${i++}`)
-          log(e)
+          // log(e)
 
-          return
+          throw e
         }
+
+        log(`resolving value ${i}`)
 
         let ir: IteratorResult<any>
         try {
@@ -33,20 +36,23 @@ const pullConsumer = ({ log = noop, delay, continueOnError }: AsyncPullConsumerO
           log(e)
 
           if (continueOnError) {
-            log('continuing on error')
+            log('continuing on producer error')
             continue
           }
 
-          throw 'cancel'
-        }
+          log('stopping on producer error')
 
-        if (isPositiveNumber) {
-          await wait(delay)
+          throw e
         }
 
         log(ir.done
-          ? `received done at step ${i++}`
-          : `received value at step ${i++}`)
+          ? `resolved to done at step ${i++}`
+          : `resolved value at step ${i++}`)
+
+        if (isPositiveNumber(delay)) {
+          await wait(delay)
+        }
+
         sink(ir)
 
         if (ir.done) {

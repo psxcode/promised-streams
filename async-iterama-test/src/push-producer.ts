@@ -18,6 +18,7 @@ const pushProducer = ({ log = noop, dataResolveDelay, dataPrepareDelay, errorAtS
     for (const chunk of data) {
       try {
         if (isPositiveNumber(dataPrepareDelay)) {
+          log(`preparing data ${i}`)
           await wait(dataPrepareDelay)
         }
 
@@ -32,13 +33,14 @@ const pushProducer = ({ log = noop, dataResolveDelay, dataPrepareDelay, errorAtS
           } else {
             resolve(iteratorResult(chunk))
           }
-
-          ++i
         }))
       } catch (e) {
         log(`consumer rejected at step ${i}`)
-        throw e
+        log(e)
+
+        return
       }
+      ++i
     }
 
     log(`pushing complete at ${i}`)

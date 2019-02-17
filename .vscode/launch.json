@@ -30,7 +30,8 @@
       "type": "node",
       "request": "launch",
       "env": {
-        "NODE_ENV": "test"
+        "NODE_ENV": "test",
+        "DEBUG": "ai:*,ait:*"
       },
       "name": "Test Current File",
       "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/mocha",

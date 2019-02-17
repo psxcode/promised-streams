@@ -20,7 +20,7 @@ const pushConsumer = ({ log = noop, delay, cancelAtStep, continueOnError }: Push
       try {
         ir = await result
       } catch (e) {
-        log(`received error at step ${i}`)
+        log(`resolved to error at step ${i}`)
         log(e)
 
         if (continueOnError) {
@@ -33,20 +33,21 @@ const pushConsumer = ({ log = noop, delay, cancelAtStep, continueOnError }: Push
         log(`returning break on error at step ${i}`)
         ++i
 
-        return Promise.reject('break on error')
+        return Promise.reject()
       }
 
       if (ir.done) {
-        log(`received done at step ${i}`)
+        log(`resolved to done at step ${i}`)
         ++i
         sink(ir)
 
         return
       }
 
-      log(`received value ${ir.value} at ${i}`)
+      log(`resolved value ${ir.value} at ${i}`)
 
       if (isPositiveNumber(delay)) {
+        log(`consuming value`)
         await wait(delay)
       }
 
@@ -56,8 +57,10 @@ const pushConsumer = ({ log = noop, delay, cancelAtStep, continueOnError }: Push
         log(`cancelling at step ${i}`)
         ++i
 
-        return Promise.reject('cancel')
+        return Promise.reject()
       }
+
+      ++i
     }
   }
 

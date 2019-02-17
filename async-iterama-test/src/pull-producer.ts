@@ -22,21 +22,28 @@ const pullProducer = ({ log = noop, dataPrepareDelay, dataResolveDelay, errorAtS
       await wait(dataPrepareDelay)
     }
 
-    return new Promise(async (resolve, reject) => {
-      const ir = it.next()
+    const ir = it.next()
 
+    if (errorAtStep === i) {
+      log(`returning error at step ${i++}`)
+
+      return new Promise(async (_, reject) => {
+        if (isPositiveNumber(dataResolveDelay)) {
+          await wait(dataResolveDelay)
+        }
+
+        reject(new Error('producer error'))
+      })
+    }
+
+    log(ir.done
+      ? `returning done at step ${i++}`
+      : `returning chunk ${i++}`)
+
+    return new Promise(async (resolve) => {
       if (isPositiveNumber(dataResolveDelay)) {
         await wait(dataResolveDelay)
       }
-
-      if (errorAtStep === i) {
-        log(`returning error at step ${i++}`)
-        reject(new Error('producer error'))
-      }
-
-      log(ir.done
-        ? `returning done at step ${i++}`
-        : `returning chunk at step ${i++}`)
 
       resolve(ir)
     })
