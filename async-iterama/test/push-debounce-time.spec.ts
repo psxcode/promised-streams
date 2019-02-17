@@ -11,7 +11,7 @@ const producerLog = debug('ai:producer')
 const consumerLog = debug('ai:consumer')
 const sinkLog = debug('ai:sink') as (arg: IteratorResult<number>) => void
 
-describe.only('[ pushDebounceTime ]', () => {
+describe('[ pushDebounceTime ]', () => {
   it('should work', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)

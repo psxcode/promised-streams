@@ -26,7 +26,6 @@ describe('[ pushDebounce ]', () => {
     const r = pushProducer({ log: producerLog })(data)
 
     await r(t(w))
-    // await compose(r, t)(w)
 
     /* wait additional time to drain debounce */
     await wait(20)
@@ -71,7 +70,7 @@ describe('[ pushDebounce ]', () => {
     ])
   })
 
-  it('should deliver producer error tp consumer', async () => {
+  it('should deliver producer error to consumer', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog })(spy)
