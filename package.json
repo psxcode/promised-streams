@@ -1,27 +1,19 @@
 {
-  "name": "async-iterama",
-  "version": "0.0.0",
-  "main": "index.js",
-  "module": "index",
-  "typings": "index.d.ts",
+  "private": true,
   "license": "MIT",
   "author": "psxcode <psxcode@gmail.com> (https://github.com/psxcode)",
   "homepage": "https://github.com/psxcode/async-iterama",
+  "workspaces": [
+    "async-iterama",
+    "async-iterama-test"
+  ],
   "scripts": {
-    "test": "NODE_ENV=test nyc mocha 'test/*.spec.ts'",
-    "build": "rimraf build && yarn build:js && yarn build:dts",
-    "copy": "cp ./{package.json,readme.md,LICENSE} ./build",
-    "build:dts": "tsc --emitDeclarationOnly -p tsconfig.build.json",
-    "build:js": "NODE_ENV=production babel src --out-dir build --extensions '.ts,.js' --source-maps 'inline'"
+    "test": "NODE_ENV=test nyc mocha './*/test/*.spec.ts'",
+    "build:ai": "scripts/build.sh async-iterama",
+    "build:ait": "scripts/build.sh async-iterama-test"
   },
   "engines": {
     "node": ">=8"
-  },
-  "dependencies": {
-    "@babel/runtime": "^7.3.1",
-    "circularr": "^0.1.5",
-    "iterama": "^0.1.1",
-    "node-streams": "^0.2.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",
@@ -53,7 +45,8 @@
   },
   "nyc": {
     "include": [
-      "src"
+      "async-iterama/src",
+      "async-iterama-test/src"
     ],
     "require": [
       "./tshook.js"

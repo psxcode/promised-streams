@@ -1,6 +1,6 @@
 import { waitTimePromise as wait } from '@psxcode/wait'
-import { PushProducer } from '../src'
-import { iteratorResult, doneAsyncIteratorResult } from '../src/helpers'
+import { iteratorResult, doneAsyncIteratorResult } from './helpers'
+import { PushProducer } from './types'
 import noop from './noop'
 import isPositiveNumber from './is-positive-number'
 

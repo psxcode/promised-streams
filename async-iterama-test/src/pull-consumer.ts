@@ -1,5 +1,5 @@
 import { waitTimePromise as wait } from '@psxcode/wait'
-import { PullConsumer, AsyncIteratorResult } from '../src'
+import { PullConsumer, AsyncIteratorResult } from './types'
 import noop from './noop'
 import isPositiveNumber from './is-positive-number'
 
@@ -36,6 +36,8 @@ const pullConsumer = ({ log = noop, delay, continueOnError }: AsyncPullConsumerO
             log('continuing on error')
             continue
           }
+
+          throw 'cancel'
         }
 
         if (isPositiveNumber) {

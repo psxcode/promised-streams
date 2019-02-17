@@ -2,28 +2,27 @@ import { describe, it } from 'mocha'
 import { expect } from 'chai'
 import debug from 'debug'
 import fn from 'test-fn'
-import { pushConcat } from '../src'
+import { pullConsumer, pullProducer } from 'async-iterama-test/src'
+import { pullConcat } from '../src'
 import makeNumbers from './make-numbers'
-import pushConsumer from './push-consumer'
-import pushProducer from './push-producer'
 
 const consumerLog = debug('ai:consumer')
 const sinkLog = debug('ai:sink')
 let logIndex = 0
 const producerLog = () => debug(`ai:producer${logIndex++}`)
 
-describe('[ pushConcat ]', () => {
+describe('[ pullConcat ]', () => {
   it('should work', async () => {
     const data0 = makeNumbers(2)
     const data1 = makeNumbers(2)
     const spy = fn(sinkLog)
-    const w = pushConsumer({ log: consumerLog })(spy)
-    const r = pushConcat(
-      pushProducer({ log: producerLog() })(data0),
-      pushProducer({ log: producerLog() })(data1)
+    const w = pullConsumer({ log: consumerLog })(spy)
+    const r = pullConcat(
+      pullProducer({ log: producerLog() })(data0),
+      pullProducer({ log: producerLog() })(data1)
     )
 
-    await r(w)
+    await w(r)
 
     expect(spy.calls).deep.eq([
       [{ value: 0, done: false }],
@@ -37,12 +36,12 @@ describe('[ pushConcat ]', () => {
   it('should work with single producer', async () => {
     const data0 = makeNumbers(2)
     const spy = fn(sinkLog)
-    const w = pushConsumer({ log: consumerLog })(spy)
-    const r = pushConcat(
-      pushProducer({ log: producerLog() })(data0)
+    const w = pullConsumer({ log: consumerLog })(spy)
+    const r = pullConcat(
+      pullProducer({ log: producerLog() })(data0)
     )
 
-    await r(w)
+    await w(r)
 
     expect(spy.calls).deep.eq([
       [{ value: 0, done: false }],
@@ -53,10 +52,10 @@ describe('[ pushConcat ]', () => {
 
   it('should work with no producers', async () => {
     const spy = fn(sinkLog)
-    const w = pushConsumer({ log: consumerLog })(spy)
-    const r = pushConcat()
+    const w = pullConsumer({ log: consumerLog })(spy)
+    const r = pullConcat()
 
-    await r(w)
+    await w(r)
 
     expect(spy.calls).deep.eq([
       [{ value: undefined, done: true }],
@@ -67,13 +66,13 @@ describe('[ pushConcat ]', () => {
     const data0 = makeNumbers(2)
     const data1 = makeNumbers(2)
     const spy = fn(sinkLog)
-    const w = pushConsumer({ log: consumerLog, delay: 30 })(spy)
-    const r = pushConcat(
-      pushProducer({ log: producerLog() })(data0),
-      pushProducer({ log: producerLog() })(data1)
+    const w = pullConsumer({ log: consumerLog, delay: 30 })(spy)
+    const r = pullConcat(
+      pullProducer({ log: producerLog() })(data0),
+      pullProducer({ log: producerLog() })(data1)
     )
 
-    await r(w)
+    await w(r)
 
     expect(spy.calls).deep.eq([
       [{ value: 0, done: false }],
@@ -84,42 +83,18 @@ describe('[ pushConcat ]', () => {
     ])
   })
 
-  it('should propagate consumer cancel to corresponding producer', async () => {
-    const data0 = makeNumbers(4)
-    const data1 = makeNumbers(4)
-    const spy = fn(sinkLog)
-    const w = pushConsumer({ log: consumerLog, cancelAtStep: 0 })(spy)
-    const r = pushConcat(
-      pushProducer({ log: producerLog() })(data0),
-      pushProducer({ log: producerLog() })(data1)
-    )
-
-    try {
-      await r(w)
-    } catch {
-
-      expect(spy.calls).deep.eq([
-        [{ value: 0, done: false }],
-      ])
-
-      return
-    }
-
-    expect.fail('should not get here')
-  })
-
   it('should propagate producer error to consumer', async () => {
     const data0 = makeNumbers(2)
     const data1 = makeNumbers(2)
     const spy = fn(sinkLog)
-    const w = pushConsumer({ log: consumerLog })(spy)
-    const r = pushConcat(
-      pushProducer({ log: producerLog() })(data0),
-      pushProducer({ log: producerLog(), errorAtStep: 0 })(data1)
+    const w = pullConsumer({ log: consumerLog })(spy)
+    const r = pullConcat(
+      pullProducer({ log: producerLog() })(data0),
+      pullProducer({ log: producerLog(), errorAtStep: 0 })(data1)
     )
 
     try {
-      await r(w)
+      await w(r)
     } catch {
 
       expect(spy.calls).deep.eq([
@@ -137,13 +112,13 @@ describe('[ pushConcat ]', () => {
     const data0 = makeNumbers(2)
     const data1 = makeNumbers(2)
     const spy = fn(sinkLog)
-    const w = pushConsumer({ log: consumerLog, continueOnError: true })(spy)
-    const r = pushConcat(
-      pushProducer({ log: producerLog() })(data0),
-      pushProducer({ log: producerLog(), errorAtStep: 0 })(data1)
+    const w = pullConsumer({ log: consumerLog, continueOnError: true })(spy)
+    const r = pullConcat(
+      pullProducer({ log: producerLog() })(data0),
+      pullProducer({ log: producerLog(), errorAtStep: 0 })(data1)
     )
 
-    await r(w)
+    await w(r)
 
     expect(spy.calls).deep.eq([
       [{ value: 0, done: false }],

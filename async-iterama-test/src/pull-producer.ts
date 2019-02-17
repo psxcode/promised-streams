@@ -1,6 +1,6 @@
 import { waitTimePromise as wait } from '@psxcode/wait'
 import { iterate } from 'iterama'
-import { PullProducer } from '../src'
+import { PullProducer } from './types'
 import noop from './noop'
 import isPositiveNumber from './is-positive-number'
 

@@ -1,0 +1,23 @@
+{
+  "name": "async-iterama",
+  "version": "0.0.0",
+  "main": "index.js",
+  "module": "index",
+  "typings": "index.d.ts",
+  "license": "MIT",
+  "author": "psxcode <psxcode@gmail.com> (https://github.com/psxcode)",
+  "homepage": "https://github.com/psxcode/async-iterama",
+  "engines": {
+    "node": ">=8"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.3.1",
+    "@psxcode/wait": "^0.1.1",
+    "circularr": "^0.1.5",
+    "iterama": "^0.1.1",
+    "node-streams": "^0.2.1"
+  },
+  "devDependencies": {
+    "async-iterama-test": "^0.0.0"
+  }
+}

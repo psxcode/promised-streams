@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "esnext",
-    "module": "commonjs",
+    "module": "esnext",
     "moduleResolution": "node",
     "strict": true,
     "allowSyntheticDefaultImports": true,
@@ -9,7 +9,4 @@
     "pretty": true,
     "inlineSourceMap": true
   },
-  "include": [
-    "src"
-  ]
 }

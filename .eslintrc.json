@@ -16,7 +16,13 @@
       "node": {
         "extensions": [".js", ".ts"]
       }
-    }
+    },
+    "import/core-modules": [
+      "debug",
+      "chai",
+      "mocha",
+      "test-fn"
+    ]
   },
   "rules": {
     "array-bracket-newline": [

@@ -695,6 +695,7 @@
 "@psxcode/wait@^0.1.1":
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/@psxcode/wait/-/wait-0.1.1.tgz#9462de148dcb67bdeb98e8adf274d23f86839546"
+  integrity sha512-HVQ1dG+tifm45G92p2P27KCuWDsQuu1Ha+LDn0mK0qmL6pOrJQ+haWUqXKLLs8Qp3pK4dRFPK1n8/rWb/f+2hA==
 
 "@types/chai@^4.1.7":
   version "4.1.7"

@@ -1,5 +1,5 @@
 import { waitTimePromise as wait } from '@psxcode/wait'
-import { PushConsumer } from '../src/types'
+import { PushConsumer } from './types'
 import noop from './noop'
 import isPositiveNumber from './is-positive-number'
 

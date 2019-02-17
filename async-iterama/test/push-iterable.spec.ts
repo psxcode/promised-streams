@@ -2,21 +2,21 @@ import { describe, it } from 'mocha'
 import { expect } from 'chai'
 import debug from 'debug'
 import fn from 'test-fn'
-import { pullIterable } from '../src'
+import { pushConsumer } from 'async-iterama-test/src'
+import { pushIterable } from '../src'
 import makeNumbers from './make-numbers'
-import pullConsumer from './pull-consumer'
 
 const consumerLog = debug('ai:consumer')
 const sinkLog = debug('ai:sink')
 
-describe('[ pullIterable ]', () => {
+describe('[ pushIterable ]', () => {
   it('should work', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
-    const w = pullConsumer({ log: consumerLog, delay: 10 })(spy)
-    const r = pullIterable(data)
+    const w = pushConsumer({ log: consumerLog, delay: 10 })(spy)
+    const r = pushIterable(data)
 
-    await w(r)
+    await r(w)
 
     expect(spy.calls).deep.eq([
       [{ value: 0, done: false }],

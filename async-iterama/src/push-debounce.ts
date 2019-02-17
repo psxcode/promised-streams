@@ -1,6 +1,6 @@
 import { WaitFn, PushConsumer, AsyncIteratorResult, UnsubFn } from './types'
 
-export const pushDebounce = (wait: WaitFn) => <T> (consumer: PushConsumer<T>): PushConsumer<T> => {
+const pushDebounce = (wait: WaitFn) => <T> (consumer: PushConsumer<T>): PushConsumer<T> => {
   let last0: AsyncIteratorResult<T>
   let last1: AsyncIteratorResult<T>
   let unsub: UnsubFn
@@ -45,3 +45,5 @@ export const pushDebounce = (wait: WaitFn) => <T> (consumer: PushConsumer<T>): P
     })
   }
 }
+
+export default pushDebounce
