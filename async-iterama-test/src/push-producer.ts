@@ -43,8 +43,12 @@ const pushProducer = ({ log = noop, dataResolveDelay, dataPrepareDelay, errorAtS
       ++i
     }
 
-    log(`pushing complete at ${i}`)
-    await consumer(doneAsyncIteratorResult())
+    log(`pushing complete`)
+    try {
+      await consumer(doneAsyncIteratorResult())
+    } catch {
+      log(`consumer rejected at complete`)
+    }
   }
 }
 

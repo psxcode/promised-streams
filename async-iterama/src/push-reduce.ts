@@ -24,12 +24,19 @@ const pushReduce = <S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) =>
       }
 
       if (ir.done) {
-        await consumer(asyncIteratorResult(state))
+        let consumerResult
+        try {
+          await (consumerResult = consumer(asyncIteratorResult(state)))
+        } catch {
+          return consumerResult
+        }
+
         state = undefined as any
-        await consumer(doneAsyncIteratorResult())
+
+        return consumer(doneAsyncIteratorResult())
       } else {
         try {
-          state = await (reducer(state, ir.value))
+          state = await reducer(state, ir.value)
         } catch (e) {
           return consumer(errorAsyncIteratorResult(e))
         }
