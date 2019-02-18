@@ -37,7 +37,7 @@ const ereducer2 = (state?: number, value?: number) => {
 }
 
 
-describe.only('[ pushScan ]', () => {
+describe('[ pushScan ]', () => {
   it('should work', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
@@ -113,22 +113,10 @@ describe.only('[ pushScan ]', () => {
     await r(t(w))
 
     expect(spy.calls).deep.eq([
-      it('should deliver producer error to consumer', async () => {
-        const data = makeNumbers(4)
-        const spy = fn(sinkLog)
-        const w = pushConsumer({ log: consumerLog })(spy)
-        const t = pushScan(reducer)
-        const r = pushProducer({ log: producerLog, errorAtStep: 2 })(data)
-
-        await r(t(w))
-
-        expect(spy.calls).deep.eq([
-          [{ value: 0, done: false }],
-          [{ value: 1, done: false }],
-          [{ value: 3, done: false }],
-          [{ value: undefined, done: true }],
-        ])
-      }),
+      [{ value: 0, done: false }],
+      [{ value: 1, done: false }],
+      [{ value: 4, done: false }],
+      [{ value: undefined, done: true }],
     ])
   })
 
@@ -141,12 +129,7 @@ describe.only('[ pushScan ]', () => {
 
     await r(t(w))
 
-    expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-      [{ value: 1, done: false }],
-      [{ value: 3, done: false }],
-      [{ value: undefined, done: true }],
-    ])
+    expect(spy.calls).deep.eq([])
   })
 
   it('should deliver reducer error to consumer', async () => {

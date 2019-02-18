@@ -3,22 +3,42 @@ import { doneAsyncIteratorResult } from './helpers'
 
 const pushConcat = <T> (...producers: PushProducer<T>[]): PushProducer<T> =>
   async (consumer) => {
+    let consumerError: Promise<void> | undefined
     for (const producer of producers) {
       await producer(async (result) => {
+        if (consumerError) {
+          return consumerError
+        }
         let ir: IteratorResult<T>
         try {
           ir = await result
         } catch {
-          return consumer(result)
+          let consumerResult
+          try {
+            await (consumerResult = consumer(result))
+          } catch {
+            consumerError = consumerResult
+          }
+
+          return consumerResult
         }
 
         if (!ir.done) {
-          return consumer(result)
+          let consumerResult
+          try {
+            return await (consumerResult = consumer(result))
+          } catch {
+            consumerError = consumerResult
+          }
+
+          return consumerResult
         }
       })
     }
 
-    return consumer(doneAsyncIteratorResult())
+    if (!consumerError) {
+      return consumer(doneAsyncIteratorResult())
+    }
   }
 
 export default pushConcat

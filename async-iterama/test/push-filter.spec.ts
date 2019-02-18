@@ -9,7 +9,7 @@ import makeNumbers from './make-numbers'
 
 const producerLog = debug('ai:producer')
 const consumerLog = debug('ai:consumer')
-const mapLog = debug('ai:map')
+const mapLog = debug('ai:filter')
 const sinkLog = debug('ai:sink')
 const isEven = (value: number) => {
   mapLog('filtering value')
@@ -17,7 +17,7 @@ const isEven = (value: number) => {
   return value % 2 === 0
 }
 
-const aiseven = async (value: number) => {
+const asyncIsEven = async (value: number) => {
   mapLog('filtering value begin')
   await wait(50)
   mapLog('filtering value done')
@@ -47,11 +47,11 @@ describe('[ pushFilter ]', () => {
     ])
   })
 
-  it('should work with async map', async () => {
+  it('should work with async predicate', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog })(spy)
-    const t = pushFilter(aiseven)
+    const t = pushFilter(asyncIsEven)
     const r = pushProducer({ log: producerLog })(data)
 
     await r(t(w))
@@ -92,12 +92,12 @@ describe('[ pushFilter ]', () => {
     ])
   })
 
-  it('should deliver mapper error to consumer', async () => {
+  it('should deliver predicate error to consumer', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog })(spy)
     const t = pushFilter(errorFn)
-    const r = pushProducer({ log: producerLog, errorAtStep: 2 })(data)
+    const r = pushProducer({ log: producerLog })(data)
 
     await r(t(w))
 
