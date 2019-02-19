@@ -3,59 +3,79 @@ import { doneAsyncIteratorResult } from './helpers'
 
 const pushMerge = <T> (...producers: PushProducer<T>[]): PushProducer<T> => {
   let numDoneProducers = 0
-  const values: {result: AsyncIteratorResult<T>, resolve: () => void}[] = []
+  const values: {result: AsyncIteratorResult<T>, resolve: (arg: any) => void}[] = []
   let consumerError: Promise<void> | undefined = undefined
 
   return async (consumer) => {
-    const checkValue = async (): Promise<void> => {
-      if (numDoneProducers === producers.length) {
+    let consumingInProgress = false
+    const consumeNextValue = async (): Promise<void> => {
+      if (consumingInProgress) {
+        return
+      }
+      consumingInProgress = true
+
+      if (!consumerError && numDoneProducers === producers.length && values.length === 0) {
         return consumer(doneAsyncIteratorResult())
       }
 
       const nextValue = values.shift()
       if (!nextValue) {
+        consumingInProgress = false
+
         return
       }
 
       const { result, resolve } = nextValue
 
-      try {
-        await consumer(result)
-      } catch (e) {
-        consumerError = Promise.reject(e)
+      if (consumerError) {
+        resolve(consumerError)
+        consumingInProgress = false
+
+        return consumeNextValue()
       }
 
-      resolve()
+      let consumerResult
+      try {
+        await (consumerResult = consumer(result))
+      } catch {
+        consumerError = consumerResult
+      }
 
-      return checkValue()
+      resolve(consumerResult)
+      consumingInProgress = false
+
+      return consumeNextValue()
     }
 
-    for (let i = 0; i < producers.length; ++i) {
-      producers[i]((result) => new Promise(async (resolve) => {
-        if (consumerError) {
-          resolve(consumerError)
-        }
+    if (producers.length === 0) {
+      return consumer(doneAsyncIteratorResult())
+    }
 
-        let ir: IteratorResult<T>
-        try {
-          ir = await result
-        } catch {
+    return Promise.all(
+      producers.map((p) => p(
+        (result) => new Promise(async (resolve) => {
+          let ir: IteratorResult<T>
+          try {
+            ir = await result
+          } catch {
+            values.push({ result, resolve })
+
+            return consumeNextValue()
+          }
+
+          if (ir.done) {
+            ++numDoneProducers
+            consumeNextValue()
+
+            return resolve()
+          }
+
           values.push({ result, resolve })
 
-          return checkValue()
-        }
-
-        if (ir.done) {
-          ++numDoneProducers
-          checkValue()
-
-          return resolve()
-        }
-
-        values.push({ result, resolve })
-        checkValue()
-      }))
-    }
+          return consumeNextValue()
+        })
+      ))
+    ) as Promise<any>
   }
 }
 

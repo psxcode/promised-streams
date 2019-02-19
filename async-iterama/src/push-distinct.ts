@@ -1,7 +1,7 @@
 import { PushConsumer } from './types'
 import { errorAsyncIteratorResult } from './helpers'
 
-const pushDistinct = <T> (isAllowed: (prev: T, next: T) => boolean) => (consumer: PushConsumer<T>): PushConsumer<T> => {
+const pushDistinct = <T> (isAllowed: (prev: T, next: T) => Promise<boolean> | boolean) => (consumer: PushConsumer<T>): PushConsumer<T> => {
   let last: any = consumer
 
   return async (result) => {
@@ -20,7 +20,7 @@ const pushDistinct = <T> (isAllowed: (prev: T, next: T) => boolean) => (consumer
 
     let allow: boolean
     try {
-      allow = isAllowed(last, ir.value)
+      allow = await isAllowed(last, ir.value)
     } catch (e) {
       return consumer(errorAsyncIteratorResult(e))
     }
