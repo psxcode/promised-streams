@@ -5,47 +5,47 @@ const pushDebounce = (wait: WaitFn) => <T> (consumer: PushConsumer<T>): PushCons
   let last0: AsyncIteratorResult<T>
   let last1: AsyncIteratorResult<T>
   let unsub: UnsubFn
-  let consumerPromise: Promise<void> | undefined
+  let consumerResult: Promise<void> | undefined
 
   return async (result) => {
     result.catch(noop)
     last0 = last1
     last1 = result
 
-    if (consumerPromise) {
+    /* previous value consume is still in progress */
+    if (consumerResult) {
       try {
-        await consumerPromise
+        /* await to prev value consume complete */
+        await consumerResult
       } catch {
-        return consumerPromise
+        /* consumer returned cancel */
+        return consumerResult
       }
-      consumerPromise = undefined
+      consumerResult = undefined
     }
 
     unsub && unsub()
     unsub = wait(async () => {
       unsub = undefined
 
-      let ir: IteratorResult<T>
+      /* unwrap result */
+      let ir: IteratorResult<T> | undefined = undefined
       try {
         ir = await last1
-      } catch {
-        try {
-          await (consumerPromise = consumer(last1))
-        } catch {}
+      } catch {}
 
-        return
-      }
-
-      if (ir.done) {
+      /* check done */
+      if (ir && ir.done) {
         try {
-          await (consumerPromise = consumer(last0))
+          /* send last value before done */
+          await (consumerResult = consumer(last0))
         } catch {
           return
         }
       }
 
       try {
-        await (consumerPromise = consumer(last1))
+        await (consumerResult = consumer(last1))
       } catch {}
     })
   }

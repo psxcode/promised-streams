@@ -13,7 +13,7 @@ const producerLog = () => debug(`ai:producer${logIndex++}`)
 
 describe('[ pushZip ]', () => {
   it('should work', async () => {
-    const data0 = makeNumbers(2)
+    const data0 = [0, 1, 2, 3]
     const data1 = makeNumbers(2)
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog })(spy)
@@ -25,10 +25,8 @@ describe('[ pushZip ]', () => {
     await r(w)
 
     expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-      [{ value: 0, done: false }],
-      [{ value: 1, done: false }],
-      [{ value: 1, done: false }],
+      [{ value: [0, 0], done: false }],
+      [{ value: [1, 1], done: false }],
       [{ value: undefined, done: true }],
     ])
   })
@@ -44,8 +42,8 @@ describe('[ pushZip ]', () => {
     await r(w)
 
     expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-      [{ value: 1, done: false }],
+      [{ value: [0], done: false }],
+      [{ value: [1], done: false }],
       [{ value: undefined, done: true }],
     ])
   })
@@ -63,7 +61,7 @@ describe('[ pushZip ]', () => {
   })
 
   it('should handle consumer delay', async () => {
-    const data0 = makeNumbers(2)
+    const data0 = [0, 1, 2, 3]
     const data1 = makeNumbers(2)
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog, delay: 30 })(spy)
@@ -75,16 +73,14 @@ describe('[ pushZip ]', () => {
     await r(w)
 
     expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-      [{ value: 0, done: false }],
-      [{ value: 1, done: false }],
-      [{ value: 1, done: false }],
+      [{ value: [0, 0], done: false }],
+      [{ value: [1, 1], done: false }],
       [{ value: undefined, done: true }],
     ])
   })
 
   it('should propagate consumer cancel to all producers', async () => {
-    const data0 = makeNumbers(4)
+    const data0 = [0, 1, 2, 3]
     const data1 = makeNumbers(4)
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog, cancelAtStep: 0 })(spy)
@@ -96,12 +92,12 @@ describe('[ pushZip ]', () => {
     await r(w)
 
     expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
+      [{ value: [0, 0], done: false }],
     ])
   })
 
   it('should propagate producer error to consumer', async () => {
-    const data0 = makeNumbers(2)
+    const data0 = [0, 1, 2, 3]
     const data1 = makeNumbers(2)
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog })(spy)
@@ -112,13 +108,11 @@ describe('[ pushZip ]', () => {
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-    ])
+    expect(spy.calls).deep.eq([])
   })
 
   it('should propagate producer error to consumer and continue', async () => {
-    const data0 = makeNumbers(2)
+    const data0 = [0, 1, 2, 3]
     const data1 = makeNumbers(2)
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog, continueOnError: true })(spy)
@@ -130,9 +124,7 @@ describe('[ pushZip ]', () => {
     await r(w)
 
     expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-      [{ value: 1, done: false }],
-      [{ value: 1, done: false }],
+      [{ value: [1, 1], done: false }],
       [{ value: undefined, done: true }],
     ])
   })
