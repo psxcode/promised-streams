@@ -3,7 +3,7 @@ import noop from './noop'
 
 const pushDebounce = (wait: WaitFn) => <T> (consumer: PushConsumer<T>): PushConsumer<T> => {
   let last0: AsyncIteratorResult<T> | undefined
-  let last1: AsyncIteratorResult<T>
+  let last1: AsyncIteratorResult<T> | undefined
   let unsub: UnsubFn
   let consumerResult: Promise<void> | undefined
 
@@ -37,8 +37,13 @@ const pushDebounce = (wait: WaitFn) => <T> (consumer: PushConsumer<T>): PushCons
       }
 
       try {
-        await (consumerResult = consumer(last1))
+        await (consumerResult = consumer(last1!))
       } catch {}
+
+      if (ir && ir.done) {
+        last0 = undefined
+        last1 = undefined
+      }
     })
   }
 }
