@@ -2,7 +2,7 @@ import { WaitFn, PushConsumer, AsyncIteratorResult, UnsubFn } from './types'
 import noop from './noop'
 
 const pushDebounce = (wait: WaitFn) => <T> (consumer: PushConsumer<T>): PushConsumer<T> => {
-  let last0: AsyncIteratorResult<T>
+  let last0: AsyncIteratorResult<T> | undefined
   let last1: AsyncIteratorResult<T>
   let unsub: UnsubFn
   let consumerResult: Promise<void> | undefined
@@ -13,16 +13,8 @@ const pushDebounce = (wait: WaitFn) => <T> (consumer: PushConsumer<T>): PushCons
     last1 = result
 
     /* previous value consume is still in progress */
-    if (consumerResult) {
-      try {
-        /* await to prev value consume complete */
-        await consumerResult
-      } catch {
-        /* consumer returned cancel */
-        return consumerResult
-      }
-      consumerResult = undefined
-    }
+    consumerResult && await consumerResult
+    consumerResult = undefined
 
     unsub && unsub()
     unsub = wait(async () => {
@@ -35,7 +27,7 @@ const pushDebounce = (wait: WaitFn) => <T> (consumer: PushConsumer<T>): PushCons
       } catch {}
 
       /* check done */
-      if (ir && ir.done) {
+      if (ir && ir.done && last0) {
         try {
           /* send last value before done */
           await (consumerResult = consumer(last0))

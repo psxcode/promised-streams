@@ -53,6 +53,23 @@ describe('[ pushDebounce ]', () => {
     ])
   })
 
+  it('should handle immediate done', async () => {
+    const data: number[] = []
+    const spy = fn(sinkLog)
+    const w = pushConsumer({ log: consumerLog })(spy)
+    const t = pushDebounce(debWait(10))
+    const r = pushProducer({ log: producerLog })(data)
+
+    await r(t(w))
+
+    /* wait additional time to drain debounce */
+    await wait(20)
+
+    expect(spy.calls).deep.eq([
+      [{ value: undefined, done: true }],
+    ])
+  })
+
   it('should deliver consumer cancel', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
@@ -84,6 +101,26 @@ describe('[ pushDebounce ]', () => {
 
     expect(spy.calls).deep.eq([
       [{ value: 0, done: false }],
+    ])
+  })
+
+  it('should be able to continue after producer error', async () => {
+    const data = makeNumbers(4)
+    const spy = fn(sinkLog)
+    const w = pushConsumer({ log: consumerLog, continueOnError: true })(spy)
+    const t = pushDebounce(debWait(10))
+    const r = pushProducer({ log: producerLog, errorAtStep: 1, dataPrepareDelay: 50 })(data)
+
+    await r(t(w))
+
+    /* wait additional time to drain debounce */
+    await wait(20)
+
+    expect(spy.calls).deep.eq([
+      [{ value: 0, done: false }],
+      [{ value: 2, done: false }],
+      [{ value: 3, done: false }],
+      [{ value: undefined, done: true }],
     ])
   })
 })
