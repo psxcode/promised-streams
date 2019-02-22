@@ -83,7 +83,28 @@ describe('[ pullConcat ]', () => {
     ])
   })
 
-  it('should propagate producer error to consumer', async () => {
+  it('should handle producer delay', async () => {
+    const data0 = makeNumbers(2)
+    const data1 = makeNumbers(2)
+    const spy = fn(sinkLog)
+    const w = pullConsumer({ log: consumerLog, delay: 30 })(spy)
+    const r = pullConcat(
+      pullProducer({ log: producerLog(), dataPrepareDelay: 10 })(data0),
+      pullProducer({ log: producerLog(), dataResolveDelay: 10 })(data1)
+    )
+
+    await w(r)
+
+    expect(spy.calls).deep.eq([
+      [{ value: 0, done: false }],
+      [{ value: 1, done: false }],
+      [{ value: 0, done: false }],
+      [{ value: 1, done: false }],
+      [{ value: undefined, done: true }],
+    ])
+  })
+
+  it('should deliver producer error to consumer', async () => {
     const data0 = makeNumbers(2)
     const data1 = makeNumbers(2)
     const spy = fn(sinkLog)
@@ -108,7 +129,7 @@ describe('[ pullConcat ]', () => {
     expect.fail('should not get here')
   })
 
-  it('should propagate producer error to consumer and continue', async () => {
+  it('should deliver producer error to consumer and continue', async () => {
     const data0 = makeNumbers(2)
     const data1 = makeNumbers(2)
     const spy = fn(sinkLog)
