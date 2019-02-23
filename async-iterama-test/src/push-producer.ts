@@ -11,45 +11,46 @@ export type PushProducerOptions = {
   errorAtStep?: number,
 }
 
-const pushProducer = ({ log = noop, dataResolveDelay, dataPrepareDelay, errorAtStep }: PushProducerOptions = {}) => <T>(data: Iterable<T>): PushProducer<T> => {
-  let i = 0
+const pushProducer = ({ log = noop, dataResolveDelay, dataPrepareDelay, errorAtStep }: PushProducerOptions = {}) =>
+  <T>(data: Iterable<T>): PushProducer<T> => {
+    let i = 0
 
-  return async (consumer) => {
-    for (const chunk of data) {
-      try {
-        if (isPositiveNumber(dataPrepareDelay)) {
-          log(`preparing data ${i}`)
-          await wait(dataPrepareDelay)
+    return async (consumer) => {
+      for (const chunk of data) {
+        try {
+          if (isPositiveNumber(dataPrepareDelay)) {
+            log(`preparing data ${i}`)
+            await wait(dataPrepareDelay)
+          }
+
+          await consumer(new Promise(async (resolve, reject) => {
+            log(`pushing data ${i}`)
+            if (isPositiveNumber(dataResolveDelay)) {
+              await wait(dataResolveDelay)
+            }
+
+            if (errorAtStep === i) {
+              reject(new Error(`error at step ${i}`))
+            } else {
+              resolve(iteratorResult(chunk))
+            }
+          }))
+        } catch (e) {
+          log(`consumer rejected at step ${i}`)
+          log(e)
+
+          return
         }
-
-        await consumer(new Promise(async (resolve, reject) => {
-          log(`pushing data ${i}`)
-          if (isPositiveNumber(dataResolveDelay)) {
-            await wait(dataResolveDelay)
-          }
-
-          if (errorAtStep === i) {
-            reject(new Error(`error at step ${i}`))
-          } else {
-            resolve(iteratorResult(chunk))
-          }
-        }))
-      } catch (e) {
-        log(`consumer rejected at step ${i}`)
-        log(e)
-
-        return
+        ++i
       }
-      ++i
-    }
 
-    log(`pushing complete`)
-    try {
-      await consumer(doneAsyncIteratorResult())
-    } catch {
-      log(`consumer rejected at complete`)
+      log(`pushing complete`)
+      try {
+        await consumer(doneAsyncIteratorResult())
+      } catch {
+        log(`consumer rejected at complete`)
+      }
     }
   }
-}
 
 export default pushProducer

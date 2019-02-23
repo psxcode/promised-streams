@@ -10,13 +10,13 @@ export type AsyncPullConsumerOptions = {
 }
 
 const pullConsumer = ({ log = noop, delay, continueOnError }: AsyncPullConsumerOptions = {}) =>
-  (sink: (chunk: any) => void): PullConsumer<any> => {
+  <T> (sink: (chunk: IteratorResult<T>) => void): PullConsumer<T> => {
     let i = 0
 
     return async (producer) => {
       while (true) {
         log(`pulling value ${i}`)
-        let air: AsyncIteratorResult<any>
+        let air: AsyncIteratorResult<T>
         try {
           air = producer()
         } catch (e) {
@@ -28,7 +28,7 @@ const pullConsumer = ({ log = noop, delay, continueOnError }: AsyncPullConsumerO
 
         log(`resolving value ${i}`)
 
-        let ir: IteratorResult<any>
+        let ir: IteratorResult<T>
         try {
           ir = await air
         } catch (e) {

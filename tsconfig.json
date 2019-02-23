@@ -9,4 +9,7 @@
     "pretty": true,
     "inlineSourceMap": true
   },
+  "include": [
+    "src"
+  ]
 }

@@ -1,5 +1,5 @@
 import { PullProducer, AsyncIteratorResult } from './types'
-import { errorAsyncIteratorResult, asyncIteratorResult, doneAsyncIteratorResult } from './helpers'
+import { errorAsyncIteratorResult, doneAsyncIteratorResult } from './helpers'
 
 const race = <T>(promises: (Promise<IteratorResult<T>> | null)[]) => new Promise<[IteratorResult<T>, number]>((resolve, reject) => {
   promises.forEach((p, i) => p && p.then(
@@ -11,22 +11,22 @@ const race = <T>(promises: (Promise<IteratorResult<T>> | null)[]) => new Promise
 const isValid = (obj: any) => !!obj
 
 const pullMerge = <T> (...producers: PullProducer<T>[]): PullProducer<T> => {
-  return async () => {
-    const activeProducers: (PullProducer<T> | null)[] = producers.slice()
-    const promises: (AsyncIteratorResult<T> | null)[] = producers.map(() => null)
+  const activeProducers: (PullProducer<T> | null)[] = producers.slice()
+  const promises: (AsyncIteratorResult<T> | null)[] = producers.map(() => null)
 
+  return async () => {
     while (activeProducers.some(isValid)) {
       let result: IteratorResult<T>
-      let index: number
+      let winnerIndex: number
       try {
-        for (let i = 0 ; i < producers.length; ++i) {
+        for (let i = 0 ; i < activeProducers.length; ++i) {
           const producer = activeProducers[i]
           if (promises[i] === null && producer !== null) {
             promises[i] = producer()
           }
         }
-        [result, index] = await race(promises)
-        promises[index] = null
+        [result, winnerIndex] = await race(promises)
+        promises[winnerIndex] = null
       } catch ([e, index]) {
         activeProducers[index] = null
         promises[index] = null
@@ -35,11 +35,11 @@ const pullMerge = <T> (...producers: PullProducer<T>[]): PullProducer<T> => {
       }
 
       if (result.done) {
-        activeProducers[index] = null
+        activeProducers[winnerIndex] = null
         continue
       }
 
-      asyncIteratorResult(result.value)
+      return result
     }
 
     return doneAsyncIteratorResult()

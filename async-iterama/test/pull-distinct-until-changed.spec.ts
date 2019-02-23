@@ -2,39 +2,20 @@ import { describe, it } from 'mocha'
 import { expect } from 'chai'
 import debug from 'debug'
 import fn from 'test-fn'
-import { waitTimePromise as wait } from '@psxcode/wait'
 import { pullConsumer, pullProducer } from 'async-iterama-test/src'
-import { pullDistinct } from '../src'
+import { pullDistinctUntilChanged } from '../src'
 
 const consumerLog = debug('ai:consumer')
 const producerLog = () => debug(`ai:producer`)
-const mapLog = debug('ai:filter')
 const sinkLog = debug('ai:sink')
-const notEqual = (a: number, b: number) => {
-  mapLog('filtering value')
 
-  return a !== b
-}
-
-const asyncNotEqual = async (a: number, b: number) => {
-  mapLog('filtering value begin')
-  await wait(50)
-  mapLog('filtering value done')
-
-  return a !== b
-}
-
-const errorFn = () => {
-  throw new Error('error in predicate')
-}
-
-describe('[ pullDistinct ]', () => {
+describe('[ pullDistinctUntilChanged ]', () => {
   it('should work', async () => {
     const data = [0, 1, 1, 2, 3, 3, 3]
     const spy = fn(sinkLog)
     const w = pullConsumer({ log: consumerLog })(spy)
     const r = pullProducer({ log: producerLog() })(data)
-    const t = pullDistinct(notEqual)
+    const t = pullDistinctUntilChanged
 
     await w(t(r))
 
@@ -52,7 +33,7 @@ describe('[ pullDistinct ]', () => {
     const spy = fn(sinkLog)
     const w = pullConsumer({ log: consumerLog })(spy)
     const r = pullProducer({ log: producerLog() })(data)
-    const t = pullDistinct(asyncNotEqual)
+    const t = pullDistinctUntilChanged
 
     await w(t(r))
 
@@ -70,7 +51,7 @@ describe('[ pullDistinct ]', () => {
     const spy = fn(sinkLog)
     const w = pullConsumer({ log: consumerLog })(spy)
     const r = pullProducer({ log: producerLog(), errorAtStep: 2 })(data)
-    const t = pullDistinct(notEqual)
+    const t = pullDistinctUntilChanged
 
     try {
       await w(t(r))
@@ -87,31 +68,12 @@ describe('[ pullDistinct ]', () => {
     expect.fail('should not get here')
   })
 
-  it('should deliver predicate error to consumer', async () => {
-    const data = [0, 1, 1, 2, 3, 3, 3]
-    const spy = fn(sinkLog)
-    const w = pullConsumer({ log: consumerLog })(spy)
-    const t = pullDistinct(errorFn)
-    const r = pullProducer({ log: producerLog })(data)
-
-    try {
-      await w(t(r))
-    } catch {
-
-      expect(spy.calls).deep.eq([])
-
-      return
-    }
-
-    expect.fail('should not get here')
-  })
-
   it('should deliver producer error to consumer and continue', async () => {
     const data = [0, 1, 1, 2, 3, 3, 3]
     const spy = fn(sinkLog)
     const w = pullConsumer({ log: consumerLog, continueOnError: true })(spy)
     const r = pullProducer({ log: producerLog(), errorAtStep: 3 })(data)
-    const t = pullDistinct(notEqual)
+    const t = pullDistinctUntilChanged
 
     await w(t(r))
 

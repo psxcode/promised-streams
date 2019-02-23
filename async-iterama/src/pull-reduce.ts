@@ -1,5 +1,5 @@
 import { PullProducer } from './types'
-import { doneAsyncIteratorResult, asyncIteratorResult } from './helpers'
+import { doneIteratorResult, iteratorResult } from './helpers'
 
 const pullReduce = <S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) =>
   (producer: PullProducer<T>): PullProducer<S> => {
@@ -9,7 +9,9 @@ const pullReduce = <S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) =>
 
     return async () => {
       if (isDone) {
-        return doneAsyncIteratorResult()
+        state = undefined as any
+
+        return doneIteratorResult()
       }
 
       if (!isInit) {
@@ -22,9 +24,8 @@ const pullReduce = <S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) =>
 
         if (done) {
           isDone = true
-          state = undefined as any
 
-          return asyncIteratorResult(state)
+          return iteratorResult(state)
         }
 
         state = await reducer(state, value)
