@@ -1,6 +1,6 @@
 import FixedArray from 'circularr'
 import { AsyncIteratorResult, PullProducer } from './types'
-import { doneAsyncIteratorResult } from './helpers'
+import { doneAsyncIteratorResult, errorAsyncIteratorResult } from './helpers'
 
 const pullTakeFirst = (numTake: number) => <T> (producer: PullProducer<T>): PullProducer<T> => {
   let i = 0
@@ -15,30 +15,35 @@ const pullTakeFirst = (numTake: number) => <T> (producer: PullProducer<T>): Pull
 }
 
 const pullTakeLast = (numTake: number) => <T> (producer: PullProducer<T>): PullProducer<T> => {
-  const last = new FixedArray<AsyncIteratorResult<T>>(numTake)
+  let last = new FixedArray<AsyncIteratorResult<T>>(numTake)
   let isInit = false
-  let i = 1
+  let i = 0
 
   return async () => {
     if (!isInit) {
       isInit = true
 
       while (true) {
-        const air = producer()
+        let air: AsyncIteratorResult<T> | undefined = undefined
         let done = false
         try {
-          done = (await air).done
-        } catch {}
+          done = (await (air = producer())).done
+        } catch (e) {
+          if (!air) {
+            air = errorAsyncIteratorResult(e)
+          }
+        }
 
         if (done) {
-          return last.shift(air)
+          last = last.trim()
+          break
         }
 
         last.shift(air)
       }
     }
 
-    if (i++ < numTake) {
+    if (i++ < last.length) {
       return last.shift(undefined as any)
     }
 

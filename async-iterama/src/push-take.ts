@@ -1,5 +1,6 @@
 import FixedArray from 'circularr'
 import { PushConsumer, AsyncIteratorResult } from './types'
+import { doneAsyncIteratorResult } from './helpers'
 
 const pushTakeFirst = (numTake: number) => <T> (consumer: PushConsumer<T>): PushConsumer<T> => {
   let i = 0
@@ -7,12 +8,16 @@ const pushTakeFirst = (numTake: number) => <T> (consumer: PushConsumer<T>): Push
   return async (result) => {
     if (i++ < numTake) {
       return consumer(result)
+    } else {
+      await consumer(doneAsyncIteratorResult())
+
+      return Promise.reject()
     }
   }
 }
 
-const pushTakeLast = (numSkip: number) => <T> (consumer: PushConsumer<T>): PushConsumer<T> => {
-  const values = new FixedArray<AsyncIteratorResult<T>>(numSkip)
+const pushTakeLast = (numTake: number) => <T> (consumer: PushConsumer<T>): PushConsumer<T> => {
+  const values = new FixedArray<AsyncIteratorResult<T>>(numTake)
 
   return async (result) => {
     let done = false
@@ -21,7 +26,7 @@ const pushTakeLast = (numSkip: number) => <T> (consumer: PushConsumer<T>): PushC
     } catch {}
 
     if (done) {
-      for (const value of values) {
+      for (const value of values.trim()) {
         await consumer(value)
       }
 
@@ -34,10 +39,10 @@ const pushTakeLast = (numSkip: number) => <T> (consumer: PushConsumer<T>): PushC
   }
 }
 
-const pushTake = (numSkip: number) => (
-  numSkip < 0
-    ? pushTakeLast(-numSkip)
-    : pushTakeFirst(numSkip)
+const pushTake = (numTake: number) => (
+  numTake < 0
+    ? pushTakeLast(-numTake)
+    : pushTakeFirst(numTake)
 )
 
 export default pushTake
