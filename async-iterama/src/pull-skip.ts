@@ -48,7 +48,17 @@ const pullSkipLast = (numSkip: number) => <T> (producer: PullProducer<T>): PullP
       }
     }
 
-    return last.shift(producer())
+    const air = producer()
+    let done = false
+    try {
+      done = (await air).done
+    } catch {}
+
+    if (done) {
+      return air
+    }
+
+    return last.shift(air)
   }
 }
 
