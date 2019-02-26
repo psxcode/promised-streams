@@ -9,8 +9,15 @@
     "plugin:import/errors",
     "plugin:import/warnings"
   ],
-  "parser": "eslint-plugin-typescript/parser",
-  "plugins": ["typescript", "import"],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "modules": true
+    }
+  },
+  "plugins": ["@typescript-eslint", "import"],
   "settings": {
     "import/resolver": {
       "node": {
@@ -343,7 +350,7 @@
       }
     ],
     "no-unused-vars": "off",
-    "typescript/no-unused-vars": "error",
+    "@typescript-eslint/no-unused-vars": "error",
     "no-undef": "off",
     "no-empty": "off",
     "no-cond-assign": "off",
