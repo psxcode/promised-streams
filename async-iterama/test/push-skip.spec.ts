@@ -128,7 +128,7 @@ describe('[ pushSkip ]', () => {
     await r(t(w))
 
     expect(spy.calls).deep.eq([
-      [{ value: 1, done: false }],
+      [{ value: 0, done: false }],
     ])
   })
 

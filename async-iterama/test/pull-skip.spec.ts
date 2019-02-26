@@ -10,7 +10,7 @@ const producerLog = debug('ai:producer')
 const consumerLog = debug('ai:consumer')
 const sinkLog = debug('ai:sink')
 
-describe.only('[ pullSkip ]', () => {
+describe('[ pullSkip ]', () => {
   it('should work with positive numbers', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
