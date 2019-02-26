@@ -2,7 +2,7 @@ import { subscribeAsync } from 'node-streams'
 import { AsyncIteratorResult, PullProducer } from './types'
 import { doneAsyncIteratorResult, errorAsyncIteratorResult, asyncIteratorResult } from './helpers'
 
-const pullStream = <T> (stream: NodeJS.ReadableStream): PullProducer<T> => {
+const pullFromStream = <T> (stream: NodeJS.ReadableStream): PullProducer<T> => {
   let nextPromise: { resolve: (v?: any) => void, reject: (e?: any) => void } | undefined
   let nextAir: (() => AsyncIteratorResult<T>) | undefined
   let nextErrorAir: AsyncIteratorResult<T> | undefined
@@ -56,4 +56,4 @@ const pullStream = <T> (stream: NodeJS.ReadableStream): PullProducer<T> => {
   }
 }
 
-export default pullStream
+export default pullFromStream
