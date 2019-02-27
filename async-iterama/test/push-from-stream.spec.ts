@@ -69,7 +69,7 @@ describe.only('[ pushFromStream ]', () => {
     ])
   })
 
-  it.only('should deliver steam error to consumer', async () => {
+  it('should deliver steam error to consumer', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog })(spy)
@@ -79,8 +79,24 @@ describe.only('[ pushFromStream ]', () => {
 
     await r(w)
 
+    /* stream does not deliver data immediately, but error does */
+    expect(spy.calls).deep.eq([])
+  })
+
+  it.only('should deliver steam error to consumer and continue', async () => {
+    const data = makeNumbers(4)
+    const spy = fn(sinkLog)
+    const w = pushConsumer({ log: consumerLog, continueOnError: true })(spy)
+    const r = pushFromStream(
+      readable({ log: producerLog, eager: true, errorAtStep: 2 })({ objectMode: true })(data)
+    )
+
+    await r(w)
+
     expect(spy.calls).deep.eq([
       [{ value: 0, done: false }],
+      [{ value: 1, done: false }],
+      [{ value: undefined, done: true }],
     ])
   })
 })
