@@ -3,57 +3,37 @@ import { AsyncIteratorResult, PullProducer } from './types'
 import { doneAsyncIteratorResult, errorAsyncIteratorResult, asyncIteratorResult } from './helpers'
 
 const pullFromStream = <T> (stream: NodeJS.ReadableStream): PullProducer<T> => {
-  let nextPromise: { resolve: (v?: any) => void, reject: (e?: any) => void } | undefined
-  let nextAir: (() => AsyncIteratorResult<T>) | undefined
-  let nextErrorAir: AsyncIteratorResult<T> | undefined
-  let nextDoneAir: AsyncIteratorResult<T> | undefined
+  let hasValue: (() => void) | undefined = undefined
+  const values: (() => AsyncIteratorResult<T>)[] = []
 
-  const unsubscribe = subscribeAsync({
+  subscribeAsync({
     next (value) {
       return new Promise((resolve) => {
-        const air = asyncIteratorResult(value)
-        if (nextPromise) {
-          nextPromise.resolve(air)
-          nextPromise = undefined
-        } else {
-          nextAir = () => (resolve(), air)
-        }
+        values.push(() => (resolve(), asyncIteratorResult(value)))
+        hasValue && hasValue()
       })
     },
     error (e) {
-      unsubscribe()
-      if (nextPromise) {
-        nextPromise.reject(e)
-      } else {
-        nextErrorAir = errorAsyncIteratorResult(e)
-      }
+      return new Promise((resolve) => {
+        values.push(() => (resolve(), errorAsyncIteratorResult(e)))
+        hasValue && hasValue()
+      })
     },
     complete () {
-      const doneAir = doneAsyncIteratorResult()
-      if (nextPromise) {
-        nextPromise.resolve(doneAir)
-      } else {
-        nextDoneAir = doneAir
-      }
+      return new Promise((resolve) => {
+        values.push(() => (resolve(), doneAsyncIteratorResult()))
+        hasValue && hasValue()
+      })
     },
   })(stream)
 
-  return async () => {
-    return new Promise((resolve, reject) => {
-      if (nextAir) {
-        resolve(nextAir())
-        nextAir = undefined
-      } else if (nextErrorAir) {
-        resolve(nextErrorAir)
-        nextErrorAir = undefined
-      } else if (nextDoneAir) {
-        resolve(nextDoneAir)
-        nextDoneAir = undefined
-      } else {
-        nextPromise = { resolve, reject }
-      }
-    })
-  }
+  return () => new Promise((resolve) => {
+    if (values.length > 0) {
+      resolve()
+    } else {
+      hasValue = resolve
+    }
+  }).then(() => values.shift()!())
 }
 
 export default pullFromStream

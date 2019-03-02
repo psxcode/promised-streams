@@ -15,7 +15,7 @@
     "@psxcode/wait": "^0.1.1",
     "circularr": "^0.2.1",
     "iterama": "^0.1.1",
-    "node-streams": "^0.2.1"
+    "node-streams": "^0.2.2"
   },
   "devDependencies": {
     "async-iterama-test": "^0.0.0",

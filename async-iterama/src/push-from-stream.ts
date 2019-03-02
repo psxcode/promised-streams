@@ -4,30 +4,19 @@ import { doneAsyncIteratorResult, errorAsyncIteratorResult, asyncIteratorResult 
 
 const pushFromStream = <T> (stream: NodeJS.ReadableStream): PushProducer<T> =>
   (consumer) => new Promise((resolve) => {
-    let promise = Promise.resolve()
-
-    const onError = () => {
-      unsubscribe()
+    const onReject = () => {
+      unsub()
       resolve()
     }
-
-    const unsubscribe = subscribeAsync({
+    const unsub = subscribeAsync({
       next (value) {
-        return promise = promise
-          .then(() => consumer(asyncIteratorResult(value)))
-          .catch(onError)
+        return consumer(asyncIteratorResult(value)).catch(onReject)
       },
       error (e) {
-        return promise = promise
-          .then(() => consumer(errorAsyncIteratorResult(e)))
-          .catch(onError)
+        return consumer(errorAsyncIteratorResult(e)).catch(onReject)
       },
-      async complete () {
-        try {
-          await promise
-          await consumer(doneAsyncIteratorResult())
-        } catch {}
-        resolve()
+      complete () {
+        consumer(doneAsyncIteratorResult()).then(resolve, resolve)
       },
     })(stream)
   })
