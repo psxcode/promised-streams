@@ -24,14 +24,15 @@ const pushProducer = ({ log = noop, dataResolveDelay, dataPrepareDelay, errorAtS
           }
 
           await consumer(new Promise(async (resolve, reject) => {
-            log(`pushing data ${i}`)
             if (isPositiveNumber(dataResolveDelay)) {
               await wait(dataResolveDelay)
             }
 
             if (errorAtStep === i) {
+              log(`pushing error at ${i}`)
               reject(new Error(`error at step ${i}`))
             } else {
+              log(`pushing data ${i}`)
               resolve(iteratorResult(chunk))
             }
           }))
