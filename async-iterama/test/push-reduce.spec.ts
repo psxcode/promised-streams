@@ -82,6 +82,20 @@ describe('[ pushReduce ]', () => {
     ])
   })
 
+  it('should deliver consumer crash', async () => {
+    const data = makeNumbers(4)
+    const spy = fn(sinkLog)
+    const w = pushConsumer({ log: consumerLog, crashAtStep: 0 })(spy)
+    const t = pushReduce(reducer)
+    const r = pushProducer({ log: producerLog })(data)
+
+    await r(t(w))
+
+    expect(spy.calls).deep.eq([
+      [{ value: 6, done: false }],
+    ])
+  })
+
   it('should deliver producer error to consumer', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)

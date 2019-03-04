@@ -129,6 +129,31 @@ describe('[ pullConcat ]', () => {
     expect.fail('should not get here')
   })
 
+  it('should handle producer crash', async () => {
+    const data0 = makeNumbers(2)
+    const data1 = makeNumbers(2)
+    const spy = fn(sinkLog)
+    const w = pullConsumer({ log: consumerLog })(spy)
+    const r = pullConcat(
+      pullProducer({ log: producerLog() })(data0),
+      pullProducer({ log: producerLog(), crashAtStep: 0 })(data1)
+    )
+
+    try {
+      await w(r)
+    } catch {
+
+      expect(spy.calls).deep.eq([
+        [{ value: 0, done: false }],
+        [{ value: 1, done: false }],
+      ])
+
+      return
+    }
+
+    expect.fail('should not get here')
+  })
+
   it('should deliver producer error to consumer and continue', async () => {
     const data0 = makeNumbers(2)
     const data1 = makeNumbers(2)

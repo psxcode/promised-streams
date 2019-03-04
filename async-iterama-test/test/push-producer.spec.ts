@@ -98,6 +98,19 @@ describe('[ push-producer / push-consumer ]', () => {
     ])
   })
 
+  it('should handle consumer crash', async () => {
+    const data = makeNumbers(2)
+    const spy = fn(sinkLog)
+    const r = pushProducer({ log: producerLog })(data)
+    const w = pushConsumer({ log: consumerLog, crashAtStep: 1 })(spy)
+
+    await r(w)
+
+    expect(spy.calls).deep.eq([
+      [{ value: 0, done: false }],
+    ])
+  })
+
   it('should handle consumer cancel', async () => {
     const data = makeNumbers(2)
     const spy = fn(sinkLog)

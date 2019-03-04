@@ -70,6 +70,23 @@ describe('[ pull-consumer / pull-producer ]', () => {
     ])
   })
 
+  it('should handle producer crash', async () => {
+    const data = makeNumbers(2)
+    const spy = fn(sinkLog)
+    const r = pullProducer({ log: producerLog, crashAtStep: 0 })(data)
+    const w = pullConsumer({ log: consumerLog })(spy)
+
+    try {
+      await w(r)
+    } catch {
+      expect(spy.calls).deep.eq([])
+
+      return
+    }
+
+    expect.fail('should not get here')
+  })
+
   it('should handle producer error', async () => {
     const data = makeNumbers(2)
     const spy = fn(sinkLog)

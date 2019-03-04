@@ -91,7 +91,7 @@ describe('[ pullStartWith ]', () => {
     expect.fail('should not get here')
   })
 
-  it('should be able to continue after producer error', async () => {
+  it('should deliver producer error to consumer and continue', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
     const w = pullConsumer({ log: consumerLog, continueOnError: true })(spy)
@@ -107,5 +107,27 @@ describe('[ pullStartWith ]', () => {
       [{ value: 3, done: false }],
       [{ value: undefined, done: true }],
     ])
+  })
+
+  it('should handle producer crash', async () => {
+    const data = makeNumbers(4)
+    const spy = fn(sinkLog)
+    const w = pullConsumer({ log: consumerLog })(spy)
+    const t = pullStartWith(32)
+    const r = pullProducer({ log: producerLog, crashAtStep: 2 })(data)
+
+    try {
+      await w(t(r))
+    } catch {
+      expect(spy.calls).deep.eq([
+        [{ value: 32, done: false }],
+        [{ value: 0, done: false }],
+        [{ value: 1, done: false }],
+      ])
+
+      return
+    }
+
+    expect.fail('should not get here')
   })
 })

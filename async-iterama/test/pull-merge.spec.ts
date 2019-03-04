@@ -119,4 +119,26 @@ describe('[ pullMerge ]', () => {
       [{ value: undefined, done: true }],
     ])
   })
+
+  it('should handle producer crash', async () => {
+    const data0 = makeNumbers(2)
+    const data1 = makeNumbers(2)
+    const spy = fn(sinkLog)
+    const w = pullConsumer({ log: consumerLog })(spy)
+    const r0 = pullProducer({ log: producerLog() })(data0)
+    const r1 = pullProducer({ log: producerLog(), crashAtStep: 0 })(data1)
+    const t = pullMerge
+
+    try {
+      await w(t(r0, r1))
+    } catch {
+      expect(spy.calls).deep.eq([
+        [{ value: 0, done: false }],
+      ])
+
+      return
+    }
+
+    expect.fail('should not get here')
+  })
 })

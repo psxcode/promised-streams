@@ -21,7 +21,6 @@ const pullConsumer = ({ log = noop, delay, continueOnError }: AsyncPullConsumerO
           air = producer()
         } catch (e) {
           log(`producer crashed at step ${i++}`)
-          // log(e)
 
           throw e
         }

@@ -65,6 +65,25 @@ describe('[ pullDistinct ]', () => {
     ])
   })
 
+  it('should deliver predicate error to consumer', async () => {
+    const data = [0, 1, 1, 2, 3, 3, 3]
+    const spy = fn(sinkLog)
+    const w = pullConsumer({ log: consumerLog })(spy)
+    const t = pullDistinct(errorFn)
+    const r = pullProducer({ log: producerLog })(data)
+
+    try {
+      await w(t(r))
+    } catch {
+
+      expect(spy.calls).deep.eq([])
+
+      return
+    }
+
+    expect.fail('should not get here')
+  })
+
   it('should deliver producer error to consumer', async () => {
     const data = [0, 1, 1, 2, 3, 3, 3]
     const spy = fn(sinkLog)
@@ -87,25 +106,6 @@ describe('[ pullDistinct ]', () => {
     expect.fail('should not get here')
   })
 
-  it('should deliver predicate error to consumer', async () => {
-    const data = [0, 1, 1, 2, 3, 3, 3]
-    const spy = fn(sinkLog)
-    const w = pullConsumer({ log: consumerLog })(spy)
-    const t = pullDistinct(errorFn)
-    const r = pullProducer({ log: producerLog })(data)
-
-    try {
-      await w(t(r))
-    } catch {
-
-      expect(spy.calls).deep.eq([])
-
-      return
-    }
-
-    expect.fail('should not get here')
-  })
-
   it('should deliver producer error to consumer and continue', async () => {
     const data = [0, 1, 1, 2, 3, 3, 3]
     const spy = fn(sinkLog)
@@ -121,5 +121,27 @@ describe('[ pullDistinct ]', () => {
       [{ value: 3, done: false }],
       [{ value: undefined, done: true }],
     ])
+  })
+
+  it('should handle producer crash', async () => {
+    const data = [0, 1, 1, 2, 3, 3, 3]
+    const spy = fn(sinkLog)
+    const w = pullConsumer({ log: consumerLog })(spy)
+    const r = pullProducer({ log: producerLog(), crashAtStep: 2 })(data)
+    const t = pullDistinct(notEqual)
+
+    try {
+      await w(t(r))
+    } catch {
+
+      expect(spy.calls).deep.eq([
+        [{ value: 0, done: false }],
+        [{ value: 1, done: false }],
+      ])
+
+      return
+    }
+
+    expect.fail('should not get here')
   })
 })

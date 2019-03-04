@@ -96,6 +96,23 @@ describe('[ pushZip ]', () => {
     ])
   })
 
+  it('should handle consumer crash', async () => {
+    const data0 = [0, 1, 2, 3]
+    const data1 = makeNumbers(4)
+    const spy = fn(sinkLog)
+    const w = pushConsumer({ log: consumerLog, crashAtStep: 0 })(spy)
+    const r = pushZip(
+      pushProducer({ log: producerLog() })(data0),
+      pushProducer({ log: producerLog() })(data1)
+    )
+
+    await r(w)
+
+    expect(spy.calls).deep.eq([
+      [{ value: [0, 0], done: false }],
+    ])
+  })
+
   it('should propagate producer error to consumer', async () => {
     const data0 = [0, 1, 2, 3]
     const data1 = makeNumbers(2)

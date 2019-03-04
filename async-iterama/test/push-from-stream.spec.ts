@@ -148,4 +148,20 @@ describe('[ pushFromStream ]', () => {
       [{ value: 1, done: false }],
     ])
   })
+
+  it('consumer crash', async () => {
+    const data = makeNumbers(4)
+    const spy = fn(sinkLog)
+    const w = pushConsumer({ log: consumerLog, crashAtStep: 1 })(spy)
+    const r = pushFromStream(
+      readable({ log: producerLog, eager: true })({ objectMode: true })(data)
+    )
+
+    await r(w)
+
+    expect(spy.calls).deep.eq([
+      [{ value: 0, done: false }],
+      [{ value: 1, done: false }],
+    ])
+  })
 })

@@ -84,6 +84,21 @@ describe('[ pushStartWith ]', () => {
     ])
   })
 
+  it('should handle consumer crash', async () => {
+    const data = makeNumbers(4)
+    const spy = fn(sinkLog)
+    const w = pushConsumer({ log: consumerLog, crashAtStep: 1 })(spy)
+    const t = pushStartWith(3, 4, 5)
+    const r = pushProducer({ log: producerLog })(data)
+
+    await r(t(w))
+
+    expect(spy.calls).deep.eq([
+      [{ value: 3, done: false }],
+      [{ value: 4, done: false }],
+    ])
+  })
+
   it('should deliver producer error to consumer', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)

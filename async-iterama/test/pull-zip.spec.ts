@@ -112,4 +112,24 @@ describe('[ pullZip ]', () => {
       [{ value: undefined, done: true }],
     ])
   })
+
+  it('should handle producer crash', async () => {
+    const data0 = [0, 1, 2, 3]
+    const data1 = makeNumbers(2)
+    const spy = fn(sinkLog)
+    const w = pullConsumer({ log: consumerLog })(spy)
+    const r0 = pullProducer({ log: producerLog() })(data0)
+    const r1 = pullProducer({ log: producerLog(), crashAtStep: 0 })(data1)
+    const t = pullZip
+
+    try {
+      await w(t(r0, r1))
+    } catch {
+      expect(spy.calls).deep.eq([])
+
+      return
+    }
+
+    expect.fail('should not get here')
+  })
 })

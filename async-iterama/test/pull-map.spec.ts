@@ -122,4 +122,25 @@ describe('[ pullMap ]', () => {
       [{ value: undefined, done: true }],
     ])
   })
+
+  it('should handle producer crash', async () => {
+    const data = makeNumbers(4)
+    const spy = fn(sinkLog)
+    const w = pullConsumer({ log: consumerLog })(spy)
+    const t = pullMap(mult2)
+    const r = pullProducer({ log: producerLog, crashAtStep: 2 })(data)
+
+    try {
+      await w(t(r))
+    } catch {
+      expect(spy.calls).deep.eq([
+        [{ value: 0, done: false }],
+        [{ value: 2, done: false }],
+      ])
+
+      return
+    }
+
+    expect.fail('should not get here')
+  })
 })

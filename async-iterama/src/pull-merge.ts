@@ -1,12 +1,5 @@
 import { PullProducer, AsyncIteratorResult } from './types'
-import { errorAsyncIteratorResult, doneAsyncIteratorResult } from './helpers'
-
-const race = <T>(promises: (Promise<IteratorResult<T>> | null)[]) => new Promise<[IteratorResult<T>, number]>((resolve, reject) => {
-  promises.forEach((p, i) => p && p.then(
-    (res) => resolve([res, i]),
-    (reason) => reject([reason, i])
-  ))
-})
+import { errorAsyncIteratorResult, doneAsyncIteratorResult, race } from './helpers'
 
 const isValid = (obj: any) => !!obj
 

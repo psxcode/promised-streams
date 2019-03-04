@@ -8,18 +8,48 @@ export type PushConsumerOptions = {
   delay?: number,
   cancelAtStep?: number,
   continueOnError?: boolean,
+  crashAtStep?: number,
 }
 
-const pushConsumer = ({ log = noop, delay, cancelAtStep, continueOnError }: PushConsumerOptions = {}) =>
+const pushConsumer = ({ log = noop, delay, cancelAtStep, continueOnError, crashAtStep }: PushConsumerOptions = {}) =>
   <T> (sink: (result: IteratorResult<T>) => void): PushConsumer<T> => {
     let i = 0
 
-    return async (result) => {
+    return (result) => {
       log(`receiving data at ${i}`)
-      let ir: IteratorResult<T>
-      try {
-        ir = await result
-      } catch (e) {
+
+      if (i === crashAtStep) {
+        log(`crashing at ${i}`)
+        throw new Error(`consumer crashed at step ${0}`)
+      }
+
+      return result.then(async (ir) => {
+        if (ir.done) {
+          log(`resolved to done at step ${i}`)
+          ++i
+          sink(ir)
+
+          return
+        }
+
+        log(`resolved value ${ir.value} at ${i}`)
+
+        if (isPositiveNumber(delay)) {
+          log(`consuming value`)
+          await wait(delay)
+        }
+
+        sink(ir)
+
+        if (i === cancelAtStep) {
+          log(`cancelling at step ${i}`)
+          ++i
+
+          return Promise.reject()
+        }
+
+        ++i
+      }, (e) => {
         log(`resolved to error at step ${i}`)
         log(e)
 
@@ -27,40 +57,14 @@ const pushConsumer = ({ log = noop, delay, cancelAtStep, continueOnError }: Push
           log(`continue on error at step ${i}`)
           ++i
 
-          return
+          return Promise.resolve()
         }
 
         log(`returning break on error at step ${i}`)
         ++i
 
         return Promise.reject()
-      }
-
-      if (ir.done) {
-        log(`resolved to done at step ${i}`)
-        ++i
-        sink(ir)
-
-        return
-      }
-
-      log(`resolved value ${ir.value} at ${i}`)
-
-      if (isPositiveNumber(delay)) {
-        log(`consuming value`)
-        await wait(delay)
-      }
-
-      sink(ir)
-
-      if (i === cancelAtStep) {
-        log(`cancelling at step ${i}`)
-        ++i
-
-        return Promise.reject()
-      }
-
-      ++i
+      })
     }
   }
 

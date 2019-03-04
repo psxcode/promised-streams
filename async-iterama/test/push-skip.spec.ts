@@ -71,7 +71,7 @@ describe('[ pushSkip ]', () => {
     ])
   })
 
-  it('should work 0', async () => {
+  it('should work with 0 skip', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog })(spy)
@@ -93,6 +93,21 @@ describe('[ pushSkip ]', () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog, cancelAtStep: 1 })(spy)
+    const t = pushSkip(1)
+    const r = pushProducer({ log: producerLog })(data)
+
+    await r(t(w))
+
+    expect(spy.calls).deep.eq([
+      [{ value: 1, done: false }],
+      [{ value: 2, done: false }],
+    ])
+  })
+
+  it('should handle consumer crash', async () => {
+    const data = makeNumbers(4)
+    const spy = fn(sinkLog)
+    const w = pushConsumer({ log: consumerLog, crashAtStep: 1 })(spy)
     const t = pushSkip(1)
     const r = pushProducer({ log: producerLog })(data)
 

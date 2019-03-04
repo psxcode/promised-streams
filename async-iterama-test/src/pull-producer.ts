@@ -9,20 +9,15 @@ export type PullProducerOptions = {
   dataResolveDelay?: number,
   dataPrepareDelay?: number,
   errorAtStep?: number,
+  crashAtStep?: number,
 }
 
-const pullProducer = ({ log = noop, dataPrepareDelay, dataResolveDelay, errorAtStep }: PullProducerOptions = {}) =>
+const pullProducer = ({ log = noop, dataPrepareDelay, dataResolveDelay, errorAtStep, crashAtStep }: PullProducerOptions = {}) =>
   <T> (data: Iterable<T>): PullProducer<T> => {
     let i = 0
     const it = iterate(data)
 
-    return async () => {
-      log(`value requested at step ${i}`)
-
-      if (isPositiveNumber(dataPrepareDelay)) {
-        await wait(dataPrepareDelay)
-      }
-
+    const getNextValue = (): Promise<IteratorResult<T>> => {
       const ir = it.next()
 
       if (errorAtStep === i) {
@@ -48,6 +43,22 @@ const pullProducer = ({ log = noop, dataPrepareDelay, dataResolveDelay, errorAtS
 
         resolve(ir)
       })
+    }
+
+    return () => {
+      log(`value requested at step ${i}`)
+
+      if (i === crashAtStep) {
+        log(`crashing at ${i}`)
+
+        throw new Error(`producer crash at step ${i}`)
+      }
+
+      if (isPositiveNumber(dataPrepareDelay)) {
+        return wait(dataPrepareDelay).then(getNextValue)
+      }
+
+      return getNextValue()
     }
   }
 

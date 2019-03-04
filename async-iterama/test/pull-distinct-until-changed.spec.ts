@@ -84,4 +84,26 @@ describe('[ pullDistinctUntilChanged ]', () => {
       [{ value: undefined, done: true }],
     ])
   })
+
+  it('should handle producer crash', async () => {
+    const data = [0, 1, 1, 2, 3, 3, 3]
+    const spy = fn(sinkLog)
+    const w = pullConsumer({ log: consumerLog })(spy)
+    const r = pullProducer({ log: producerLog(), crashAtStep: 2 })(data)
+    const t = pullDistinctUntilChanged
+
+    try {
+      await w(t(r))
+    } catch {
+
+      expect(spy.calls).deep.eq([
+        [{ value: 0, done: false }],
+        [{ value: 1, done: false }],
+      ])
+
+      return
+    }
+
+    expect.fail('should not get here')
+  })
 })

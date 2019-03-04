@@ -73,6 +73,28 @@ describe('[ pullSide ]', () => {
     ])
   })
 
+  it('should deliver side-effect function error to consumer', async () => {
+    const data = makeNumbers(4)
+    const spy = fn(sinkLog)
+    const sideSpy = fn(errorFn)
+    const w = pullConsumer({ log: consumerLog })(spy)
+    const t = pullSide(sideSpy)
+    const r = pullProducer({ log: producerLog, errorAtStep: 2 })(data)
+
+    try {
+      await w(t(r))
+    } catch {
+      expect(spy.calls).deep.eq([])
+      expect(sideSpy.calls).deep.eq([
+        [0],
+      ])
+
+      return
+    }
+
+    expect.fail('should not get here')
+  })
+
   it('should deliver producer error to consumer', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
@@ -99,20 +121,50 @@ describe('[ pullSide ]', () => {
     expect.fail('should not get here')
   })
 
-  it('should deliver side-effect function error to consumer', async () => {
+  it('should deliver producer error to consumer and continue', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
-    const sideSpy = fn(errorFn)
-    const w = pullConsumer({ log: consumerLog })(spy)
+    const sideSpy = fn(sideFn)
+    const w = pullConsumer({ log: consumerLog, continueOnError: true })(spy)
     const t = pullSide(sideSpy)
     const r = pullProducer({ log: producerLog, errorAtStep: 2 })(data)
 
     try {
       await w(t(r))
     } catch {
-      expect(spy.calls).deep.eq([])
+      expect(spy.calls).deep.eq([
+        [{ value: 0, done: false }],
+        [{ value: 1, done: false }],
+      ])
+
       expect(sideSpy.calls).deep.eq([
-        [0],
+        [0], [1],
+      ])
+
+      return
+    }
+
+    expect.fail('should not get here')
+  })
+
+  it('should handle producer crash', async () => {
+    const data = makeNumbers(4)
+    const spy = fn(sinkLog)
+    const sideSpy = fn(sideFn)
+    const w = pullConsumer({ log: consumerLog })(spy)
+    const t = pullSide(sideSpy)
+    const r = pullProducer({ log: producerLog, crashAtStep: 2 })(data)
+
+    try {
+      await w(t(r))
+    } catch {
+      expect(spy.calls).deep.eq([
+        [{ value: 0, done: false }],
+        [{ value: 1, done: false }],
+      ])
+
+      expect(sideSpy.calls).deep.eq([
+        [0], [1],
       ])
 
       return

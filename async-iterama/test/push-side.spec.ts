@@ -93,6 +93,26 @@ describe('[ pushSide ]', () => {
     ])
   })
 
+  it('should deliver consumer crash', async () => {
+    const data = makeNumbers(4)
+    const spy = fn(sinkLog)
+    const sideSpy = fn(sideFn)
+    const w = pushConsumer({ log: consumerLog, crashAtStep: 1 })(spy)
+    const t = pushSide(sideSpy)
+    const r = pushProducer({ log: producerLog })(data)
+
+    await r(t(w))
+
+    expect(spy.calls).deep.eq([
+      [{ value: 0, done: false }],
+      [{ value: 1, done: false }],
+    ])
+
+    expect(sideSpy.calls).deep.eq([
+      [0], [1],
+    ])
+  })
+
   it('should deliver producer error to consumer', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)

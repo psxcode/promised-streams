@@ -10,3 +10,10 @@ export const asyncIteratorResult = <T> (value: T): AsyncIteratorResult<T> =>
 export const errorAsyncIteratorResult = (err?: any): AsyncIteratorResult<any> => Promise.reject(err)
 
 export const doneAsyncIteratorResult = (): AsyncIteratorResult<any> => Promise.resolve(doneIteratorResult())
+
+export const race = <T>(promises: (Promise<IteratorResult<T>> | null)[]) => new Promise<[IteratorResult<T>, number]>((resolve, reject) => {
+  promises.forEach((p, i) => p && p.then(
+    (res) => resolve([res, i]),
+    (reason) => reject([reason, i])
+  ))
+})

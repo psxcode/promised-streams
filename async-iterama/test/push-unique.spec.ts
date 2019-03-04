@@ -44,6 +44,21 @@ describe('[ pushUnique ]', () => {
     ])
   })
 
+  it('should handle consumer crash', async () => {
+    const data = [0, 1, 1, 2, 3, 2, 1, 0]
+    const spy = fn(sinkLog)
+    const w = pushConsumer({ log: consumerLog, crashAtStep: 1 })(spy)
+    const t = pushUnique
+    const r = pushProducer({ log: producerLog })(data)
+
+    await r(t(w))
+
+    expect(spy.calls).deep.eq([
+      [{ value: 0, done: false }],
+      [{ value: 1, done: false }],
+    ])
+  })
+
   it('should deliver producer error to consumer', async () => {
     const data = [0, 1, 1, 2, 3, 2, 1, 0]
     const spy = fn(sinkLog)

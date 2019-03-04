@@ -68,24 +68,6 @@ describe('[ pullReduce ]', () => {
     ])
   })
 
-  it('should deliver producer error to consumer', async () => {
-    const data = makeNumbers(4)
-    const spy = fn(sinkLog)
-    const w = pullConsumer({ log: consumerLog })(spy)
-    const t = pullReduce(reducer)
-    const r = pullProducer({ log: producerLog, errorAtStep: 2 })(data)
-
-    try {
-      await w(t(r))
-    } catch {
-      expect(spy.calls).deep.eq([])
-
-      return
-    }
-
-    expect.fail('should not get here')
-  })
-
   it('should deliver initial state error to consumer', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
@@ -110,6 +92,60 @@ describe('[ pullReduce ]', () => {
     const w = pullConsumer({ log: consumerLog })(spy)
     const t = pullReduce(errReducer2)
     const r = pullProducer({ log: producerLog })(data)
+
+    try {
+      await w(t(r))
+    } catch {
+      expect(spy.calls).deep.eq([])
+
+      return
+    }
+
+    expect.fail('should not get here')
+  })
+
+  it('should deliver producer error to consumer', async () => {
+    const data = makeNumbers(4)
+    const spy = fn(sinkLog)
+    const w = pullConsumer({ log: consumerLog })(spy)
+    const t = pullReduce(reducer)
+    const r = pullProducer({ log: producerLog, errorAtStep: 2 })(data)
+
+    try {
+      await w(t(r))
+    } catch {
+      expect(spy.calls).deep.eq([])
+
+      return
+    }
+
+    expect.fail('should not get here')
+  })
+
+  it('should deliver producer error to consumer and continue', async () => {
+    const data = makeNumbers(4)
+    const spy = fn(sinkLog)
+    const w = pullConsumer({ log: consumerLog, continueOnError: true })(spy)
+    const t = pullReduce(reducer)
+    const r = pullProducer({ log: producerLog, errorAtStep: 2 })(data)
+
+    try {
+      await w(t(r))
+    } catch {
+      expect(spy.calls).deep.eq([])
+
+      return
+    }
+
+    expect.fail('should not get here')
+  })
+
+  it('should handle producer crash', async () => {
+    const data = makeNumbers(4)
+    const spy = fn(sinkLog)
+    const w = pullConsumer({ log: consumerLog })(spy)
+    const t = pullReduce(reducer)
+    const r = pullProducer({ log: producerLog, crashAtStep: 2 })(data)
 
     try {
       await w(t(r))
