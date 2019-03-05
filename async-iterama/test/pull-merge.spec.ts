@@ -17,8 +17,8 @@ describe('[ pullMerge ]', () => {
     const data1 = makeNumbers(2)
     const spy = fn(sinkLog)
     const w = pullConsumer({ log: consumerLog })(spy)
-    const r0 = pullProducer({ log: producerLog() })(data0)
-    const r1 = pullProducer({ log: producerLog() })(data1)
+    const r0 = pullProducer({ log: producerLog(), dataResolveDelay: 5 })(data0)
+    const r1 = pullProducer({ log: producerLog(), dataResolveDelay: 8 })(data1)
     const t = pullMerge
 
     await w(t(r0, r1))
@@ -73,8 +73,8 @@ describe('[ pullMerge ]', () => {
 
     expect(spy.calls).deep.eq([
       [{ value: 0, done: false }],
-      [{ value: 0, done: false }],
       [{ value: 1, done: false }],
+      [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: undefined, done: true }],
     ])
@@ -85,8 +85,8 @@ describe('[ pullMerge ]', () => {
     const data1 = makeNumbers(2)
     const spy = fn(sinkLog)
     const w = pullConsumer({ log: consumerLog })(spy)
-    const r0 = pullProducer({ log: producerLog() })(data0)
-    const r1 = pullProducer({ log: producerLog(), errorAtStep: 0 })(data1)
+    const r0 = pullProducer({ log: producerLog(), dataResolveDelay: 5 })(data0)
+    const r1 = pullProducer({ log: producerLog(), errorAtStep: 0, dataPrepareDelay: 8 })(data1)
     const t = pullMerge
 
     try {
@@ -133,7 +133,6 @@ describe('[ pullMerge ]', () => {
       await w(t(r0, r1))
     } catch {
       expect(spy.calls).deep.eq([
-        [{ value: 0, done: false }],
       ])
 
       return

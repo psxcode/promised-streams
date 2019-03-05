@@ -1,5 +1,5 @@
 import { PullProducer, AsyncIteratorResult } from './types'
-import { errorAsyncIteratorResult, doneAsyncIteratorResult, race } from './helpers'
+import { doneAsyncIteratorResult, race } from './helpers'
 
 const isValid = (obj: any) => !!obj
 
@@ -20,11 +20,13 @@ const pullMerge = <T> (...producers: PullProducer<T>[]): PullProducer<T> => {
         }
         [result, winnerIndex] = await race(promises)
         promises[winnerIndex] = null
-      } catch ([e, index]) {
+      } catch ([_, index]) {
+        const res = promises[index]!
+
         activeProducers[index] = null
         promises[index] = null
 
-        return errorAsyncIteratorResult(e)
+        return res
       }
 
       if (result.done) {
