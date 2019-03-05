@@ -1,5 +1,7 @@
 import FixedArray from 'circularr'
 import { AsyncIteratorResult, PullProducer } from './types'
+import { errorAsyncIteratorResult } from './helpers'
+import noop from './noop'
 
 const pullSkipFirst = (numSkip: number) => <T> (producer: PullProducer<T>): PullProducer<T> => {
   let isInit = false
@@ -32,11 +34,15 @@ const pullSkipLast = (numSkip: number) => <T> (producer: PullProducer<T>): PullP
     if (!isInit) {
       isInit = true
       for (let i = 0; i < numSkip; ++i) {
-        const air = producer()
+        let air: AsyncIteratorResult<T> | undefined = undefined
         let done = false
         try {
-          done = (await air).done
-        } catch {}
+          done = (await (air = producer())).done
+        } catch (e) {
+          if (!air) {
+            (air = errorAsyncIteratorResult(e)).catch(noop)
+          }
+        }
 
         if (done) {
           last.clear()
@@ -48,11 +54,15 @@ const pullSkipLast = (numSkip: number) => <T> (producer: PullProducer<T>): PullP
       }
     }
 
-    const air = producer()
+    let air: AsyncIteratorResult<T> | undefined = undefined
     let done = false
     try {
-      done = (await air).done
-    } catch {}
+      done = (await (air = producer())).done
+    } catch (e) {
+      if (!air) {
+        (air = errorAsyncIteratorResult(e)).catch(noop)
+      }
+    }
 
     if (done) {
       return air

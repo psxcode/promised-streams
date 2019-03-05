@@ -50,6 +50,7 @@ const pullProducer = ({ log = noop, dataPrepareDelay, dataResolveDelay, errorAtS
 
       if (i === crashAtStep) {
         log(`crashing at ${i}`)
+        ++i
 
         throw new Error(`producer crash at step ${i}`)
       }

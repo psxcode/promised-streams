@@ -1,5 +1,6 @@
 import { PullProducer, AsyncIteratorResult } from './types'
-import { doneAsyncIteratorResult, race } from './helpers'
+import { doneAsyncIteratorResult, race, errorAsyncIteratorResult } from './helpers'
+import noop from './noop'
 
 const isValid = (obj: any) => !!obj
 
@@ -11,15 +12,25 @@ const pullMerge = <T> (...producers: PullProducer<T>[]): PullProducer<T> => {
     while (activeProducers.some(isValid)) {
       let result: IteratorResult<T>
       let winnerIndex: number
-      try {
-        for (let i = 0 ; i < activeProducers.length; ++i) {
-          const producer = activeProducers[i]
-          if (promises[i] === null && producer !== null) {
+
+      for (let i = 0 ; i < activeProducers.length; ++i) {
+        const producer = activeProducers[i]
+        if (promises[i] === null && producer !== null) {
+          try {
             promises[i] = producer()
+          } catch (e) {
+            let err: AsyncIteratorResult<any>
+            (err = errorAsyncIteratorResult(e)).catch(noop)
+            activeProducers[i] = null
+            promises[i] = null
+
+            return err
           }
         }
+      }
+
+      try {
         [result, winnerIndex] = await race(promises)
-        promises[winnerIndex] = null
       } catch ([_, index]) {
         const res = promises[index]!
 
@@ -28,6 +39,7 @@ const pullMerge = <T> (...producers: PullProducer<T>[]): PullProducer<T> => {
 
         return res
       }
+      promises[winnerIndex] = null
 
       if (result.done) {
         activeProducers[winnerIndex] = null

@@ -129,6 +129,26 @@ describe('[ pullSkip ]', () => {
     expect.fail('should not get here')
   })
 
+  it('should deliver producer error to consumer', async () => {
+    const data = makeNumbers(4)
+    const spy = fn(sinkLog)
+    const w = pullConsumer({ log: consumerLog })(spy)
+    const t = pullSkip(-1)
+    const r = pullProducer({ log: producerLog, errorAtStep: 1 })(data)
+
+    try {
+      await w(t(r))
+    } catch {
+      expect(spy.calls).deep.eq([
+        [{ value: 0, done: false }],
+      ])
+
+      return
+    }
+
+    expect.fail('should not get here')
+  })
+
   it('should skip error', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
@@ -166,6 +186,26 @@ describe('[ pullSkip ]', () => {
     const spy = fn(sinkLog)
     const w = pullConsumer({ log: consumerLog })(spy)
     const t = pullSkip(-2)
+    const r = pullProducer({ log: producerLog, crashAtStep: 1 })(data)
+
+    try {
+      await w(t(r))
+    } catch {
+      expect(spy.calls).deep.eq([
+        [{ value: 0, done: false }],
+      ])
+
+      return
+    }
+
+    expect.fail('should not get here')
+  })
+
+  it('should handle producer crash', async () => {
+    const data = makeNumbers(4)
+    const spy = fn(sinkLog)
+    const w = pullConsumer({ log: consumerLog })(spy)
+    const t = pullSkip(-1)
     const r = pullProducer({ log: producerLog, crashAtStep: 1 })(data)
 
     try {

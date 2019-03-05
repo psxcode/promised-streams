@@ -129,22 +129,18 @@ describe('[ pullSide ]', () => {
     const t = pullSide(sideSpy)
     const r = pullProducer({ log: producerLog, errorAtStep: 2 })(data)
 
-    try {
-      await w(t(r))
-    } catch {
-      expect(spy.calls).deep.eq([
-        [{ value: 0, done: false }],
-        [{ value: 1, done: false }],
-      ])
+    await w(t(r))
 
-      expect(sideSpy.calls).deep.eq([
-        [0], [1],
-      ])
+    expect(spy.calls).deep.eq([
+      [{ value: 0, done: false }],
+      [{ value: 1, done: false }],
+      [{ value: 3, done: false }],
+      [{ value: undefined, done: true }],
+    ])
 
-      return
-    }
-
-    expect.fail('should not get here')
+    expect(sideSpy.calls).deep.eq([
+      [0], [1], [3],
+    ])
   })
 
   it('should handle producer crash', async () => {

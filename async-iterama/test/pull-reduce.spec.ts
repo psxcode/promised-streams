@@ -129,15 +129,12 @@ describe('[ pullReduce ]', () => {
     const t = pullReduce(reducer)
     const r = pullProducer({ log: producerLog, errorAtStep: 2 })(data)
 
-    try {
-      await w(t(r))
-    } catch {
-      expect(spy.calls).deep.eq([])
+    await w(t(r))
 
-      return
-    }
-
-    expect.fail('should not get here')
+    expect(spy.calls).deep.eq([
+      [{ value: 4, done: false }],
+      [{ value: undefined, done: true }],
+    ])
   })
 
   it('should handle producer crash', async () => {

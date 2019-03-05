@@ -58,18 +58,18 @@ describe('[ pullWithLatest ]', () => {
     const data1 = makeNumbers(2)
     const dataMain = makeNumbers(2)
     const spy = fn(sinkLog)
-    const w = pullConsumer({ log: consumerLog, delay: 30 })(spy)
+    const w = pullConsumer({ log: consumerLog, delay: 50 })(spy)
     const r = pullWithLatest(
-      pullProducer({ log: producerLog() })(data0),
-      pullProducer({ log: producerLog() })(data1)
+      pullProducer({ log: producerLog(), dataPrepareDelay: 4 })(data0),
+      pullProducer({ log: producerLog(), dataPrepareDelay: 7 })(data1)
     )(
-      pullProducer({ log: mainProducerLog() })(dataMain)
+      pullProducer({ log: mainProducerLog(), dataPrepareDelay: 10 })(dataMain)
     )
 
     await w(r)
 
     expect(spy.calls).deep.eq([
-      [{ value: [0, undefined, undefined], done: false }],
+      [{ value: [0, 1, 0], done: false }],
       [{ value: [1, 3, 1], done: false }],
       [{ value: undefined, done: true }],
     ])
@@ -139,17 +139,17 @@ describe('[ pullWithLatest ]', () => {
     const spy = fn(sinkLog)
     const w = pullConsumer({ log: consumerLog, continueOnError: true })(spy)
     const r = pullWithLatest(
-      pullProducer({ log: producerLog() })(data0),
-      pullProducer({ log: producerLog(), errorAtStep: 0 })(data1)
+      pullProducer({ log: producerLog(), dataPrepareDelay: 4 })(data0),
+      pullProducer({ log: producerLog(), dataPrepareDelay: 7, errorAtStep: 0 })(data1)
     )(
-      pullProducer({ log: mainProducerLog() })(dataMain)
+      pullProducer({ log: mainProducerLog(), dataPrepareDelay: 10 })(dataMain)
     )
 
     await w(r)
 
     expect(spy.calls).deep.eq([
-      [{ value: [0, undefined, undefined], done: false }],
-      [{ value: [1, 2, undefined], done: false }],
+      [{ value: [0, 1, undefined], done: false }],
+      [{ value: [1, 3, undefined], done: false }],
       [{ value: undefined, done: true }],
     ])
   })

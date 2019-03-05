@@ -1,5 +1,6 @@
 import { PullProducer, AsyncIteratorResult } from './types'
-import { race, asyncIteratorResult } from './helpers'
+import { race, asyncIteratorResult, errorAsyncIteratorResult } from './helpers'
+import noop from './noop'
 
 const isValid = (obj: any) => !!obj
 
@@ -21,16 +22,25 @@ function pullWithLatest (...producers: PullProducer<any>[]) {
         let ir: IteratorResult<any>
         let index: number
 
-        try {
-          for (let i = 0; i < activeProducers.length; ++i) {
-            const producer = activeProducers[i]
-            if (promises[i] === null && producer !== null) {
+        for (let i = 0; i < activeProducers.length; ++i) {
+          const producer = activeProducers[i]
+          if (promises[i] === null && producer !== null) {
+            try {
               promises[i] = producer()
+            } catch (e) {
+              let err: AsyncIteratorResult<any>
+              (err = errorAsyncIteratorResult(e)).catch(noop)
+              producerErrors.push(err)
+              activeProducers[i] = null
+              promises[i] = null
+
+              continue
             }
           }
+        }
 
+        try {
           [ir, index] = await race(promises)
-          promises[index] = null
         } catch ([e, index]) {
           producerErrors.push(promises[index]!)
           activeProducers[index] = null
@@ -38,6 +48,8 @@ function pullWithLatest (...producers: PullProducer<any>[]) {
 
           continue
         }
+
+        promises[index] = null
 
         if (ir.done) {
           activeProducers[index] = null
