@@ -95,7 +95,6 @@ describe('[ pushStartWith ]', () => {
 
     expect(spy.calls).deep.eq([
       [{ value: 3, done: false }],
-      [{ value: 4, done: false }],
     ])
   })
 

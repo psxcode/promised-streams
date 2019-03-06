@@ -55,7 +55,6 @@ describe('[ pushUnique ]', () => {
 
     expect(spy.calls).deep.eq([
       [{ value: 0, done: false }],
-      [{ value: 1, done: false }],
     ])
   })
 

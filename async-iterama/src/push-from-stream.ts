@@ -9,14 +9,25 @@ const pushFromStream = <T> (stream: NodeJS.ReadableStream): PushProducer<T> =>
       resolve()
     }
     const unsub = subscribeAsync({
-      next (value) {
-        return consumer(asyncIteratorResult(value)).catch(onReject)
+      async next (value) {
+        try {
+          await consumer(asyncIteratorResult(value))
+        } catch {
+          onReject()
+        }
       },
-      error (e) {
-        return consumer(errorAsyncIteratorResult(e)).catch(onReject)
+      async error (e) {
+        try {
+          await consumer(errorAsyncIteratorResult(e))
+        } catch {
+          onReject()
+        }
       },
-      complete () {
-        consumer(doneAsyncIteratorResult()).then(resolve, resolve)
+      async complete () {
+        try {
+          await consumer(doneAsyncIteratorResult())
+        } catch {}
+        resolve()
       },
     })(stream)
   })

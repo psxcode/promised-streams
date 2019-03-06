@@ -85,7 +85,7 @@ describe('[ pushReduce ]', () => {
   it('should deliver consumer crash', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
-    const w = pushConsumer({ log: consumerLog, crashAtStep: 0 })(spy)
+    const w = pushConsumer({ log: consumerLog, crashAtStep: 1 })(spy)
     const t = pushReduce(reducer)
     const r = pushProducer({ log: producerLog })(data)
 

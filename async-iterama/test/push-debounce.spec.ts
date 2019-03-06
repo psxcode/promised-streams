@@ -90,7 +90,7 @@ describe('[ pushDebounce ]', () => {
   it('should handle consumer crash', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
-    const w = pushConsumer({ log: consumerLog, crashAtStep: 0 })(spy)
+    const w = pushConsumer({ log: consumerLog, crashAtStep: 1 })(spy)
     const t = pushDebounce(debWait(10))
     const r = pushProducer({ log: producerLog, dataPrepareDelay: 100 })(data)
 

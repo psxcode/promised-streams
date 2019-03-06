@@ -58,7 +58,10 @@ const pushMerge = <T> (...producers: PushProducer<T>[]): PushProducer<T> => {
       let consumerResult
       try {
         await (consumerResult = consumer(result))
-      } catch {
+      } catch (e) {
+        if (!consumerResult) {
+          consumerResult = Promise.reject(e)
+        }
         consumerError = consumerResult
       }
 

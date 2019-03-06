@@ -104,7 +104,7 @@ describe('[ pushMerge ]', () => {
     const data0 = makeNumbers(4)
     const data1 = makeNumbers(4)
     const spy = fn(sinkLog)
-    const w = pushConsumer({ log: consumerLog, crashAtStep: 0 })(spy)
+    const w = pushConsumer({ log: consumerLog, crashAtStep: 1 })(spy)
     const r = pushMerge(
       pushProducer({ log: producerLog() })(data0),
       pushProducer({ log: producerLog() })(data1)

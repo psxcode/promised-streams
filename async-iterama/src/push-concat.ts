@@ -1,5 +1,6 @@
 import { PushProducer } from './types'
 import { doneAsyncIteratorResult } from './helpers'
+import noop from './noop'
 
 const pushConcat = <T> (...producers: PushProducer<T>[]): PushProducer<T> =>
   async (consumer) => {
@@ -25,7 +26,10 @@ const pushConcat = <T> (...producers: PushProducer<T>[]): PushProducer<T> =>
         let consumerResult
         try {
           return await (consumerResult = consumer(result))
-        } catch {
+        } catch (e) {
+          if (!consumerResult) {
+            (consumerResult = Promise.reject(e)).catch(noop)
+          }
           /* store cancelation for next producers */
           consumerError = consumerResult
         }

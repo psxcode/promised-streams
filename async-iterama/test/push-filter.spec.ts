@@ -89,7 +89,6 @@ describe('[ pushFilter ]', () => {
 
     expect(spy.calls).deep.eq([
       [{ value: 0, done: false }],
-      [{ value: 2, done: false }],
     ])
   })
 

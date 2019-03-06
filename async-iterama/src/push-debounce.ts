@@ -38,7 +38,11 @@ const pushDebounce = (wait: WaitFn) => <T> (consumer: PushConsumer<T>): PushCons
 
       try {
         await (consumerResult = consumer(last1!))
-      } catch {}
+      } catch (e) {
+        if (!consumerResult) {
+          (consumerResult = Promise.reject(e)).catch(noop)
+        }
+      }
 
       if (ir && ir.done) {
         last0 = undefined
