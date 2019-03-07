@@ -10,11 +10,11 @@ const pool = <T> (): IPool<T> => {
   }
 
   return {
-    async push (value: AsyncIteratorResult<T>) {
-      data.push(value)
+    async push (result) {
+      data.push(result)
       onData && onData()
     },
-    pull (): AsyncIteratorResult<T> {
+    pull () {
       return pullPromise ||
         (data.length > 0 && data.shift()) ||
         (pullPromise = new Promise((res) => {

@@ -18,8 +18,8 @@ describe('[ pushCombine ]', () => {
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog })(spy)
     const r = pushCombine(
-      pushProducer({ log: producerLog(), dataPrepareDelay: 5 })(data0),
-      pushProducer({ log: producerLog(), dataPrepareDelay: 8 })(data1)
+      pushProducer({ log: producerLog() })(data0),
+      pushProducer({ log: producerLog() })(data1)
     )
 
     await r(w)

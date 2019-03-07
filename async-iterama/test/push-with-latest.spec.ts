@@ -84,7 +84,7 @@ describe('[ pushWithLatest ]', () => {
       pushProducer({ log: producerLog(), dataPrepareDelay: 10 })(data0),
       pushProducer({ log: producerLog(), dataPrepareDelay: 10 })(data1)
     )(
-      pushProducer({ log: mainProducerLog(), dataPrepareDelay: 35 })(dataMain)
+      pushProducer({ log: mainProducerLog(), dataPrepareDelay: 40 })(dataMain)
     )
 
     await r(w)
