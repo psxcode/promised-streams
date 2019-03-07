@@ -8,7 +8,7 @@
     "async-iterama-test"
   ],
   "scripts": {
-    "ctest": "NODE_ENV=test nyc mocha './*/test/*.spec.ts'",
+    "cover": "NODE_ENV=test nyc mocha './*/test/*.spec.ts'",
     "test": "NODE_ENV=test mocha --require register.js './*/test/*.spec.ts'",
     "build:ai": "scripts/build.sh async-iterama",
     "build:ait": "scripts/build.sh async-iterama-test"

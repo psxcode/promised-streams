@@ -9,7 +9,6 @@ const producerLog = debug('ai:producer')
 const consumerLog = debug('ai:consumer')
 const sinkLog = debug('ai:sink')
 
-
 describe('[ pushDistinctUntilChanged ]', () => {
   it('should work', async () => {
     const data = [0, 1, 1, 2, 3, 3, 3]

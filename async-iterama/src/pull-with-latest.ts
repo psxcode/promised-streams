@@ -1,5 +1,5 @@
 import { PullProducer, AsyncIteratorResult } from './types'
-import { race, asyncIteratorResult, errorAsyncIteratorResult } from './helpers'
+import { racePromises, asyncIteratorResult, errorAsyncIteratorResult } from './helpers'
 import noop from './noop'
 
 const isValid = (obj: any) => !!obj
@@ -17,6 +17,8 @@ function pullWithLatest (...producers: PullProducer<any>[]) {
     const producerErrors: AsyncIteratorResult<any>[] = []
     let isInit = false
     let done = false
+    const race = racePromises()
+
     const pullFromProducers = async () => {
       while (!done && activeProducers.some(isValid)) {
         let ir: IteratorResult<any>

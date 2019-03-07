@@ -13,12 +13,12 @@ const producerLog = () => debug(`ai:producer${logIndex++}`)
 
 describe('[ pullMerge ]', () => {
   it('should work', async () => {
-    const data0 = makeNumbers(2)
+    const data0 = makeNumbers(3)
     const data1 = makeNumbers(2)
     const spy = fn(sinkLog)
     const w = pullConsumer({ log: consumerLog })(spy)
-    const r0 = pullProducer({ log: producerLog(), dataResolveDelay: 5 })(data0)
-    const r1 = pullProducer({ log: producerLog(), dataResolveDelay: 8 })(data1)
+    const r0 = pullProducer({ log: producerLog() })(data0)
+    const r1 = pullProducer({ log: producerLog() })(data1)
     const t = pullMerge
 
     await w(t(r0, r1))
@@ -28,12 +28,13 @@ describe('[ pullMerge ]', () => {
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: 1, done: false }],
+      [{ value: 2, done: false }],
       [{ value: undefined, done: true }],
     ])
   })
 
   it('should work with single producer', async () => {
-    const data0 = makeNumbers(2)
+    const data0 = makeNumbers(3)
     const spy = fn(sinkLog)
     const w = pullConsumer({ log: consumerLog })(spy)
     const r = pullProducer({ log: producerLog() })(data0)
@@ -44,6 +45,7 @@ describe('[ pullMerge ]', () => {
     expect(spy.calls).deep.eq([
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
+      [{ value: 2, done: false }],
       [{ value: undefined, done: true }],
     ])
   })
@@ -73,8 +75,8 @@ describe('[ pullMerge ]', () => {
 
     expect(spy.calls).deep.eq([
       [{ value: 0, done: false }],
-      [{ value: 1, done: false }],
       [{ value: 0, done: false }],
+      [{ value: 1, done: false }],
       [{ value: 1, done: false }],
       [{ value: undefined, done: true }],
     ])

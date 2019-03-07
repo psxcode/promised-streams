@@ -1,5 +1,6 @@
 export * from './types'
 export { default as pushCombine } from './push-combine'
+export { default as pullCombine } from './pull-combine'
 export { default as pushConcat } from './push-concat'
 export { default as pullConcat } from './pull-concat'
 export { default as pushDebounce } from './push-debounce'

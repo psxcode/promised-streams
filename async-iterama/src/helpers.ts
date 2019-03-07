@@ -11,9 +11,24 @@ export const errorAsyncIteratorResult = (err?: any): AsyncIteratorResult<any> =>
 
 export const doneAsyncIteratorResult = (): AsyncIteratorResult<any> => Promise.resolve(doneIteratorResult())
 
-export const race = <T>(promises: (Promise<IteratorResult<T>> | null)[]) => new Promise<[IteratorResult<T>, number]>((resolve, reject) => {
-  promises.forEach((p, i) => p && p.then(
-    (res) => resolve([res, i]),
-    (reason) => reject([reason, i])
-  ))
-})
+export const racePromises = () => {
+  /* rotate index offset to prevent promise index lock */
+  let indexOffset = 0
+
+  return <T>(promises: (Promise<IteratorResult<T>> | null)[]) =>
+    new Promise<[IteratorResult<T>, number]>((resolve, reject) => {
+      for (let i = 0; i < promises.length; ++i) {
+        const promiseIndex = (i + indexOffset) % promises.length
+        const promise = promises[promiseIndex]
+
+        if (promise) {
+          promise.then(
+            (res) => resolve([res, promiseIndex]),
+            (reason) => reject([reason, promiseIndex])
+          )
+        }
+      }
+
+      ++indexOffset
+    })
+}
