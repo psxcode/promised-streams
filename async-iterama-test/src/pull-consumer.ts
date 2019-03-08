@@ -1,5 +1,5 @@
 import { waitTimePromise as wait } from '@psxcode/wait'
-import { PullConsumer, AsyncIteratorResult } from './types'
+import { PullProducer, AsyncIteratorResult } from './types'
 import noop from './noop'
 import isPositiveNumber from './is-positive-number'
 
@@ -10,10 +10,10 @@ export type AsyncPullConsumerOptions = {
 }
 
 const pullConsumer = ({ log = noop, delay, continueOnError }: AsyncPullConsumerOptions = {}) =>
-  <T> (sink: (chunk: IteratorResult<T>) => void): PullConsumer<T> => {
+  (sink: (chunk: IteratorResult<any>) => void) => {
     let i = 0
 
-    return async (producer) => {
+    return async <T> (producer: PullProducer<T>) => {
       while (true) {
         log(`pulling value ${i}`)
         let air: AsyncIteratorResult<T>
