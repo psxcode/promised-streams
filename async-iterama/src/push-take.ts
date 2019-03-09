@@ -1,6 +1,7 @@
 import FixedArray from 'circularr'
 import { PushConsumer, AsyncIteratorResult } from './types'
 import { doneAsyncIteratorResult } from './helpers'
+import noop from './noop'
 
 const pushTakeFirst = (numTake: number) => <T> (consumer: PushConsumer<T>): PushConsumer<T> => {
   let i = 0
@@ -9,6 +10,9 @@ const pushTakeFirst = (numTake: number) => <T> (consumer: PushConsumer<T>): Push
     if (i++ < numTake) {
       return consumer(result)
     } else {
+      /* prevent unhandled promise warning */
+      result.catch(noop)
+
       await consumer(doneAsyncIteratorResult())
 
       return Promise.reject()
@@ -29,8 +33,6 @@ const pushTakeLast = (numTake: number) => <T> (consumer: PushConsumer<T>): PushC
       for (const value of values.trim()) {
         await consumer(value)
       }
-
-      values.clear()
 
       return consumer(result)
     }

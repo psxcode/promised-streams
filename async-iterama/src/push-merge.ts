@@ -4,7 +4,7 @@ import { doneAsyncIteratorResult } from './helpers'
 const pushMerge = <T> (...producers: PushProducer<T>[]): PushProducer<T> => {
   let numDoneProducers = 0
   const values: {result: AsyncIteratorResult<T>, resolve: (arg?: any) => void}[] = []
-  let consumerError: Promise<void> | undefined = undefined
+  let consumerCancel: Promise<void> | undefined = undefined
 
   return async (consumer) => {
     if (producers.length === 0) {
@@ -18,10 +18,6 @@ const pushMerge = <T> (...producers: PushProducer<T>[]): PushProducer<T> => {
       }
       consumingInProgress = true
 
-      if (!consumerError && numDoneProducers === producers.length && values.length === 0) {
-        return consumer(doneAsyncIteratorResult())
-      }
-
       const nextValue = values.shift()
 
       /* no values */
@@ -33,53 +29,58 @@ const pushMerge = <T> (...producers: PushProducer<T>[]): PushProducer<T> => {
 
       const { result, resolve } = nextValue
 
-      /* is consumer canceled */
-      if (consumerError) {
-        resolve(consumerError)
-        consumingInProgress = false
+      /* has consumer canceled */
+      if (consumerCancel) {
+        resolve(consumerCancel)
 
-        return consumeNextValue()
+        consumingInProgress = false
+        setImmediate(consumeNextValue)
+
+        return
       }
 
       /* unwrap result to check if done */
-      let ir: IteratorResult<any> | undefined = undefined
+      let done = false
       try {
-        ir = await result
+        done = (await result).done
       } catch {}
 
-      if (ir && ir.done) {
-        resolve()
+      if (done) {
         ++numDoneProducers
-        consumingInProgress = false
 
-        return consumeNextValue()
+        resolve(
+          numDoneProducers === producers.length
+            ? consumer(result)
+            : undefined
+        )
+
+        consumingInProgress = false
+        setImmediate(consumeNextValue)
+
+        return
       }
 
-      let consumerResult
+      let consumerResult: Promise<void> | undefined = undefined
       try {
         await (consumerResult = consumer(result))
       } catch (e) {
-        if (!consumerResult) {
-          consumerResult = Promise.reject(e)
-        }
-        consumerError = consumerResult
+        consumerCancel = consumerResult = Promise.reject(e)
       }
 
       resolve(consumerResult)
-      consumingInProgress = false
 
-      return consumeNextValue()
+      consumingInProgress = false
+      setImmediate(consumeNextValue)
     }
 
-    return Promise.all(
+    await Promise.all(
       producers.map((p) => p(
         (result) => new Promise(async (resolve) => {
           values.push({ result, resolve })
-
-          return consumeNextValue()
+          consumeNextValue()
         })
       ))
-    ) as Promise<any>
+    )
   }
 }
 

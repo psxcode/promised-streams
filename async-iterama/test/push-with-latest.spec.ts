@@ -14,7 +14,7 @@ const mainProducerLog = () => debug(`ai:main-producer`)
 
 describe('[ pushWithLatest ]', () => {
   it('should work', async () => {
-    const data0 = [0, 1, 2, 3]
+    const data0 = makeNumbers(4)
     const data1 = makeNumbers(2)
     const dataMain = makeNumbers(2)
     const spy = fn(sinkLog)
@@ -53,7 +53,7 @@ describe('[ pushWithLatest ]', () => {
   })
 
   it('should handle consumer delay', async () => {
-    const data0 = [0, 1, 2, 3]
+    const data0 = makeNumbers(4)
     const data1 = makeNumbers(2)
     const dataMain = makeNumbers(2)
     const spy = fn(sinkLog)
@@ -75,7 +75,7 @@ describe('[ pushWithLatest ]', () => {
   })
 
   it('should propagate consumer cancel to all producers', async () => {
-    const data0 = [0, 1, 2, 3]
+    const data0 = makeNumbers(4)
     const data1 = makeNumbers(4)
     const dataMain = makeNumbers(4)
     const spy = fn(sinkLog)
@@ -94,8 +94,29 @@ describe('[ pushWithLatest ]', () => {
     ])
   })
 
+  it('should propagate consumer cancel on complete to all producers', async () => {
+    const data0 = makeNumbers(4)
+    const data1 = makeNumbers(4)
+    const dataMain = makeNumbers(1)
+    const spy = fn(sinkLog)
+    const w = pushConsumer({ log: consumerLog, cancelAtStep: 1 })(spy)
+    const r = pushWithLatest(
+      pushProducer({ log: producerLog(), dataPrepareDelay: 10 })(data0),
+      pushProducer({ log: producerLog(), dataPrepareDelay: 10 })(data1)
+    )(
+      pushProducer({ log: mainProducerLog() })(dataMain)
+    )
+
+    await r(w)
+
+    expect(spy.calls).deep.eq([
+      [{ value: [0, undefined, undefined], done: false }],
+      [{ value: undefined, done: true }],
+    ])
+  })
+
   it('should propagate consumer crash to all producers', async () => {
-    const data0 = [0, 1, 2, 3]
+    const data0 = makeNumbers(4)
     const data1 = makeNumbers(4)
     const dataMain = makeNumbers(4)
     const spy = fn(sinkLog)
@@ -114,15 +135,35 @@ describe('[ pushWithLatest ]', () => {
     ])
   })
 
+  it('should propagate consumer crash on complete to all producers', async () => {
+    const data0 = makeNumbers(4)
+    const data1 = makeNumbers(4)
+    const dataMain = makeNumbers(1)
+    const spy = fn(sinkLog)
+    const w = pushConsumer({ log: consumerLog, crashAtStep: 1 })(spy)
+    const r = pushWithLatest(
+      pushProducer({ log: producerLog(), dataPrepareDelay: 10 })(data0),
+      pushProducer({ log: producerLog(), dataPrepareDelay: 10 })(data1)
+    )(
+      pushProducer({ log: mainProducerLog() })(dataMain)
+    )
+
+    await r(w)
+
+    expect(spy.calls).deep.eq([
+      [{ value: [0, undefined, undefined], done: false }],
+    ])
+  })
+
   it('should propagate producer error to consumer', async () => {
-    const data0 = [0, 1, 2, 3]
+    const data0 = makeNumbers(4)
     const data1 = makeNumbers(2)
     const dataMain = makeNumbers(2)
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog })(spy)
     const r = pushWithLatest(
       pushProducer({ log: producerLog() })(data0),
-      pushProducer({ log: producerLog(), errorAtStep: 0 })(data1)
+      pushProducer({ log: producerLog(), errorAtStep: 1 })(data1)
     )(
       pushProducer({ log: mainProducerLog(), dataPrepareDelay: 10 })(dataMain)
     )
@@ -133,7 +174,7 @@ describe('[ pushWithLatest ]', () => {
   })
 
   it('should propagate main producer error to consumer', async () => {
-    const data0 = [0, 1, 2, 3]
+    const data0 = makeNumbers(4)
     const data1 = makeNumbers(2)
     const dataMain = makeNumbers(2)
     const spy = fn(sinkLog)
@@ -151,7 +192,7 @@ describe('[ pushWithLatest ]', () => {
   })
 
   it('should propagate producer error to consumer and continue', async () => {
-    const data0 = [0, 1, 2, 3]
+    const data0 = makeNumbers(4)
     const data1 = makeNumbers(2)
     const dataMain = makeNumbers(2)
     const spy = fn(sinkLog)
@@ -168,6 +209,28 @@ describe('[ pushWithLatest ]', () => {
     expect(spy.calls).deep.eq([
       [{ value: [0, 1, undefined], done: false }],
       [{ value: [1, 3, 1], done: false }],
+      [{ value: undefined, done: true }],
+    ])
+  })
+
+  it('should propagate main producer error to consumer and continue', async () => {
+    const data0 = makeNumbers(4)
+    const data1 = makeNumbers(2)
+    const dataMain = makeNumbers(3)
+    const spy = fn(sinkLog)
+    const w = pushConsumer({ log: consumerLog, continueOnError: true })(spy)
+    const r = pushWithLatest(
+      pushProducer({ log: producerLog() })(data0),
+      pushProducer({ log: producerLog() })(data1)
+    )(
+      pushProducer({ log: mainProducerLog(), errorAtStep: 1 })(dataMain)
+    )
+
+    await r(w)
+
+    expect(spy.calls).deep.eq([
+      [{ value: [0, 0, 0], done: false }],
+      [{ value: [2, 3, 1], done: false }],
       [{ value: undefined, done: true }],
     ])
   })

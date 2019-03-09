@@ -19,7 +19,7 @@ const pushThrottle = (wait: WaitFn) => <T> (consumer: PushConsumer<T>): PushCons
       return
     }
 
-    unsub = wait(async () => {
+    unsub = wait(async (): Promise<void> => {
       unsub = undefined
 
       /* unwrap result */

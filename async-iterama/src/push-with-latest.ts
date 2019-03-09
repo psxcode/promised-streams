@@ -1,5 +1,6 @@
 import { PushProducer } from './types'
 import { errorAsyncIteratorResult, asyncIteratorResult } from './helpers'
+import noop from './noop'
 
 function pushWithLatest (): <T>(main: PushProducer<T>) => PushProducer<[T]>
 function pushWithLatest <T1>(p1: PushProducer<T1>): <T>(main: PushProducer<T>) => PushProducer<[T, T1]>
@@ -10,14 +11,14 @@ function pushWithLatest (...producers: PushProducer<any>[]) {
   return (mainProducer: PushProducer<any>): PushProducer<any[]> => {
     const latest: any[] = producers.map(() => undefined)
     let consumerResult: Promise<void> = Promise.resolve()
-    let consumerCanceled = false
+    let consumerCancel: Promise<void> | undefined = undefined
 
     return async (consumer) => {
       await Promise.all([
         ...producers.map((p, i) => p(
           async (result) => {
-            if (consumerCanceled) {
-              return consumerResult
+            if (consumerCancel) {
+              return consumerCancel
             }
 
             let ir: IteratorResult<any>
@@ -27,7 +28,7 @@ function pushWithLatest (...producers: PushProducer<any>[]) {
               try {
                 await (consumerResult = consumerResult.then(() => consumer(errorAsyncIteratorResult(e))))
               } catch {
-                consumerCanceled = true
+                consumerCancel = consumerResult
               }
 
               return consumerResult
@@ -39,8 +40,8 @@ function pushWithLatest (...producers: PushProducer<any>[]) {
           }
         )),
         mainProducer(async (result) => {
-          if (consumerCanceled) {
-            return consumerResult
+          if (consumerCancel) {
+            return consumerCancel
           }
 
           let ir: IteratorResult<any>
@@ -50,20 +51,26 @@ function pushWithLatest (...producers: PushProducer<any>[]) {
             try {
               await (consumerResult = consumerResult.then(() => consumer(errorAsyncIteratorResult(e))))
             } catch {
-              consumerCanceled = true
+              consumerCancel = consumerResult
             }
 
             return consumerResult
           }
 
           if (ir.done) {
-            return consumer(result)
+            try {
+              await (consumerResult = consumerResult.then(() => consumer(result)))
+            } catch {}
+
+            (consumerCancel = Promise.reject()).catch(noop)
+
+            return consumerResult
           }
 
           try {
             await (consumerResult = consumerResult.then(() => consumer(asyncIteratorResult([ir.value, ...latest]))))
           } catch {
-            consumerCanceled = true
+            consumerCancel = consumerResult
           }
 
           return consumerResult

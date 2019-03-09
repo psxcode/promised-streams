@@ -79,6 +79,24 @@ describe('[ pushZip ]', () => {
     ])
   })
 
+  it('should handle producer delay', async () => {
+    const data0 = [0, 1, 2, 3]
+    const data1 = makeNumbers(1)
+    const spy = fn(sinkLog)
+    const w = pushConsumer({ log: consumerLog, delay: 30 })(spy)
+    const r = pushZip(
+      pushProducer({ log: producerLog(), dataPrepareDelay: 50 })(data0),
+      pushProducer({ log: producerLog() })(data1)
+    )
+
+    await r(w)
+
+    expect(spy.calls).deep.eq([
+      [{ value: [0, 0], done: false }],
+      [{ value: undefined, done: true }],
+    ])
+  })
+
   it('should propagate consumer cancel to all producers', async () => {
     const data0 = [0, 1, 2, 3]
     const data1 = makeNumbers(4)
@@ -99,6 +117,23 @@ describe('[ pushZip ]', () => {
   it('should handle consumer crash', async () => {
     const data0 = [0, 1, 2, 3]
     const data1 = makeNumbers(4)
+    const spy = fn(sinkLog)
+    const w = pushConsumer({ log: consumerLog, crashAtStep: 1 })(spy)
+    const r = pushZip(
+      pushProducer({ log: producerLog() })(data0),
+      pushProducer({ log: producerLog() })(data1)
+    )
+
+    await r(w)
+
+    expect(spy.calls).deep.eq([
+      [{ value: [0, 0], done: false }],
+    ])
+  })
+
+  it('should handle consumer crash on complete', async () => {
+    const data0 = [0]
+    const data1 = makeNumbers(1)
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog, crashAtStep: 1 })(spy)
     const r = pushZip(

@@ -104,6 +104,25 @@ describe('[ pushThrottle ]', () => {
     ])
   })
 
+  it('should handle consumer crash on complete', async () => {
+    const data = makeNumbers(4)
+    const spy = fn(sinkLog)
+    const w = pushConsumer({ log: consumerLog, crashAtStep: 3 })(spy)
+    const t = pushThrottle(debWait(10))
+    const r = pushProducer({ log: producerLog, dataPrepareDelay: 100 })(data)
+
+    await r(t(w))
+
+    /* wait additional time to drain throttle */
+    await wait(20)
+
+    expect(spy.calls).deep.eq([
+      [{ value: 0, done: false }],
+      [{ value: 1, done: false }],
+      [{ value: 2, done: false }],
+    ])
+  })
+
   it('should deliver producer error to consumer', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)

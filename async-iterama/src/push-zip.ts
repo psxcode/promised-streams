@@ -1,5 +1,11 @@
 import { PushConsumer, PushProducer, AsyncIteratorResult } from './types'
 import { errorAsyncIteratorResult, asyncIteratorResult, doneAsyncIteratorResult } from './helpers'
+import noop from './noop'
+
+type ProducerValue = {
+  result: AsyncIteratorResult<any>,
+  resolve: (arg: any) => void
+}
 
 function pushZip (): (consumer: PushConsumer<[]>) => Promise<void>
 function pushZip<T0> (p0: PushProducer<T0>): (consumer: PushConsumer<[T0]>) => Promise<void>
@@ -8,10 +14,9 @@ function pushZip<T0, T1, T2> (p0: PushProducer<T0>, p1: PushProducer<T1>, p2: Pu
 function pushZip<T0, T1, T2, T3> (p0: PushProducer<T0>, p1: PushProducer<T1>, p2: PushProducer<T2>, p3: PushProducer<T3>): (consumer: PushConsumer<[T0, T1, T2, T3]>) => Promise<void>
 
 function pushZip (...producers: PushProducer<any>[]): PushProducer<any> {
-  const producerValues: {result: AsyncIteratorResult<any>, resolve: (arg: any) => void}[][] = producers.map(() => [])
-  let consumerError: Promise<void> | undefined
+  const values: ProducerValue[][] = producers.map(() => [])
 
-  return (consumer) => {
+  return async (consumer): Promise<void> => {
     if (producers.length === 0) {
       return consumer(doneAsyncIteratorResult())
     }
@@ -23,27 +28,14 @@ function pushZip (...producers: PushProducer<any>[]): PushProducer<any> {
       }
       consumeInProgress = true
 
-      /* get next values */
-      let nextValues: any[] | undefined
-      if (producerValues.every((v) => v.length > 0)) {
-        nextValues = producerValues.map((v) => v.shift())
-      }
-
-      /* no values to consume */
-      if (!nextValues) {
+      if (!values.every((v) => v.length > 0)) {
         consumeInProgress = false
 
         return
       }
 
-      /* if consumer already canceled */
-      if (consumerError) {
-        nextValues.forEach(({ resolve }) => resolve(consumerError))
-        consumeInProgress = false
-
-        return consumeValue()
-      }
-
+      /* get next values */
+      const nextValues = values.map((v) => v.shift()!)
       const airs = nextValues.map(({ result }) => result)
 
       /* producer error case */
@@ -51,17 +43,19 @@ function pushZip (...producers: PushProducer<any>[]): PushProducer<any> {
       try {
         irs = await Promise.all(airs)
       } catch (e) {
-        let consumerResult: Promise<void>
+        let consumerResult: Promise<void> | undefined = undefined
         try {
           await (consumerResult = consumer(errorAsyncIteratorResult(e)))
-        } catch {
-          consumerError = consumerResult!
+        } catch (e) {
+          (consumerResult = Promise.reject(e)).catch(noop)
         }
 
         nextValues.forEach(({ resolve }) => resolve(consumerResult))
-        consumeInProgress = false
 
-        return consumeValue()
+        consumeInProgress = false
+        setImmediate(consumeValue)
+
+        return
       }
 
       /* find done producer index */
@@ -69,52 +63,52 @@ function pushZip (...producers: PushProducer<any>[]): PushProducer<any> {
 
       /* solve done state */
       if (doneIndices.length > 0) {
-        /* send done to consumer */
-        let consumerResult: Promise<void>
+        let consumerResult: Promise<void> | undefined = undefined
         try {
-          await (consumerResult = consumer(doneAsyncIteratorResult()))
-        } catch {}
+          consumerResult = consumer(doneAsyncIteratorResult())
+        } catch (e) {
+          (consumerResult = Promise.reject(e)).catch(noop)
+        }
 
         /* prepare cancel promise to stop other producers */
-        try {
-          await (consumerError = Promise.reject())
-        } catch {}
+        let consumerCancel: Promise<void>
+        (consumerCancel = Promise.reject()).catch(noop)
 
         /* resolve done producer */
         nextValues.forEach(({ resolve }, i) => resolve(
           doneIndices.includes(i)
             ? consumerResult
-            : consumerError
+            : consumerCancel
         ))
 
         consumeInProgress = false
+        setImmediate(consumeValue)
 
-        return consumeValue()
+        return
       }
 
       /* pass values to consumer */
       const resultValues = irs.map((ir) => ir.value)
-      let consumerResult: Promise<void>
+      let consumerResult: Promise<void> | undefined = undefined
       try {
         await (consumerResult = consumer(asyncIteratorResult(resultValues)))
-      } catch {
-        consumerError = consumerResult!
+      } catch (e) {
+        (consumerResult = Promise.reject(e)).catch(noop)
       }
 
       /* pass consumer result to provider */
       nextValues.forEach(({ resolve }) => resolve(consumerResult))
-      consumeInProgress = false
 
-      return consumeValue()
+      consumeInProgress = false
+      setImmediate(consumeValue)
     }
 
-    return Promise.all(producers.map((p, i) => p(
+    await Promise.all(producers.map((p, i) => p(
       (result) => new Promise((resolve) => {
-        producerValues[i].push({ result, resolve })
-
-        return consumeValue()
+        values[i].push({ result, resolve })
+        consumeValue()
       })
-    ))) as Promise<any>
+    )))
   }
 }
 

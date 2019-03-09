@@ -113,6 +113,42 @@ describe('[ pullTake ]', () => {
     expect.fail('should not get here')
   })
 
+  it('should deliver producer error to consumer', async () => {
+    const data = makeNumbers(4)
+    const spy = fn(sinkLog)
+    const w = pullConsumer({ log: consumerLog })(spy)
+    const t = pullTake(-2)
+    const r = pullProducer({ log: producerLog, errorAtStep: 3 })(data)
+
+    try {
+      await w(t(r))
+    } catch {
+      expect(spy.calls).deep.eq([
+        [{ value: 2, done: false }],
+      ])
+
+      return
+    }
+
+    expect.fail('should not get here')
+  })
+
+  it('should skip producer error', async () => {
+    const data = makeNumbers(4)
+    const spy = fn(sinkLog)
+    const w = pullConsumer({ log: consumerLog })(spy)
+    const t = pullTake(-2)
+    const r = pullProducer({ log: producerLog, errorAtStep: 1 })(data)
+
+    await w(t(r))
+
+    expect(spy.calls).deep.eq([
+      [{ value: 2, done: false }],
+      [{ value: 3, done: false }],
+      [{ value: undefined, done: true }],
+    ])
+  })
+
   it('should deliver producer error to consumer and continue', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
@@ -124,6 +160,21 @@ describe('[ pullTake ]', () => {
 
     expect(spy.calls).deep.eq([
       [{ value: 1, done: false }],
+      [{ value: undefined, done: true }],
+    ])
+  })
+
+  it('should deliver producer error to consumer and continue', async () => {
+    const data = makeNumbers(4)
+    const spy = fn(sinkLog)
+    const w = pullConsumer({ log: consumerLog, continueOnError: true })(spy)
+    const t = pullTake(-2)
+    const r = pullProducer({ log: producerLog, errorAtStep: 2 })(data)
+
+    await w(t(r))
+
+    expect(spy.calls).deep.eq([
+      [{ value: 3, done: false }],
       [{ value: undefined, done: true }],
     ])
   })
@@ -141,6 +192,24 @@ describe('[ pullTake ]', () => {
       expect(spy.calls).deep.eq([
         [{ value: 0, done: false }],
       ])
+
+      return
+    }
+
+    expect.fail('should not get here')
+  })
+
+  it('should handle producer crash', async () => {
+    const data = makeNumbers(4)
+    const spy = fn(sinkLog)
+    const w = pullConsumer({ log: consumerLog })(spy)
+    const t = pullTake(-2)
+    const r = pullProducer({ log: producerLog, crashAtStep: 3 })(data)
+
+    try {
+      await w(t(r))
+    } catch {
+      expect(spy.calls).deep.eq([])
 
       return
     }
