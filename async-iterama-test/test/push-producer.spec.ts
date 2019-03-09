@@ -83,7 +83,21 @@ describe('[ push-producer / push-consumer ]', () => {
     ])
   })
 
-  it('should be able to continue on producer error', async () => {
+  it('should handle producer error on complete', async () => {
+    const data = makeNumbers(2)
+    const spy = fn(sinkLog)
+    const r = pushProducer({ log: producerLog, errorAtStep: 2 })(data)
+    const w = pushConsumer({ log: consumerLog })(spy)
+
+    await r(w)
+
+    expect(spy.calls).deep.eq([
+      [{ value: 0, done: false }],
+      [{ value: 1, done: false }],
+    ])
+  })
+
+  it('should handle producer error and continue', async () => {
     const data = makeNumbers(3)
     const spy = fn(sinkLog)
     const r = pushProducer({ log: producerLog, errorAtStep: 1 })(data)
@@ -111,6 +125,20 @@ describe('[ push-producer / push-consumer ]', () => {
     ])
   })
 
+  it('should handle consumer crash on complete', async () => {
+    const data = makeNumbers(2)
+    const spy = fn(sinkLog)
+    const r = pushProducer({ log: producerLog })(data)
+    const w = pushConsumer({ log: consumerLog, crashAtStep: 2 })(spy)
+
+    await r(w)
+
+    expect(spy.calls).deep.eq([
+      [{ value: 0, done: false }],
+      [{ value: 1, done: false }],
+    ])
+  })
+
   it('should handle consumer cancel', async () => {
     const data = makeNumbers(2)
     const spy = fn(sinkLog)
@@ -122,6 +150,21 @@ describe('[ push-producer / push-consumer ]', () => {
     expect(spy.calls).deep.eq([
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
+    ])
+  })
+
+  it('should handle consumer cancel on complete', async () => {
+    const data = makeNumbers(2)
+    const spy = fn(sinkLog)
+    const r = pushProducer({ log: producerLog })(data)
+    const w = pushConsumer({ log: consumerLog, cancelAtStep: 2 })(spy)
+
+    await r(w)
+
+    expect(spy.calls).deep.eq([
+      [{ value: 0, done: false }],
+      [{ value: 1, done: false }],
+      [{ value: undefined, done: true }],
     ])
   })
 })

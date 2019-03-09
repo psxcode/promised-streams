@@ -24,15 +24,11 @@ const pushConsumer = ({ log = noop, delay, cancelAtStep, continueOnError, crashA
       }
 
       return result.then(async (ir) => {
-        if (ir.done) {
-          log(`resolved to done at step ${i}`)
-          ++i
-          sink(ir)
-
-          return
-        }
-
-        log(`resolved value ${ir.value} at ${i}`)
+        log(
+          ir.done
+            ? `resolved 'done' at step ${i}`
+            : `resolved 'value' at step ${i}`
+        )
 
         if (isPositiveNumber(delay)) {
           log(`consuming value`)

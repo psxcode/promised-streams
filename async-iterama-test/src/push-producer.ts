@@ -1,6 +1,6 @@
 import { waitTimePromise as wait } from '@psxcode/wait'
-import { iteratorResult, doneAsyncIteratorResult } from './helpers'
-import { PushProducer } from './types'
+import { iteratorResult, doneAsyncIteratorResult, errorAsyncIteratorResult } from './helpers'
+import { PushProducer, AsyncIteratorResult } from './types'
 import noop from './noop'
 import isPositiveNumber from './is-positive-number'
 
@@ -45,11 +45,31 @@ const pushProducer = ({ log = noop, dataResolveDelay, dataPrepareDelay, errorAtS
         ++i
       }
 
-      log(`pushing complete`)
+      /* done */
+      log(i === errorAtStep
+        ? 'pushing error at complete'
+        : 'pushing complete')
+
+      let result: AsyncIteratorResult<T>
+      (result = i === errorAtStep
+        ? errorAsyncIteratorResult(new Error(`error at complete`))
+        : doneAsyncIteratorResult()).catch(noop)
+
+      let consumerResult: Promise<void> | undefined = undefined
       try {
-        await consumer(doneAsyncIteratorResult())
-      } catch {
+        consumerResult = consumer(result)
+      } catch (e) {
+        log(`consumer crashed at complete`)
+
+        return
+      }
+
+      try {
+        await consumerResult
+      } catch (e) {
         log(`consumer rejected at complete`)
+
+        return
       }
     }
   }
