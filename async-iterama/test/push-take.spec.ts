@@ -79,7 +79,7 @@ describe('[ pushTake ]', () => {
     ])
   })
 
-  it('should work 0', async () => {
+  it('should work with 0 take', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog })(spy)
@@ -213,7 +213,7 @@ describe('[ pushTake ]', () => {
     ])
   })
 
-  it('should deliver error to consumer', async () => {
+  it('should deliver producer error to consumer', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog })(spy)
@@ -227,7 +227,7 @@ describe('[ pushTake ]', () => {
     ])
   })
 
-  it('should NOT deliver error to consumer on complete', async () => {
+  it('should NOT deliver producer error to consumer on complete', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog })(spy)
@@ -243,12 +243,12 @@ describe('[ pushTake ]', () => {
     ])
   })
 
-  it('should skip error', async () => {
+  it('should skip producer error', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog })(spy)
     const t = pushTake(2)
-    const r = pushProducer({ log: producerLog, errorAtStep: 2 })(data)
+    const r = pushProducer({ log: producerLog, errorAtStep: 3 })(data)
 
     await r(t(w))
 
@@ -259,7 +259,7 @@ describe('[ pushTake ]', () => {
     ])
   })
 
-  it('should deliver error to consumer on negative', async () => {
+  it('should deliver producer error to consumer on negative', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog })(spy)
@@ -273,7 +273,7 @@ describe('[ pushTake ]', () => {
     ])
   })
 
-  it('should deliver error to consumer on negative on complete', async () => {
+  it('should deliver producer error to consumer on negative on complete', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog })(spy)
@@ -286,7 +286,7 @@ describe('[ pushTake ]', () => {
     expect(spy.calls).deep.eq([])
   })
 
-  it('should skip error on negative', async () => {
+  it('should skip producer error on negative', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog })(spy)

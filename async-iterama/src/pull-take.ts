@@ -16,10 +16,15 @@ const pullTakeFirst = (numTake: number) => <T> (producer: PullProducer<T>): Pull
 
 const pullTakeLast = (numTake: number) => <T> (producer: PullProducer<T>): PullProducer<T> => {
   let last = new FixedArray<AsyncIteratorResult<T>>(numTake)
+  let producerError: AsyncIteratorResult<T> | undefined = undefined
   let isInit = false
   let i = 0
 
   return async () => {
+    if (producerError) {
+      return producerError
+    }
+
     if (!isInit) {
       isInit = true
 
@@ -29,9 +34,9 @@ const pullTakeLast = (numTake: number) => <T> (producer: PullProducer<T>): PullP
         try {
           done = (await (air = producer())).done
         } catch (e) {
-          if (!air) {
-            air = errorAsyncIteratorResult(e)
-          }
+          producerError = errorAsyncIteratorResult(e)
+
+          return producerError
         }
 
         if (done) {

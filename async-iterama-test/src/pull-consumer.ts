@@ -3,6 +3,8 @@ import { PullProducer, AsyncIteratorResult } from './types'
 import noop from './noop'
 import isPositiveNumber from './is-positive-number'
 
+const MAX_ERROR_RETRIES = 2
+
 export type AsyncPullConsumerOptions = {
   log?: typeof console.log,
   delay?: number,
@@ -12,6 +14,7 @@ export type AsyncPullConsumerOptions = {
 const pullConsumer = ({ log = noop, delay, continueOnError }: AsyncPullConsumerOptions = {}) =>
   (sink: (chunk: IteratorResult<any>) => void) => {
     let i = 0
+    let errorRetries = 0
 
     return async <T> (producer: PullProducer<T>) => {
       while (true) {
@@ -20,7 +23,7 @@ const pullConsumer = ({ log = noop, delay, continueOnError }: AsyncPullConsumerO
         try {
           air = producer()
         } catch (e) {
-          log(`producer crashed at step ${i++}`)
+          log(`producer crashed at step ${i}`)
 
           throw e
         }
@@ -31,11 +34,18 @@ const pullConsumer = ({ log = noop, delay, continueOnError }: AsyncPullConsumerO
         try {
           ir = await air
         } catch (e) {
-          log(`producer returned an error at step ${i++}`)
+          log(`producer returned an error at step ${i}`)
           log(e)
 
           if (continueOnError) {
+            if (++errorRetries >= MAX_ERROR_RETRIES) {
+              log('producer returns errors, stopping')
+              throw e
+            }
+
             log('continuing on producer error')
+            ++i
+
             continue
           }
 
@@ -45,8 +55,8 @@ const pullConsumer = ({ log = noop, delay, continueOnError }: AsyncPullConsumerO
         }
 
         log(ir.done
-          ? `resolved to done at step ${i++}`
-          : `resolved value at step ${i++}`)
+          ? `resolved to done at step ${i}`
+          : `resolved value at step ${i}`)
 
         if (isPositiveNumber(delay)) {
           await wait(delay)
@@ -57,6 +67,8 @@ const pullConsumer = ({ log = noop, delay, continueOnError }: AsyncPullConsumerO
         if (ir.done) {
           break
         }
+
+        ++i
       }
     }
   }
