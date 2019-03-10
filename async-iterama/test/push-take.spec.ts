@@ -108,7 +108,7 @@ describe('[ pushTake ]', () => {
     ])
   })
 
-  it('should deliver cancel on complete to producer', async () => {
+  it('should deliver cancel to producer on complete', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog, cancelAtStep: 2 })(spy)
@@ -124,7 +124,7 @@ describe('[ pushTake ]', () => {
     ])
   })
 
-  it('should deliver cancel on negative to producer', async () => {
+  it('should deliver cancel to producer on negative', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog, cancelAtStep: 1 })(spy)

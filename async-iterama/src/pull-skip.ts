@@ -1,7 +1,6 @@
 import FixedArray from 'circularr'
 import { AsyncIteratorResult, PullProducer } from './types'
-import { errorAsyncIteratorResult } from './helpers'
-import noop from './noop'
+import { errorAsyncIteratorResult, doneAsyncIteratorResult } from './helpers'
 
 const pullSkipFirst = (numSkip: number) => <T> (producer: PullProducer<T>): PullProducer<T> => {
   let isInit = false
@@ -10,14 +9,13 @@ const pullSkipFirst = (numSkip: number) => <T> (producer: PullProducer<T>): Pull
     if (!isInit) {
       isInit = true
       for (let i = 0; i < numSkip; ++i) {
-        const air = producer()
         let done = false
         try {
-          done = (await air).done
+          done = (await producer()).done
         } catch {}
 
         if (done) {
-          return air
+          return doneAsyncIteratorResult()
         }
       }
     }
@@ -28,9 +26,14 @@ const pullSkipFirst = (numSkip: number) => <T> (producer: PullProducer<T>): Pull
 
 const pullSkipLast = (numSkip: number) => <T> (producer: PullProducer<T>): PullProducer<T> => {
   const last = new FixedArray<AsyncIteratorResult<T>>(numSkip)
+  let producerError: AsyncIteratorResult<T> | undefined = undefined
   let isInit = false
 
   return async () => {
+    if (producerError) {
+      return producerError
+    }
+
     if (!isInit) {
       isInit = true
       for (let i = 0; i < numSkip; ++i) {
@@ -39,9 +42,9 @@ const pullSkipLast = (numSkip: number) => <T> (producer: PullProducer<T>): PullP
         try {
           done = (await (air = producer())).done
         } catch (e) {
-          if (!air) {
-            (air = errorAsyncIteratorResult(e)).catch(noop)
-          }
+          producerError = errorAsyncIteratorResult(e)
+
+          return producerError
         }
 
         if (done) {
@@ -59,9 +62,9 @@ const pullSkipLast = (numSkip: number) => <T> (producer: PullProducer<T>): PullP
     try {
       done = (await (air = producer())).done
     } catch (e) {
-      if (!air) {
-        (air = errorAsyncIteratorResult(e)).catch(noop)
-      }
+      producerError = errorAsyncIteratorResult(e)
+
+      return producerError
     }
 
     if (done) {
