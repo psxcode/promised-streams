@@ -139,8 +139,8 @@ describe('[ pullWithLatest ]', () => {
     const spy = fn(sinkLog)
     const w = pullConsumer({ log: consumerLog, continueOnError: true })(spy)
     const r = pullWithLatest(
-      pullProducer({ log: producerLog(), dataPrepareDelay: 4 })(data0),
-      pullProducer({ log: producerLog(), dataPrepareDelay: 7, errorAtStep: 0 })(data1)
+      pullProducer({ log: producerLog() })(data0),
+      pullProducer({ log: producerLog(), errorAtStep: 0 })(data1)
     )(
       pullProducer({ log: mainProducerLog(), dataPrepareDelay: 10 })(dataMain)
     )
@@ -148,7 +148,7 @@ describe('[ pullWithLatest ]', () => {
     await w(r)
 
     expect(spy.calls).deep.eq([
-      [{ value: [0, 1, undefined], done: false }],
+      [{ value: [0, 3, undefined], done: false }],
       [{ value: [1, 3, undefined], done: false }],
       [{ value: undefined, done: true }],
     ])
