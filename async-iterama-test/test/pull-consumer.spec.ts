@@ -78,13 +78,11 @@ describe('[ pull-consumer / pull-producer ]', () => {
 
     try {
       await w(r)
+
+      expect.fail('should not get here')
     } catch {
       expect(spy.calls).deep.eq([])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 
   it('should handle producer crash on complete', async () => {
@@ -95,16 +93,14 @@ describe('[ pull-consumer / pull-producer ]', () => {
 
     try {
       await w(r)
+
+      expect.fail('should not get here')
     } catch {
       expect(spy.calls).deep.eq([
         [{ value: 0, done: false }],
         [{ value: 1, done: false }],
       ])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 
   it('should handle producer error', async () => {
@@ -115,13 +111,11 @@ describe('[ pull-consumer / pull-producer ]', () => {
 
     try {
       await w(r)
+
+      expect.fail('should not get here')
     } catch {
       expect(spy.calls).deep.eq([])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 
   it('should handle producer error on complete', async () => {
@@ -132,16 +126,14 @@ describe('[ pull-consumer / pull-producer ]', () => {
 
     try {
       await w(r)
+
+      expect.fail('should not get here')
     } catch {
       expect(spy.calls).deep.eq([
         [{ value: 0, done: false }],
         [{ value: 1, done: false }],
       ])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 
   it('should handle delayed producer error', async () => {
@@ -152,13 +144,11 @@ describe('[ pull-consumer / pull-producer ]', () => {
 
     try {
       await w(r)
+
+      expect.fail('should not get here')
     } catch {
       expect(spy.calls).deep.eq([])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 
   it('should handle producer error and continue', async () => {

@@ -55,17 +55,14 @@ describe('[ pullDistinctUntilChanged ]', () => {
 
     try {
       await w(t(r))
-    } catch {
 
+      expect.fail('should not get here')
+    } catch {
       expect(spy.calls).deep.eq([
         [{ value: 0, done: false }],
         [{ value: 1, done: false }],
       ])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 
   it('should deliver producer error to consumer and continue', async () => {
@@ -94,16 +91,13 @@ describe('[ pullDistinctUntilChanged ]', () => {
 
     try {
       await w(t(r))
-    } catch {
 
+      expect.fail('should not get here')
+    } catch {
       expect(spy.calls).deep.eq([
         [{ value: 0, done: false }],
         [{ value: 1, done: false }],
       ])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 })

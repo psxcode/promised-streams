@@ -18,6 +18,7 @@
     "node-streams": "^0.2.2"
   },
   "devDependencies": {
+    "@psxcode/compose": "^0.1.2",
     "async-iterama-test": "^0.0.0",
     "node-stream-test": "^0.3.11"
   }

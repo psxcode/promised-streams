@@ -82,6 +82,8 @@ describe('[ pullCombine ]', () => {
 
     try {
       await w(r)
+
+      expect.fail('should not get here')
     } catch {
       /* drain producers */
       await wait(50)
@@ -91,11 +93,7 @@ describe('[ pullCombine ]', () => {
         [{ value: [0, 0], done: false }],
         [{ value: [1, 0], done: false }],
       ])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 
   it('should propagate producer error to consumer and continue', async () => {
@@ -132,6 +130,8 @@ describe('[ pullCombine ]', () => {
 
     try {
       await w(r)
+
+      expect.fail('should not get here')
     } catch {
       /* drain producers */
       await wait(50)
@@ -140,10 +140,6 @@ describe('[ pullCombine ]', () => {
         [{ value: [0, undefined], done: false }],
         [{ value: [0, 0], done: false }],
       ])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 })

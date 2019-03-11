@@ -116,17 +116,15 @@ describe('[ pullConcat ]', () => {
 
     try {
       await w(r)
+
+      expect.fail('should not get here')
     } catch {
 
       expect(spy.calls).deep.eq([
         [{ value: 0, done: false }],
         [{ value: 1, done: false }],
       ])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 
   it('should handle producer crash', async () => {
@@ -141,17 +139,15 @@ describe('[ pullConcat ]', () => {
 
     try {
       await w(r)
+
+      expect.fail('should not get here')
     } catch {
 
       expect(spy.calls).deep.eq([
         [{ value: 0, done: false }],
         [{ value: 1, done: false }],
       ])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 
   it('should deliver producer error to consumer and continue', async () => {

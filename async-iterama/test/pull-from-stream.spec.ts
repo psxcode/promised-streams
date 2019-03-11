@@ -79,14 +79,12 @@ describe('[ pullFromStream ]', () => {
 
     try {
       await w(r)
+
+      expect.fail('should not get here')
     } catch {
       /* stream does not deliver data immediately, but error does */
       expect(spy.calls).deep.eq([])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 
   it('error handling - consumer break / stream continue', async () => {
@@ -99,14 +97,12 @@ describe('[ pullFromStream ]', () => {
 
     try {
       await w(r)
+
+      expect.fail('shoudl not get here')
     } catch {
       /* stream does not deliver data immediately, but error does */
       expect(spy.calls).deep.eq([])
-
-      return
     }
-
-    expect.fail('shoudl not get here')
   })
 
   it('error handling - consumer continue / stream break', async () => {

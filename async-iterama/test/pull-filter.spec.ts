@@ -72,13 +72,11 @@ describe('[ pullFilter ]', () => {
 
     try {
       await w(t(r))
+
+      expect.fail('should not get here')
     } catch {
       expect(spy.calls).deep.eq([])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 
   it('should deliver producer error to consumer', async () => {
@@ -90,15 +88,13 @@ describe('[ pullFilter ]', () => {
 
     try {
       await w(t(r))
+
+      expect.fail('should not get here')
     } catch {
       expect(spy.calls).deep.eq([
         [{ value: 0, done: false }],
       ])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 
   it('should deliver producer error to consumer and continue', async () => {
@@ -125,14 +121,12 @@ describe('[ pullFilter ]', () => {
 
     try {
       await w(t(r))
+
+      expect.fail('should not get here')
     } catch {
       expect(spy.calls).deep.eq([
         [{ value: 0, done: false }],
       ])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 })
