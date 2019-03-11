@@ -119,6 +119,24 @@ describe('[ pool ]', () => {
     ])
   })
 
+  it('should handle consumer delay with highWatermark', async () => {
+    const data = makeNumbers(4)
+    const spy = fn(sinkLog)
+    const w = pullConsumer({ log: consumerLog, delay: 50 })(spy)
+    const r = pushProducer({ log: producerLog })(data)
+    const { pull, push } = pool<number>({ highWatermark: 1 })
+
+    await (r(push), w(pull))
+
+    expect(spy.calls).deep.eq([
+      [{ value: 0, done: false }],
+      [{ value: 1, done: false }],
+      [{ value: 2, done: false }],
+      [{ value: 3, done: false }],
+      [{ value: undefined, done: true }],
+    ])
+  })
+
   it('should deliver producer error to consumer', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)

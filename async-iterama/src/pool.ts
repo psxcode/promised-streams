@@ -1,15 +1,16 @@
-import { AsyncIteratorResult, IPool } from './types'
+import isPositiveNumber from '../../async-iterama-test/src/is-positive-number'
+import { AsyncIteratorResult, IPool, IPoolOptions } from './types'
 import noop from './noop'
 
-const pool = <T> (): IPool<T> => {
-  const values: AsyncIteratorResult<T>[] = []
-  let consumeValue: (() => void) | undefined
-  let consumerCancel: Promise<void> | undefined = undefined
+const defaultOptions = {
+  highWatermark: 64,
+}
 
-  const prepareConsumeValue = (resolve: (value: any) => void) => () => {
-    consumeValue = undefined
-    resolve(values.shift()!)
-  }
+const pool = <T> ({ highWatermark }: IPoolOptions = defaultOptions): IPool<T> => {
+  const values: AsyncIteratorResult<T>[] = []
+  let consumerCancel: Promise<void> | undefined = undefined
+  let producerResolve: ((arg?: any) => void) | undefined = undefined
+  let consumerResolve: ((arg?: any) => void) | undefined = undefined
 
   return {
     async push (result) {
@@ -21,19 +22,33 @@ const pool = <T> (): IPool<T> => {
       }
 
       values.push(result)
-      consumeValue && consumeValue()
+      if (consumerResolve) {
+        consumerResolve(values.shift()!)
+        consumerResolve = undefined
+      }
 
       if (consumerCancel) {
         return consumerCancel
       }
+
+      if (isPositiveNumber(highWatermark) && highWatermark > 0 && values.length >= highWatermark) {
+        return new Promise((resolve) => {
+          producerResolve = resolve
+        })
+      }
     },
     pull () {
       if (values.length > 0) {
+        if (producerResolve) {
+          setImmediate(producerResolve)
+          producerResolve = undefined
+        }
+
         return values.shift()!
       }
 
       return new Promise((resolve) => {
-        consumeValue = prepareConsumeValue(resolve)
+        consumerResolve = resolve
       })
     },
   }
