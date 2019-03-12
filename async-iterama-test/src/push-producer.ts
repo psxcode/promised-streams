@@ -1,6 +1,6 @@
 import { waitTimePromise as wait } from '@psxcode/wait'
+import { PushProducer, AsyncIteratorResult } from 'async-iterama/src'
 import { iteratorResult, doneAsyncIteratorResult, errorAsyncIteratorResult } from './helpers'
-import { PushProducer, AsyncIteratorResult } from './types'
 import noop from './noop'
 import isPositiveNumber from './is-positive-number'
 
@@ -12,7 +12,7 @@ export type PushProducerOptions = {
 }
 
 const pushProducer = ({ log = noop, dataResolveDelay, dataPrepareDelay, errorAtStep }: PushProducerOptions = {}) =>
-  <T>(data: Iterable<T>): PushProducer<T> => {
+  <T> (data: Iterable<T>): PushProducer<T> => {
     let i = 0
 
     return async (consumer) => {

@@ -26,13 +26,13 @@ describe('[ compose ]', () => {
     const t1 = pullMap(mult2)
     const r = pullProducer({ log: producerLog })(data)
 
-    const piped0 = compose(w, t0, t1)(r)
-    const piped1 = pipe(t0, t1, w)(r)
-    const piped2 = pipe(t0, t1)
-    const piped3 = pipe(t0, piped2)(r)
-    const piped4 = pipe(t0, piped3)
+    const pipedTranforms = pipe(t0, t1)
+    const pipedProducer = pipe(t0, pipedTranforms)(r)
+    const pipedConsumer = pipe(t0, pipedTranforms, w)
+    const s0 = w(pipedProducer)
+    const s1 = pipedConsumer(r)
 
-    await w(piped)
+    await
 
     expect(spy.calls).deep.eq([
       [{ value: 0, done: false }],

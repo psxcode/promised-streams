@@ -2,7 +2,7 @@ export type AsyncIteratorResult <T> = Promise<IteratorResult<T>>
 
 export type PushConsumer <T> = (value: AsyncIteratorResult<T>) => Promise<void>
 export type PushProducer <T> = (consumer: PushConsumer<T>) => Promise<void>
-export type PullProducer <T> = () => AsyncIteratorResult<T>
+export type PullProducer <T> = (arg: void) => AsyncIteratorResult<T>
 export type PullConsumer <T> = (producer: PullProducer<T>) => Promise<void>
 
 export type IPoolOptions = {

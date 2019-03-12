@@ -14,5 +14,8 @@
     "@babel/runtime": "^7.3.4",
     "@psxcode/wait": "^0.1.1",
     "iterama": "^0.1.1"
+  },
+  "peerDependencies": {
+    "async-iterama": "^0.0.0"
   }
 }

@@ -1,4 +1,4 @@
-import { AsyncIteratorResult } from './types'
+import { AsyncIteratorResult } from 'async-iterama/src'
 
 export const iteratorResult = <T> (value: T): IteratorResult<T> => ({ value, done: false })
 
