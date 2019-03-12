@@ -93,15 +93,12 @@ describe('[ pullMerge ]', () => {
 
     try {
       await w(t(r0, r1))
+      expect.fail('should not get here')
     } catch {
       expect(spy.calls).deep.eq([
         [{ value: 0, done: false }],
       ])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 
   it('should propagate producer error to consumer and continue', async () => {
@@ -133,13 +130,10 @@ describe('[ pullMerge ]', () => {
 
     try {
       await w(t(r0, r1))
+      expect.fail('should not get here')
     } catch {
       expect(spy.calls).deep.eq([
       ])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 })

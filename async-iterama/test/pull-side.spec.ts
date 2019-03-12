@@ -83,16 +83,13 @@ describe('[ pullSide ]', () => {
 
     try {
       await w(t(r))
+      expect.fail('should not get here')
     } catch {
       expect(spy.calls).deep.eq([])
       expect(sideSpy.calls).deep.eq([
         [0],
       ])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 
   it('should deliver producer error to consumer', async () => {
@@ -105,6 +102,7 @@ describe('[ pullSide ]', () => {
 
     try {
       await w(t(r))
+      expect.fail('should not get here')
     } catch {
       expect(spy.calls).deep.eq([
         [{ value: 0, done: false }],
@@ -114,11 +112,7 @@ describe('[ pullSide ]', () => {
       expect(sideSpy.calls).deep.eq([
         [0], [1],
       ])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 
   it('should deliver producer error to consumer and continue', async () => {
@@ -153,6 +147,7 @@ describe('[ pullSide ]', () => {
 
     try {
       await w(t(r))
+      expect.fail('should not get here')
     } catch {
       expect(spy.calls).deep.eq([
         [{ value: 0, done: false }],
@@ -162,10 +157,6 @@ describe('[ pullSide ]', () => {
       expect(sideSpy.calls).deep.eq([
         [0], [1],
       ])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 })

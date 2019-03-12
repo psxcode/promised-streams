@@ -77,13 +77,10 @@ describe('[ pullReduce ]', () => {
 
     try {
       await w(t(r))
+      expect.fail('should not get here')
     } catch {
       expect(spy.calls).deep.eq([])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 
   it('should deliver reducer error to consumer', async () => {
@@ -95,13 +92,10 @@ describe('[ pullReduce ]', () => {
 
     try {
       await w(t(r))
+      expect.fail('should not get here')
     } catch {
       expect(spy.calls).deep.eq([])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 
   it('should deliver producer error to consumer', async () => {
@@ -113,13 +107,10 @@ describe('[ pullReduce ]', () => {
 
     try {
       await w(t(r))
+      expect.fail('should not get here')
     } catch {
       expect(spy.calls).deep.eq([])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 
   it('should deliver producer error to consumer and continue', async () => {
@@ -146,12 +137,9 @@ describe('[ pullReduce ]', () => {
 
     try {
       await w(t(r))
+      expect.fail('should not get here')
     } catch {
       expect(spy.calls).deep.eq([])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 })

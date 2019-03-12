@@ -98,15 +98,12 @@ describe('[ pullSkip ]', () => {
 
     try {
       await w(t(r))
+      expect.fail('should not get here')
     } catch {
       expect(spy.calls).deep.eq([
         [{ value: 2, done: false }],
       ])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 
   it('should handle producer crash on complete', async () => {
@@ -118,16 +115,13 @@ describe('[ pullSkip ]', () => {
 
     try {
       await w(t(r))
+      expect.fail('should not get here')
     } catch {
       expect(spy.calls).deep.eq([
         [{ value: 2, done: false }],
         [{ value: 3, done: false }],
       ])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 
   it('should handle producer crash on negative', async () => {
@@ -139,14 +133,11 @@ describe('[ pullSkip ]', () => {
 
     try {
       await w(t(r))
+      expect.fail('should not get here')
     } catch {
       /* cannot get 'done' value */
       expect(spy.calls).deep.eq([])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 
   it('should handle producer crash on negative on complete', async () => {
@@ -158,14 +149,11 @@ describe('[ pullSkip ]', () => {
 
     try {
       await w(t(r))
+      expect.fail('should not get here')
     } catch {
       /* cannot get 'done' value */
       expect(spy.calls).deep.eq([])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 
   it('should deliver producer error to consumer', async () => {
@@ -177,15 +165,12 @@ describe('[ pullSkip ]', () => {
 
     try {
       await w(t(r))
+      expect.fail('should not get here')
     } catch {
       expect(spy.calls).deep.eq([
         [{ value: 1, done: false }],
       ])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 
   it('should deliver producer error to consumer on complete', async () => {
@@ -197,16 +182,13 @@ describe('[ pullSkip ]', () => {
 
     try {
       await w(t(r))
+      expect.fail('should not get here')
     } catch {
       expect(spy.calls).deep.eq([
         [{ value: 2, done: false }],
         [{ value: 3, done: false }],
       ])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 
   it('should deliver producer error to consumer on negative', async () => {
@@ -218,15 +200,12 @@ describe('[ pullSkip ]', () => {
 
     try {
       await w(t(r))
+      expect.fail('should not get here')
     } catch {
       expect(spy.calls).deep.eq([
         [{ value: 0, done: false }],
       ])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 
   it('should deliver producer error to consumer on negative on complete', async () => {
@@ -238,16 +217,13 @@ describe('[ pullSkip ]', () => {
 
     try {
       await w(t(r))
+      expect.fail('should not get here')
     } catch {
       expect(spy.calls).deep.eq([
         [{ value: 0, done: false }],
         [{ value: 1, done: false }],
       ])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 
   it('should skip producer error', async () => {
@@ -275,15 +251,12 @@ describe('[ pullSkip ]', () => {
 
     try {
       await w(t(r))
+      expect.fail('should not get here')
     } catch {
       expect(spy.calls).deep.eq([
         [{ value: 0, done: false }],
       ])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 
   it('should deliver producer error to consumer and continue on negative', async () => {
@@ -295,12 +268,9 @@ describe('[ pullSkip ]', () => {
 
     try {
       await w(t(r))
+      expect.fail('should not get here')
     } catch {
       expect(spy.calls).deep.eq([])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 })

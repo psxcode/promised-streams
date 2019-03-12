@@ -90,6 +90,7 @@ describe('[ pullWithLatest ]', () => {
 
     try {
       await w(r)
+      expect.fail('should not get here')
     } catch {
       /* drain producers */
       await wait(50)
@@ -97,11 +98,7 @@ describe('[ pullWithLatest ]', () => {
       expect(spy.calls).deep.eq([
         [{ value: [0, 3, undefined], done: false }],
       ])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 
   it('should propagate main producer error to consumer', async () => {
@@ -119,17 +116,13 @@ describe('[ pullWithLatest ]', () => {
 
     try {
       await w(r)
+      expect.fail('should not get here')
     } catch {
       /* drain producers */
       await wait(50)
 
-      expect(spy.calls).deep.eq([
-      ])
-
-      return
+      expect(spy.calls).deep.eq([])
     }
-
-    expect.fail('should not get here')
   })
 
   it('should propagate producer error to consumer and continue', async () => {
@@ -169,6 +162,7 @@ describe('[ pullWithLatest ]', () => {
 
     try {
       await w(r)
+      expect.fail('should not get here')
     } catch {
       /* drain producers */
       await wait(50)
@@ -176,11 +170,7 @@ describe('[ pullWithLatest ]', () => {
       expect(spy.calls).deep.eq([
         [{ value: [0, 3, undefined], done: false }],
       ])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 
   it('should handle main producer crash', async () => {
@@ -198,16 +188,14 @@ describe('[ pullWithLatest ]', () => {
 
     try {
       await w(r)
+
+      expect.fail('should not get here')
     } catch {
       /* drain producers */
       await wait(50)
 
       expect(spy.calls).deep.eq([
       ])
-
-      return
     }
-
-    expect.fail('should not get here')
   })
 })
