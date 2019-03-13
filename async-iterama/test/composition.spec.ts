@@ -32,11 +32,8 @@ describe('[ composition ]', () => {
     const t1 = pullReduce(addReducer)
     const r = pullProducer({ log: producerLog, dataResolveDelay: 50 })(data)
 
-    const pipedTranforms = pipe(t0, t1)
-    // const pipedProducer = pipe(t0, pipedTranforms)(r)
-    const pipedConsumer = pipe(t0, pipedTranforms, w)
-    // const s0 = w(pipedProducer)
-    // const s1 = pipedConsumer(r)
+    const pipedTransforms = pipe(t0, t1)
+    const pipedConsumer = pipe(t0, pipedTransforms, w)
 
     await pipedConsumer(r)
 
@@ -54,8 +51,8 @@ describe('[ composition ]', () => {
     const t1 = pullReduce(addReducer)
     const r = pullProducer({ log: producerLog, dataResolveDelay: 50 })(data)
 
-    const pipedTranforms = pipe(t0, t1)
-    const pipedProducer = pipe(t0, pipedTranforms)(r)
+    const pipedTransforms = pipe(t0, t1)
+    const pipedProducer = pipe(t0, pipedTransforms)(r)
 
     await w(pipedProducer)
 
@@ -73,8 +70,8 @@ describe('[ composition ]', () => {
     const t1 = pushReduce(addReducer)
     const r = pushProducer({ log: producerLog, dataResolveDelay: 50 })(data)
 
-    const pipedTranforms = compose(t0, t1)
-    const pipedProducer = compose(r, t0, pipedTranforms)
+    const pipedTransforms = compose(t0, t1)
+    const pipedProducer = compose(r, t0, pipedTransforms)
 
     await pipedProducer(w)
 
@@ -92,8 +89,8 @@ describe('[ composition ]', () => {
     const t1 = pushReduce(addReducer)
     const r = pushProducer({ log: producerLog, dataResolveDelay: 50 })(data)
 
-    const pipedTranforms = compose(t0, t1)
-    const pipedConsumer = compose(t0, pipedTranforms)(w)
+    const pipedTransforms = compose(t0, t1)
+    const pipedConsumer = compose(t0, pipedTransforms)(w)
 
     await r(pipedConsumer)
 
