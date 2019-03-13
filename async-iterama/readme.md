@@ -1,5 +1,5 @@
-# async-iterama
-Asynchronous Iterator Streams with lots RxJS like operators
+# Async Iterama
+Asynchronous Iterator Streams with lots RxJS-like operators
 
 ## Install
 
@@ -7,11 +7,58 @@ Asynchronous Iterator Streams with lots RxJS like operators
 npm install async-iterama
 ```
 
-- [Terminology](#terminology)
-- [Iterator Protocol](#iterator-protocol)
-- [Async Iterator Protocol](#async-iterator-protocol)
-- [Publish / Subscribe Protocol](#publish-/-subscribe-protocol)
-- [Interfaces](#interfaces)
+- [Async Iterama](#async-iterama)
+  - [Install](#install)
+  - [Terminology](#terminology)
+  - [Iterator Protocol](#iterator-protocol)
+  - [Async Iterator Protocol](#async-iterator-protocol)
+  - [Publish / Subscribe Protocol](#publish--subscribe-protocol)
+  - [Interfaces](#interfaces)
+- [Creation](#creation)
+  - [`pullFromIterable`](#pullfromiterable)
+  - [`pushFromIterable`](#pushfromiterable)
+  - [`pullFromStream`](#pullfromstream)
+  - [`pushFromStream`](#pushfromstream)
+- [Conversion](#conversion)
+  - [`pool`](#pool)
+  - [`pump`](#pump)
+- [Combination](#combination)
+  - [`pullConcat`](#pullconcat)
+  - [`pushConcat`](#pushconcat)
+  - [`pullCombine`](#pullcombine)
+  - [`pushCombine`](#pushcombine)
+  - [`pullMerge`](#pullmerge)
+  - [`pushMerge`](#pushmerge)
+  - [`pullStartWith`](#pullstartwith)
+  - [`pushStartWith`](#pushstartwith)
+  - [`pullWithLatest`](#pullwithlatest)
+  - [`pushWithLatest`](#pushwithlatest)
+  - [`pullZip`](#pullzip)
+  - [`pushZip`](#pushzip)
+- [Filtering](#filtering)
+  - [`pullFilter`](#pullfilter)
+  - [`pushFilter`](#pushfilter)
+  - [`pullDistinct`](#pulldistinct)
+  - [`pushDistinct`](#pushdistinct)
+  - [`pullDistinctUntilChanged`](#pulldistinctuntilchanged)
+  - [`pushDistinctUntilChanged`](#pushdistinctuntilchanged)
+  - [`pullUnique`](#pullunique)
+  - [`pushUnique`](#pushunique)
+  - [`pushDebounce`](#pushdebounce)
+  - [`pushDebounceTime`](#pushdebouncetime)
+  - [`pushThrottle`](#pushthrottle)
+  - [`pushThrottleTime`](#pushthrottletime)
+  - [`pullSkip`](#pullskip)
+  - [`pushSkip`](#pushskip)
+  - [`pullTake`](#pulltake)
+  - [`pushTake`](#pushtake)
+- [Transformation](#transformation)
+  - [`pullMap`](#pullmap)
+  - [`pushMap`](#pushmap)
+  - [`pullReduce`](#pullreduce)
+  - [`pushReduce`](#pushreduce)
+  - [`pullScan`](#pullscan)
+  - [`pushScan`](#pushscan)
 
 
 ## Terminology
@@ -28,8 +75,11 @@ npm install async-iterama
 `PullProducer` is a passive, `pull` type producer, which provides values to be pulled from.  
 `Pressure` information is delivered from `producer` to `consumer`, in term of low pressure, or data production is in progress. 
 
+`Pool`.  
+`Pump`.  
+
 ## Iterator Protocol
-Standard Javascript iterator protocol carries information about data and completeness of the iteration  
+Standard Javascript iterator protocol carries data and end of the iteration indicator  
 ```js
 const iterator = getIterator(data)
 
@@ -125,302 +175,266 @@ Thus making `producer` to wait for chunk to be actually processed, before sendin
 `type AsyncIteratorResult <T> = Promise<IteratorResult<T>>`  
 Just a Promise to a standard IteratorResult object
 
-`type PushConsumer <T> = (value: AsyncIteratorResult<T>) => Promise<void>`  
+`type PushConsumer <T> = (value: Promise<IteratorResult<T>>) => Promise<void>`  
 `PushConsumer` is just a function which accepts a value and returns a `Promise` to have time to consume the chunk. This promise can be `rejected` to indicate error during data processing, or unsubscribe. Producer will immediately stop data delivery to unsubscribed consumer.
 
 `type PushProducer <T> = (consumer: PushConsumer<T>) => Promise<void>`  
 `PushProducer` is a function accepting `PushConsumer`. After getting a consumer, producer begins sending data to consumer. `PushProducer` returns a `Promise`, which resolves after all data was pushed to consumer. This promise will never be rejected. All error during data production will be forwarded to consumer.
 
-`type PullProducer <T> = () => AsyncIteratorResult<T>`  
+`type PullProducer <T> = () => Promise<IteratorResult<T>>`  
 `PullProducer` is a function which returns a chunk of data, delivered as `Promise` to `IteratorResult`. Promise can be rejected by producer to indicate an `Error`.  
 
 `type PullConsumer <T> = (producer: PullProducer<T>) => Promise<void>`  
 `PullConsumer` is a function accepting `PullProducer`. After getting the producer, consumer begins pulling the data. `PullConsumer` returns a Promise, which will be resolved after add data was pulled, or will be rejected if producer delivered an `Error`.
 
-# Operators
+# Creation
+## `pullFromIterable`
+`<T> (iterable: Iterable<T>) => PullProducer<T>`
+```js
+import { pullFromIterable } from 'async-iterama'
+
+const data = [0, 1, 2, 3]
+const producer = pullFromIterable(data)
+```
+
+## `pushFromIterable`
+`<T> (iterable: Iterable<T>) => PushProducer<T>`
+```js
+import { pushFromIterable } from 'async-iterama'
+```
+
+## `pullFromStream`
+`<T> (stream: NodeJS.ReadableStream) => PullProducer<T>`
+```js
+import { pullFromStream } from 'async-iterama'
+```
+
+## `pushFromStream`
+`<T> (stream: NodeJS.ReadableStream) => PushProducer<T>`
+```js
+import { pushFromStream } from 'async-iterama'
+```
+
+# Conversion
+
+## `pool`
+`<T> (options: IPoolOptions) => IPool<T>`
+```js
+import { pool } from 'async-iterama'
+```
+
+## `pump`
+`<T> (producer: PullProducer<T>) => PushProducer<T>`
+```js
+import { pump } from 'async-iterama'
+```
+
+# Combination
+
+## `pullConcat`
+`<T> (...producers: PullProducers<T>[]) => PullProducer<T>`
+```js
+import { pullConcat } from 'async-iterama'
+```
+
+## `pushConcat`
+`<T> (...producers: PushProducer<T>[]) => PushProducer<T>`
+```js
+import { pushConcat } from 'async-iterama'
+```
+
 ## `pullCombine`
-
-`(context: SetTimeoutContext) => (callback: () => any, delay: number) => number`
-
-```ts
-import {
-  makeSetTimeout,
-  makeSetTimeoutContext,
-  tickTimeout,
-  getSetTimeoutCalls,
-} from 'time-test'
-
-// create context
-const context = makeSetTimeoutContext()
-
-// create setTimeout
-const setTimeout = makeSetTimeout(context)
-const tick = tickTimeout(context)
-
-// set a couple of callbacks
-setTimeout(() => { console.log('cb0 invoked') }, 100)
-setTimeout(() => { console.log('cb1 invoked') }, 200)
-setTimeout(() => { console.log('cb2 invoked') }, 300)
-
-// tick till NEXT callback in queue,
-// this effectively forwards 100ms
-// callback is fired synchronously
-tick()  // -> cb0 invoked
-
-// tick with provided timeStep
-// lets pass another 250ms
-tick(250) // -> cb1 invoked  -> cb2 invoked
-
-// check the calls
-expect(getSetTimeoutCalls(context)).deep.eq([
-  { delay: 100 }, { delay: 200 }, { delay: 300 }
-])
+`<T> (...producers: PullProducers<T>[]) => PullProducer<T>`
+```js
+import { pullCombine } from 'async-iterama'
 ```
 
-## `makeClearTimeout`
-
-`(context: SetTimeoutContext) => (id: number) => void`
-
-```ts
-import {
-  makeSetTimeoutContext,
-  makeSetTimeout,
-  makeClearTimeout,
-  getSetTimeoutCalls,
-  getClearTimeoutCalls,
-} from 'time-test'
-
-// create context
-const context = makeSetTimeoutContext()
-
-// create setTimeout
-const setTimeout = makeSetTimeout(context)
-// create clearTimeout
-const clearTimeout = makeClearTimeout(context)
-
-const id = setTimeout(() => {}, 100)
-
-// clear by id
-clearTimeout(id)
-
-// check the state
-expect(getSetTimeoutCalls(context)).deep.eq([
-  { delay: 100 }
-])
-
-expect(getClearTimeoutCalls(context)).deep.eq([
-  { id: 0 }
-])
+## `pushCombine`
+`<T> (...producers: PushProducer<T>[]) => PushProducer<T>`
+```js
+import { pushCombine } from 'async-iterama'
 ```
 
-## `makeSetInterval`
-
-`(context: SetIntervalContext) => (callback: () => any, delay: number) => number`
-
-```ts
-import {
-  makeSetInterval,
-  makeSetIntervalContext,
-  tickInterval,
-  getSetIntervalCalls,
-} from 'time-test'
-
-// create context
-const context = makeSetIntervalContext()
-
-// create setInterval
-const setInterval = makeSetInterval(context)
-const tick = tickInterval(context)
-
-// set a couple of callbacks
-setInterval(() => { console.log('cb0 invoked') }, 100)
-setInterval(() => { console.log('cb1 invoked') }, 200)
-
-// tick till NEXT callback in queue,
-// this effectively forwards 100ms
-// callback is fired synchronously
-tick()  // -> cb0 invoked
-
-// tick with provided timeStep
-// lets pass another 250ms
-tick(250) // -> cb0 invoked  -> cb1 invoked
-
-// check the state
-expect(getSetIntervalCalls(context)).deep.eq([
-  { delay: 100 },
-  { delay: 200 },
-])
+## `pullMerge`
+`<T> (...producers: PullProducers<T>[]) => PullProducer<T>`
+```js
+import { pullMerge } from 'async-iterama'
 ```
 
-## `makeClearInterval`
-
-`(context: SetIntervalContext) => (id: number) => void`
-
-```ts
-import {
-  makeSetInterval,
-  makeSetIntervalContext,
-  getSetIntervalCalls,
-  getClearIntervalCalls,
-} from 'time-test'
-
-// create context
-const context = makeSetIntervalContext()
-
-// create setInterval
-const setInterval = makeSetInterval(context)
-const clearInterval = makeClearInterval(context)
-
-// set a callbacks
-const id = setInterval(() => {}, 100)
-
-// clear
-clearInterval(id)
-
-// check the state
-expect(getSetIntervalCalls(context)).deep.eq([
-  { delay: 100 },
-])
-
-expect(getClearIntervalCalls(context)).deep.eq([
-  { id: 0 }
-])
+## `pushMerge`
+`<T> (...producers: PushProducer<T>[]) => PushProducer<T>`
+```js
+import { pushMerge } from 'async-iterama'
 ```
 
-## `makeSetImmediate`
-
-`(context: SetImmediateContext) => (callback: () => any) => number`
-
-```ts
-import {
-  makeSetImmediate,
-  makeSetImmediateContext,
-  tickImmediate,
-  getSetImmediateCalls,
-} from 'time-test'
-
-// create context
-const context = makeSetImmediateContext()
-
-// create setImmediate
-const setInterval = makeSetImmediate(context)
-const tick = tickImmediate(context)
-
-// set a couple of callbacks
-setImmediate(() => { console.log('cb0 invoked') })
-setImmediate(() => { console.log('cb1 invoked') })
-
-// tick ALL callbacks in queue,
-// callbacks are fired synchronously
-tick()  // -> cb0 invoked  -> cb1 invoked
-
-// check the state
-expect(getSetImmediateCalls(context)).deep.eq([
-  {},
-  {},
-])
+## `pullStartWith`
+`<T> (...values: T[]) => (producer: PullProducer<T>) => PullProducer<T>`
+```js
+import { pullStartWith } from 'async-iterama'
 ```
 
-## `makeClearImmediate`
-
-`(context: SetImmediateContext) => (id: number) => void`
-
-```ts
-import {
-  makeSetImmediate,
-  makeSetImmediateContext,
-  getSetImmediateCalls,
-  getClearImmediateCalls,
-} from 'time-test'
-
-// create context
-const context = makeSetImmediateContext()
-
-// create setImmediate
-const setImmediate = makeSetImmediate(context)
-const clearImmediate = makeClearImmediate(context)
-
-// set a callbacks
-const id = setImmediate(() => {}, 100)
-
-// clear
-clearImmediate(id)
-
-// check the state
-expect(getSetImmediateCalls(context)).deep.eq([
-  {},
-])
-
-expect(getClearImmediateCalls(context)).deep.eq([
-  { id: 0 }
-])
+## `pushStartWith`
+`<T> (...values: T[]) => (consumer: PushConsumer<T>) => PushConsumer<T>`
+```js
+import { pushStartWith } from 'async-iterama'
 ```
 
-## `makeRequestAnimationFrame`
-
-`(context: RequestAnimationFrameContext) => (callback: () => any) => number`
-
-```ts
-import {
-  makeRequestAnimationFrame,
-  makeRequestAnimationFrameContext,
-  tickAnimation,
-  getRequestAnimationFrameCalls,
-} from 'time-test'
-
-// create context
-const context = makeRequestAnimationFrameContext()
-
-// create requestAnimationFrame
-const requestAnimationFrame = makeRequestAnimationFrame(context)
-const tick = tickAnimation(context)
-
-// set a couple of callbacks
-requestAnimationFrame(() => { console.log('cb0 invoked') })
-requestAnimationFrame(() => { console.log('cb1 invoked') })
-
-// tick ALL callbacks in queue,
-// callbacks are fired synchronously
-tick()  // -> cb0 invoked  -> cb1 invoked
-
-// check the state
-expect(getRequestAnimationFrameCalls(context)).deep.eq([
-  {},
-  {},
-])
+## `pullWithLatest`
+`<...> (...producers: PullProducer<...>[]) => <T>(mainProducer: PullProducer<T>) => PullProducer<[T, ...]>`
+```js
+import { pullWithLatest } from 'async-iterama'
 ```
 
-## `makeCancelAnimationFrame`
+## `pushWithLatest`
+`<...> (...producers: PushProducer<...>[]) => <T> (mainProducer: PushProducer<T>) => PushProducer<T, ...>`
+```js
+import { pushWithLatest } from 'async-iterama'
+```
 
-`(context: RequestAnimationFrameContext) => (callback: () => any) => number`
+## `pullZip`
+`<...> (...producers: PullProducer<...>[]) => PullProducer<[...]>`
+```js
+import { pullZip } from 'async-iterama'
+```
 
-```ts
-import {
-  makeRequestAnimationFrame,
-  makeCancelAnimationFrame,
-  makeRequestAnimationFrameContext,
-  getRequestAnimationFrameCalls,
-  getCancelAnimationFrameCalls,
-} from 'time-test'
+## `pushZip`
+`<...> (...producers: PushProducer<...>[]) => PushProducer<[...]>`
+```js
+import { pushZip } from 'async-iterama'
+```
 
-// create context
-const context = makeRequestAnimationFrameContext()
+# Filtering
 
-// create requestAnimationFrame
-const requestAnimationFrame = makeRequestAnimationFrame(context)
-const cancelAnimationFrame = makeCancelAnimationFrame(context)
+## `pullFilter`
+`<T> (predicate: (arg: T) => Promise<boolean> | boolean) => (producer: PullProducer<T>) => PullProducer<T>`
+```js
+import { pullFilter } from 'async-iterama'
+```
 
-// set a couple of callbacks
-const id = requestAnimationFrame(() => { console.log('cb0 invoked') })
+## `pushFilter`
+`<T> (predicate: (arg: T) => Promise<boolean> | boolean) => (consumer: PushConsumer<T>) => PushConsumer<T>`
+```js
+import { pushFilter } from 'async-iterama'
+```
 
-cancelAnimationFrame(id)
+## `pullDistinct`
+`<T> (isAllowed: (prev: T, next: T) => Promise<boolean> | boolean) => (producer: PullProducer<T>) => PullProducer<T>`
+```js
+import { pullDistinct } from 'async-iterama'
+```
 
-// check the state
-expect(getRequestAnimationFrameCalls(context)).deep.eq([
-  {},
-])
+## `pushDistinct`
+`<T> (isAllowed: (prev: T, next: T) => Promise<boolean> | boolean) => (consumer: PushConsumer<T>) => PushConsumer<T>`
+```js
+import { pushDistinct } from 'async-iterama'
+```
 
-expect(getCancelAnimationFrameCalls(context)).deep.eq([
-  { id: 0 },
-])
+## `pullDistinctUntilChanged`
+`<T> (producer: PullProducer<T>) => PullProducer<T>`
+```js
+import { pullDistinctUntilChanged } from 'async-iterama'
+```
+
+## `pushDistinctUntilChanged`
+`<T> (consumer: PushConsumer<T>) => PushConsumer<T>`
+```js
+import { pushDistinctUntilChanged } from 'async-iterama'
+```
+
+## `pullUnique`
+`<T> (producer: PullProducer<T>) => PullProducer<T>`
+```js
+import { pullUnique } from 'async-iterama'
+```
+
+## `pushUnique`
+`<T> (consumer: PushConsumer<T>) => PushConsumer<T>`
+```js
+import { pushUnique } from 'async-iterama'
+```
+
+## `pushDebounce`
+`(wait: WaitFn) => <T> (consumer: PushConsumer<T>): PushConsumer<T>`
+```js
+import { pushDebounce } from 'async-iterama'
+```
+
+## `pushDebounceTime`
+`(ms: number) => <T> (consumer: PushConsumer<T>) => PushConsumer<T>`
+```js
+import { pushDebounceTime } from 'async-iterama'
+```
+
+## `pushThrottle`
+`(wait: WaitFn) => <T> (consumer: PushConsumer<T>) => PushConsumer<T>`
+```js
+import { pushThrottle } from 'async-iterama'
+```
+
+## `pushThrottleTime`
+`(ms: number) => <T> (consumer: PushConsumer<T>) => PushConsumer<T>`
+```js
+import { pushThrottleTime } from 'async-iterama'
+```
+
+## `pullSkip`
+`(numSkip: number) => <T> (producer: PullProducer<T>) => PullProducer<T>`
+```js
+import { pullSkip } from 'async-iterama'
+```
+
+## `pushSkip`
+`(numSkip: number) => <T> (consumer: PushConsumer<T>) => PushConsumer<T>`
+```js
+import { pushSkip } from 'async-iterama'
+```
+
+## `pullTake`
+`(numTake: number) => <T> (producer: PullProducer<T>) => PullProducer<T>`
+```js
+import { pullTake } from 'async-iterama'
+```
+
+## `pushTake`
+`(numTake: number) => <T> (consumer: PushConsumer<T>) => PushConsumer<T>`
+```js
+import { pushTake } from 'async-iterama'
+```
+
+# Transformation
+
+## `pullMap`
+`<T, R> (xf: (arg: T) => Promise<R> | R) => (producer: PullProducer<T>) => PullProducer<R>`
+```js
+import { pullMap } from 'async-iterama'
+```
+
+## `pushMap`
+`<T, R> (xf: (arg: T) => Promise<R> | R) => (consumer: PushConsumer<R>) => PushConsumer<T>`
+```js
+import { pushMap } from 'async-iterama'
+```
+
+## `pullReduce`
+`<S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) => (producer: PullProducer<T>) => PullProducer<S>`
+```js
+import { pullReduce } from 'async-iterama'
+```
+
+## `pushReduce`
+`<S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) => (consumer: PushConsumer<S>) => PushConsumer<T>`
+```js
+import { pushReduce } from 'async-iterama'
+```
+
+## `pullScan`
+`<S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) => (producer: PullProducer<T>) => PullProducer<S>`
+```js
+import { pullScan } from 'async-iterama'
+```
+
+## `pushScan`
+`<S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) => (consumer: PushConsumer<S>) => PushConsumer<T>`
+```js
+import { pushScan } from 'async-iterama'
 ```

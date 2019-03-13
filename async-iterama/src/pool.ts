@@ -1,5 +1,5 @@
 import isPositiveNumber from '../../async-iterama-test/src/is-positive-number'
-import { AsyncIteratorResult, IPool, IPoolOptions } from './types'
+import { IPool, IPoolOptions } from './types'
 import noop from './noop'
 
 const defaultOptions = {
@@ -7,7 +7,7 @@ const defaultOptions = {
 }
 
 const pool = <T> ({ highWatermark }: IPoolOptions = defaultOptions): IPool<T> => {
-  const values: AsyncIteratorResult<T>[] = []
+  const values: Promise<IteratorResult<T>>[] = []
   let consumerCancel: Promise<void> | undefined = undefined
   let producerResolve: ((arg?: any) => void) | undefined = undefined
   let consumerResolve: ((arg?: any) => void) | undefined = undefined

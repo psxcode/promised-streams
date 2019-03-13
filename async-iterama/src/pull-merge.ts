@@ -1,4 +1,4 @@
-import { PullProducer, AsyncIteratorResult } from './types'
+import { PullProducer } from './types'
 import { doneAsyncIteratorResult, racePromises, errorAsyncIteratorResult } from './helpers'
 import noop from './noop'
 
@@ -6,7 +6,7 @@ const isValid = (obj: any) => !!obj
 
 const pullMerge = <T> (...producers: PullProducer<T>[]): PullProducer<T> => {
   const activeProducers: (PullProducer<T> | null)[] = producers.slice()
-  const promises: (AsyncIteratorResult<T> | null)[] = producers.map(() => null)
+  const promises: (Promise<IteratorResult<T>> | null)[] = producers.map(() => null)
   const race = racePromises()
 
   return async () => {
@@ -20,7 +20,7 @@ const pullMerge = <T> (...producers: PullProducer<T>[]): PullProducer<T> => {
           try {
             promises[i] = producer()
           } catch (e) {
-            let err: AsyncIteratorResult<any>
+            let err: Promise<IteratorResult<any>>
             /* prevent unhandled promise warning */
             (err = errorAsyncIteratorResult(e)).catch(noop)
 

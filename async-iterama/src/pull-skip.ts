@@ -1,5 +1,5 @@
 import FixedArray from 'circularr'
-import { AsyncIteratorResult, PullProducer } from './types'
+import { PullProducer } from './types'
 import { errorAsyncIteratorResult, doneAsyncIteratorResult } from './helpers'
 
 const pullSkipFirst = (numSkip: number) => <T> (producer: PullProducer<T>): PullProducer<T> => {
@@ -25,8 +25,8 @@ const pullSkipFirst = (numSkip: number) => <T> (producer: PullProducer<T>): Pull
 }
 
 const pullSkipLast = (numSkip: number) => <T> (producer: PullProducer<T>): PullProducer<T> => {
-  const last = new FixedArray<AsyncIteratorResult<T>>(numSkip)
-  let producerError: AsyncIteratorResult<T> | undefined = undefined
+  const last = new FixedArray<Promise<IteratorResult<T>>>(numSkip)
+  let producerError: Promise<IteratorResult<T>> | undefined = undefined
   let isInit = false
 
   return async () => {
@@ -37,7 +37,7 @@ const pullSkipLast = (numSkip: number) => <T> (producer: PullProducer<T>): PullP
     if (!isInit) {
       isInit = true
       for (let i = 0; i < numSkip; ++i) {
-        let air: AsyncIteratorResult<T> | undefined = undefined
+        let air: Promise<IteratorResult<T>> | undefined = undefined
         let done = false
         try {
           done = (await (air = producer())).done
@@ -57,7 +57,7 @@ const pullSkipLast = (numSkip: number) => <T> (producer: PullProducer<T>): PullP
       }
     }
 
-    let air: AsyncIteratorResult<T> | undefined = undefined
+    let air: Promise<IteratorResult<T>> | undefined = undefined
     let done = false
     try {
       done = (await (air = producer())).done

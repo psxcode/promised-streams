@@ -1,10 +1,10 @@
 import { subscribeAsync } from 'node-streams'
-import { AsyncIteratorResult, PullProducer } from './types'
+import { PullProducer } from './types'
 import { doneAsyncIteratorResult, errorAsyncIteratorResult, asyncIteratorResult } from './helpers'
 
 const pullFromStream = <T> (stream: NodeJS.ReadableStream): PullProducer<T> => {
   let hasValue: (() => void) | undefined = undefined
-  const values: (() => AsyncIteratorResult<T>)[] = []
+  const values: (() => Promise<IteratorResult<T>>)[] = []
 
   subscribeAsync({
     next (value) {

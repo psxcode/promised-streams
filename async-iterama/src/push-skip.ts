@@ -1,5 +1,5 @@
 import FixedArray from 'circularr'
-import { PushConsumer, AsyncIteratorResult } from './types'
+import { PushConsumer } from './types'
 
 const pushSkipFirst = (numSkip: number) => <T> (consumer: PushConsumer<T>): PushConsumer<T> => {
   let i = 0
@@ -21,7 +21,7 @@ const pushSkipFirst = (numSkip: number) => <T> (consumer: PushConsumer<T>): Push
 }
 
 const pushSkipLast = (numSkip: number) => <T> (consumer: PushConsumer<T>): PushConsumer<T> => {
-  const values = new FixedArray<AsyncIteratorResult<T>>(numSkip)
+  const values = new FixedArray<Promise<IteratorResult<T>>>(numSkip)
   let i = 0
 
   return async (result) => {

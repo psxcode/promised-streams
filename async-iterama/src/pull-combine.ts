@@ -1,4 +1,4 @@
-import { PullProducer, AsyncIteratorResult } from './types'
+import { PullProducer } from './types'
 import { racePromises, asyncIteratorResult, errorAsyncIteratorResult, doneAsyncIteratorResult } from './helpers'
 import noop from './noop'
 
@@ -13,7 +13,7 @@ function pullCombine <T1, T2, T3, T4>(p1: PullProducer<T1>, p2: PullProducer<T2>
 function pullCombine (...producers: PullProducer<any>[]): PullProducer<any[]> {
   const activeProducers: (PullProducer<any> | null)[] = producers.slice()
   const values: any[] = producers.map(() => undefined)
-  const promises: (AsyncIteratorResult<any> | null)[] = producers.map(() => null)
+  const promises: (Promise<IteratorResult<any>> | null)[] = producers.map(() => null)
   const race = racePromises()
 
   return async () => {
@@ -27,7 +27,7 @@ function pullCombine (...producers: PullProducer<any>[]): PullProducer<any[]> {
           try {
             promises[i] = producer()
           } catch (e) {
-            let err: AsyncIteratorResult<any>
+            let err: Promise<IteratorResult<any>>
             /* prevent unhandled promise warning */
             (err = errorAsyncIteratorResult(e)).catch(noop)
 

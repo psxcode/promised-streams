@@ -1,17 +1,17 @@
-import { PushConsumer, PushProducer, AsyncIteratorResult } from './types'
+import { PushProducer } from './types'
 import { errorAsyncIteratorResult, asyncIteratorResult, doneAsyncIteratorResult } from './helpers'
 import noop from './noop'
 
 type ProducerValue = {
-  result: AsyncIteratorResult<any>,
+  result: Promise<IteratorResult<any>>,
   resolve: (arg: any) => void
 }
 
-function pushZip (): (consumer: PushConsumer<[]>) => Promise<void>
-function pushZip<T0> (p0: PushProducer<T0>): (consumer: PushConsumer<[T0]>) => Promise<void>
-function pushZip<T0, T1> (p0: PushProducer<T0>, p1: PushProducer<T1>): (consumer: PushConsumer<[T0, T1]>) => Promise<void>
-function pushZip<T0, T1, T2> (p0: PushProducer<T0>, p1: PushProducer<T1>, p2: PushProducer<T2>): (consumer: PushConsumer<[T0, T1, T2]>) => Promise<void>
-function pushZip<T0, T1, T2, T3> (p0: PushProducer<T0>, p1: PushProducer<T1>, p2: PushProducer<T2>, p3: PushProducer<T3>): (consumer: PushConsumer<[T0, T1, T2, T3]>) => Promise<void>
+function pushZip (): PushProducer<[]>
+function pushZip<T0> (p0: PushProducer<T0>): PushProducer<[T0]>
+function pushZip<T0, T1> (p0: PushProducer<T0>, p1: PushProducer<T1>): PushProducer<[T0, T1]>
+function pushZip<T0, T1, T2> (p0: PushProducer<T0>, p1: PushProducer<T1>, p2: PushProducer<T2>): PushProducer<[T0, T1, T2]>
+function pushZip<T0, T1, T2, T3> (p0: PushProducer<T0>, p1: PushProducer<T1>, p2: PushProducer<T2>, p3: PushProducer<T3>): PushProducer<[T0, T1, T2, T3]>
 
 function pushZip (...producers: PushProducer<any>[]): PushProducer<any> {
   const values: ProducerValue[][] = producers.map(() => [])

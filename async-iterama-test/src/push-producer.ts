@@ -1,5 +1,5 @@
 import { waitTimePromise as wait } from '@psxcode/wait'
-import { PushProducer, AsyncIteratorResult } from 'async-iterama/src'
+import { PushProducer } from 'async-iterama/src'
 import { iteratorResult, doneAsyncIteratorResult, errorAsyncIteratorResult } from './helpers'
 import noop from './noop'
 import isPositiveNumber from './is-positive-number'
@@ -50,7 +50,7 @@ const pushProducer = ({ log = noop, dataResolveDelay, dataPrepareDelay, errorAtS
         ? 'pushing error at complete'
         : 'pushing complete')
 
-      let result: AsyncIteratorResult<T>
+      let result: Promise<IteratorResult<T>>
       (result = i === errorAtStep
         ? errorAsyncIteratorResult(new Error(`error at complete`))
         : doneAsyncIteratorResult()).catch(noop)

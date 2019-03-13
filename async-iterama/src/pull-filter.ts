@@ -1,12 +1,12 @@
 import { PullProducer } from './types'
 
-const pullFilter = <T> (pred: (arg: T) => Promise<boolean> | boolean) =>
+const pullFilter = <T> (predicate: (arg: T) => Promise<boolean> | boolean) =>
   (producer: PullProducer<T>): PullProducer<T> =>
     async () => {
       while (true) {
         const ir = await producer()
 
-        if (ir.done || await pred(ir.value)) {
+        if (ir.done || await predicate(ir.value)) {
           return ir
         }
       }

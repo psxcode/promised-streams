@@ -3,7 +3,7 @@ import { expect } from 'chai'
 import debug from 'debug'
 import fn from 'test-fn'
 import { pushConsumer } from 'async-iterama-test/src'
-import { pushIterable } from '../src'
+import { pushFromIterable } from '../src'
 import makeNumbers from './make-numbers'
 
 const consumerLog = debug('ai:consumer')
@@ -14,7 +14,7 @@ describe('[ pushIterable ]', () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog, delay: 10 })(spy)
-    const r = pushIterable(data)
+    const r = pushFromIterable(data)
 
     await r(w)
 

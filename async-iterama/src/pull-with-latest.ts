@@ -1,4 +1,4 @@
-import { PullProducer, AsyncIteratorResult } from './types'
+import { PullProducer } from './types'
 import { racePromises, asyncIteratorResult, errorAsyncIteratorResult } from './helpers'
 import noop from './noop'
 
@@ -13,8 +13,8 @@ function pullWithLatest (...producers: PullProducer<any>[]) {
   return (mainProducer: PullProducer<any>): PullProducer<any[]> => {
     const activeProducers: (PullProducer<any> | null)[] = producers.slice()
     const values: any[] = producers.map(() => undefined)
-    const promises: (AsyncIteratorResult<any> | null)[] = producers.map(() => null)
-    const producerErrors: AsyncIteratorResult<any>[] = []
+    const promises: (Promise<IteratorResult<any>> | null)[] = producers.map(() => null)
+    const producerErrors: Promise<IteratorResult<any>>[] = []
     let isInit = false
     let done = false
     const race = racePromises()
@@ -30,7 +30,7 @@ function pullWithLatest (...producers: PullProducer<any>[]) {
             try {
               promises[i] = producer()
             } catch (e) {
-              let err: AsyncIteratorResult<any>
+              let err: Promise<IteratorResult<any>>
               (err = errorAsyncIteratorResult(e)).catch(noop)
               producerErrors.push(err)
               activeProducers[i] = null
@@ -65,7 +65,7 @@ function pullWithLatest (...producers: PullProducer<any>[]) {
 
     return async () => {
       if (producerErrors.length > 0) {
-        return producerErrors.shift() as AsyncIteratorResult<any[]>
+        return producerErrors.shift() as Promise<IteratorResult<any[]>>
       }
 
       if (!isInit) {

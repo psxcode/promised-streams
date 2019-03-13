@@ -1,7 +1,7 @@
 import { PushConsumer } from './types'
 import { errorAsyncIteratorResult } from './helpers'
 
-const pushFilter = <T> (pred: (arg: T) => Promise<boolean> | boolean) =>
+const pushFilter = <T> (predicate: (arg: T) => Promise<boolean> | boolean) =>
   (consumer: PushConsumer<T>): PushConsumer<T> =>
     async (result) => {
       let ir: IteratorResult<T>
@@ -17,7 +17,7 @@ const pushFilter = <T> (pred: (arg: T) => Promise<boolean> | boolean) =>
 
       let allowed: boolean
       try {
-        allowed = await pred(ir.value)
+        allowed = await predicate(ir.value)
       } catch (e) {
         return consumer(errorAsyncIteratorResult(e))
       }

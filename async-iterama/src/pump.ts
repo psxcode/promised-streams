@@ -1,4 +1,4 @@
-import { AsyncIteratorResult, PullProducer, PushProducer } from './types'
+import { PullProducer, PushProducer } from './types'
 import { errorAsyncIteratorResult } from './helpers'
 import noop from './noop'
 
@@ -7,7 +7,7 @@ const pump = <T> (producer: PullProducer<T>): PushProducer<T> =>
     let done = false
 
     while (!done) {
-      let air: AsyncIteratorResult<T> | undefined = undefined
+      let air: Promise<IteratorResult<T>> | undefined = undefined
       try {
         done = (await (air = producer())).done
       } catch (e) {

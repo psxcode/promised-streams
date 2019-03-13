@@ -1,5 +1,5 @@
 import { waitTimePromise as wait } from '@psxcode/wait'
-import { PullProducer, AsyncIteratorResult } from 'async-iterama/src'
+import { PullProducer } from 'async-iterama/src'
 import noop from './noop'
 import isPositiveNumber from './is-positive-number'
 
@@ -19,7 +19,7 @@ const pullConsumer = ({ log = noop, delay, continueOnError }: AsyncPullConsumerO
     return async <T> (producer: PullProducer<T>) => {
       while (true) {
         log(`pulling value ${i}`)
-        let air: AsyncIteratorResult<T>
+        let air: Promise<IteratorResult<T>>
         try {
           air = producer()
         } catch (e) {

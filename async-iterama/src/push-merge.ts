@@ -1,9 +1,9 @@
-import { AsyncIteratorResult, PushProducer } from './types'
+import { PushProducer } from './types'
 import { doneAsyncIteratorResult } from './helpers'
 
 const pushMerge = <T> (...producers: PushProducer<T>[]): PushProducer<T> => {
   let numDoneProducers = 0
-  const values: {result: AsyncIteratorResult<T>, resolve: (arg?: any) => void}[] = []
+  const values: {result: Promise<IteratorResult<T>>, resolve: (arg?: any) => void}[] = []
   let consumerCancel: Promise<void> | undefined = undefined
 
   return async (consumer) => {

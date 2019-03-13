@@ -1,5 +1,5 @@
 import FixedArray from 'circularr'
-import { PushConsumer, AsyncIteratorResult } from './types'
+import { PushConsumer } from './types'
 import { doneAsyncIteratorResult } from './helpers'
 import noop from './noop'
 
@@ -21,7 +21,7 @@ const pushTakeFirst = (numTake: number) => <T> (consumer: PushConsumer<T>): Push
 }
 
 const pushTakeLast = (numTake: number) => <T> (consumer: PushConsumer<T>): PushConsumer<T> => {
-  const values = new FixedArray<AsyncIteratorResult<T>>(numTake)
+  const values = new FixedArray<Promise<IteratorResult<T>>>(numTake)
 
   return async (result) => {
     let done = false

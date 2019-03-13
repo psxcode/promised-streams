@@ -1,11 +1,11 @@
-import { WaitFn, PushConsumer, AsyncIteratorResult, UnsubFn } from './types'
+import { WaitFn, PushConsumer, UnsubscribeFn } from './types'
 import noop from './noop'
 
 const pushThrottle = (wait: WaitFn) => <T> (consumer: PushConsumer<T>): PushConsumer<T> => {
-  let last0: AsyncIteratorResult<T> | undefined
-  let last1: AsyncIteratorResult<T> | undefined
+  let last0: Promise<IteratorResult<T>> | undefined
+  let last1: Promise<IteratorResult<T>> | undefined
   let consumerResult: Promise<void> | undefined
-  let unsub: UnsubFn = undefined
+  let unsub: UnsubscribeFn = undefined
 
   return async (result) => {
     result.catch(noop)

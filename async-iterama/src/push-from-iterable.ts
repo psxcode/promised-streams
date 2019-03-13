@@ -1,7 +1,7 @@
 import { iterate } from 'iterama'
 import { PushProducer } from './types'
 
-const pushIterable = <T> (iterable: Iterable<T>): PushProducer<T> => async (consumer) => {
+const pushFromIterable = <T> (iterable: Iterable<T>): PushProducer<T> => async (consumer) => {
   const it = iterate(iterable)
 
   while (true) {
@@ -14,4 +14,4 @@ const pushIterable = <T> (iterable: Iterable<T>): PushProducer<T> => async (cons
   }
 }
 
-export default pushIterable
+export default pushFromIterable
