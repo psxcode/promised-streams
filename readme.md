@@ -1,5 +1,5 @@
-# Async Iterama
-Asynchronous Iterator Streams with lots RxJS-like operators
+# Promise Streams
+Promise-based Streams with lots of RxJS-like operators
 
 ## Install
 
@@ -7,7 +7,7 @@ Asynchronous Iterator Streams with lots RxJS-like operators
 npm install async-iterama
 ```
 
-- [Async Iterama](#async-iterama)
+- [Promise Streams](#promise-streams)
   - [Install](#install)
   - [Terminology](#terminology)
   - [Iterator Protocol](#iterator-protocol)
