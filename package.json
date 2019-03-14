@@ -2,10 +2,10 @@
   "private": true,
   "license": "MIT",
   "author": "psxcode <psxcode@gmail.com> (https://github.com/psxcode)",
-  "homepage": "https://github.com/psxcode/async-iterama",
+  "homepage": "https://github.com/psxcode/promise-streams",
   "workspaces": [
-    "async-iterama",
-    "async-iterama-test"
+    "promise-streams",
+    "promise-streams-test"
   ],
   "scripts": {
     "cover": "NODE_ENV=test nyc mocha './*/test/*.spec.ts'",
@@ -45,8 +45,8 @@
   },
   "nyc": {
     "include": [
-      "async-iterama/src",
-      "async-iterama-test/src"
+      "promise-streams/src",
+      "promise-streams-test/src"
     ],
     "require": [
       "./register.js"
