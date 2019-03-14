@@ -195,24 +195,95 @@ import { pullFromIterable } from 'async-iterama'
 
 const data = [0, 1, 2, 3]
 const producer = pullFromIterable(data)
+
+try {
+  while (true) {
+    const { value, done } = await producer()
+
+    if (done) {
+      break
+    }
+
+    console.log(value)
+  }
+} catch (e) {
+  console.error(e)
+}
 ```
 
 ## `pushFromIterable`
 `<T> (iterable: Iterable<T>) => PushProducer<T>`
 ```js
 import { pushFromIterable } from 'async-iterama'
+
+const data = [0, 1, 2, 3]
+const producer = pushFromIterable(data)
+
+await producer(async (result) => {
+  try {
+    const { value, done } = await result
+
+    if (done) {
+      return
+    }
+
+    console.log(value)
+  } catch (e) {
+    console.error(e)
+
+    /* cancel subscription */
+    return Promise.reject()
+  }
+})
 ```
 
 ## `pullFromStream`
 `<T> (stream: NodeJS.ReadableStream) => PullProducer<T>`
 ```js
 import { pullFromStream } from 'async-iterama'
+
+const readable = createStream()
+const producer = pullFromStream(readable)
+
+try {
+  while (true) {
+    const { value, done } = await producer()
+
+    if (done) {
+      break
+    }
+
+    console.log(value)
+  }
+} catch (e) {
+  console.error(e)
+}
 ```
 
 ## `pushFromStream`
 `<T> (stream: NodeJS.ReadableStream) => PushProducer<T>`
 ```js
 import { pushFromStream } from 'async-iterama'
+
+const readable = createStream()
+const producer = pushFromStream()
+
+await producer(async (result) => {
+  try {
+    const { value, done } = await result
+
+    if (done) {
+      return
+    }
+
+    console.log(value)
+  } catch (e) {
+    console.error(e)
+
+    /* cancel subscription */
+    return Promise.reject()
+  }
+})
 ```
 
 # Conversion
@@ -220,13 +291,56 @@ import { pushFromStream } from 'async-iterama'
 ## `pool`
 `<T> (options: IPoolOptions) => IPool<T>`
 ```js
-import { pool } from 'async-iterama'
+import { pool, pushFromIterable } from 'async-iterama'
+
+const data = [0, 1, 2, 3]
+const producer = pushFromIterable(data)
+
+const { pull, push } = pool({ highWatermark: 32 })
+
+producer(push)
+
+try {
+  while (true) {
+    const { value, done } = await pull()
+
+    if (done) {
+      break
+    }
+
+    console.log(value)
+  }
+} catch (e) {
+  console.error(e)
+}
 ```
 
 ## `pump`
 `<T> (producer: PullProducer<T>) => PushProducer<T>`
 ```js
 import { pump } from 'async-iterama'
+
+const data = [0, 1, 2, 3]
+const pullProducer = pullFromIterable(data)
+
+const pushProducer = pump(pullProducer)
+
+await pushProducer(async (result) => {
+  try {
+    const { value, done } = await result
+
+    if (done) {
+      return
+    }
+
+    console.log(value)
+  } catch (e) {
+    console.error(e)
+
+    /* cancel subscription */
+    return Promise.reject()
+  }
+})
 ```
 
 # Combination
