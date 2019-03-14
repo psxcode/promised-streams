@@ -2,7 +2,7 @@ import { describe, it } from 'mocha'
 import { expect } from 'chai'
 import debug from 'debug'
 import fn from 'test-fn'
-import { pushConsumer, pushProducer } from 'async-iterama-test/src'
+import { pushConsumer, pushProducer } from 'promise-streams-test/src'
 import { pushUnique } from '../src'
 
 const producerLog = debug('ai:producer')

@@ -2,7 +2,7 @@ import { describe, it } from 'mocha'
 import { expect } from 'chai'
 import debug from 'debug'
 import fn from 'test-fn'
-import { pullConsumer, pullProducer } from 'async-iterama-test/src'
+import { pullConsumer, pullProducer } from 'promise-streams-test/src'
 import { pullConcat } from '../src'
 import makeNumbers from './make-numbers'
 

@@ -10,7 +10,7 @@
     "inlineSourceMap": true
   },
   "include": [
-    "async-iterama/src",
-    "async-iterama-test/src",
+    "promise-streams/src",
+    "promise-streams-test/src",
   ]
 }

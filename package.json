@@ -10,8 +10,8 @@
   "scripts": {
     "cover": "NODE_ENV=test nyc mocha './*/test/*.spec.ts'",
     "test": "NODE_ENV=test mocha --require register.js './*/test/*.spec.ts'",
-    "build:ai": "scripts/build.sh async-iterama",
-    "build:ait": "scripts/build.sh async-iterama-test"
+    "build:ai": "scripts/build.sh promise-streams",
+    "build:ait": "scripts/build.sh promise-streams-test"
   },
   "engines": {
     "node": ">=8"

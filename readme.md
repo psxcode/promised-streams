@@ -4,7 +4,7 @@ Promise-based Streams with lots of RxJS-like operators
 ## Install
 
 ```sh
-npm install async-iterama
+npm install promise-streams
 ```
 
 - [Promise Streams](#promise-streams)
@@ -191,7 +191,7 @@ Just a Promise to a standard IteratorResult object
 ## `pullFromIterable`
 `<T> (iterable: Iterable<T>) => PullProducer<T>`
 ```js
-import { pullFromIterable } from 'async-iterama'
+import { pullFromIterable } from 'promise-streams'
 
 const data = [0, 1, 2, 3]
 const producer = pullFromIterable(data)
@@ -214,7 +214,7 @@ try {
 ## `pushFromIterable`
 `<T> (iterable: Iterable<T>) => PushProducer<T>`
 ```js
-import { pushFromIterable } from 'async-iterama'
+import { pushFromIterable } from 'promise-streams'
 
 const data = [0, 1, 2, 3]
 const producer = pushFromIterable(data)
@@ -240,7 +240,7 @@ await producer(async (result) => {
 ## `pullFromStream`
 `<T> (stream: NodeJS.ReadableStream) => PullProducer<T>`
 ```js
-import { pullFromStream } from 'async-iterama'
+import { pullFromStream } from 'promise-streams'
 
 const readable = createStream()
 const producer = pullFromStream(readable)
@@ -263,7 +263,7 @@ try {
 ## `pushFromStream`
 `<T> (stream: NodeJS.ReadableStream) => PushProducer<T>`
 ```js
-import { pushFromStream } from 'async-iterama'
+import { pushFromStream } from 'promise-streams'
 
 const readable = createStream()
 const producer = pushFromStream()
@@ -291,7 +291,7 @@ await producer(async (result) => {
 ## `pool`
 `<T> (options: IPoolOptions) => IPool<T>`
 ```js
-import { pool, pushFromIterable } from 'async-iterama'
+import { pool, pushFromIterable } from 'promise-streams'
 
 const data = [0, 1, 2, 3]
 const producer = pushFromIterable(data)
@@ -318,7 +318,7 @@ try {
 ## `pump`
 `<T> (producer: PullProducer<T>) => PushProducer<T>`
 ```js
-import { pump } from 'async-iterama'
+import { pump } from 'promise-streams'
 
 const data = [0, 1, 2, 3]
 const pullProducer = pullFromIterable(data)
@@ -348,73 +348,73 @@ await pushProducer(async (result) => {
 ## `pullConcat`
 `<T> (...producers: PullProducers<T>[]) => PullProducer<T>`
 ```js
-import { pullConcat } from 'async-iterama'
+import { pullConcat } from 'promise-streams'
 ```
 
 ## `pushConcat`
 `<T> (...producers: PushProducer<T>[]) => PushProducer<T>`
 ```js
-import { pushConcat } from 'async-iterama'
+import { pushConcat } from 'promise-streams'
 ```
 
 ## `pullCombine`
 `<T> (...producers: PullProducers<T>[]) => PullProducer<T>`
 ```js
-import { pullCombine } from 'async-iterama'
+import { pullCombine } from 'promise-streams'
 ```
 
 ## `pushCombine`
 `<T> (...producers: PushProducer<T>[]) => PushProducer<T>`
 ```js
-import { pushCombine } from 'async-iterama'
+import { pushCombine } from 'promise-streams'
 ```
 
 ## `pullMerge`
 `<T> (...producers: PullProducers<T>[]) => PullProducer<T>`
 ```js
-import { pullMerge } from 'async-iterama'
+import { pullMerge } from 'promise-streams'
 ```
 
 ## `pushMerge`
 `<T> (...producers: PushProducer<T>[]) => PushProducer<T>`
 ```js
-import { pushMerge } from 'async-iterama'
+import { pushMerge } from 'promise-streams'
 ```
 
 ## `pullStartWith`
 `<T> (...values: T[]) => (producer: PullProducer<T>) => PullProducer<T>`
 ```js
-import { pullStartWith } from 'async-iterama'
+import { pullStartWith } from 'promise-streams'
 ```
 
 ## `pushStartWith`
 `<T> (...values: T[]) => (consumer: PushConsumer<T>) => PushConsumer<T>`
 ```js
-import { pushStartWith } from 'async-iterama'
+import { pushStartWith } from 'promise-streams'
 ```
 
 ## `pullWithLatest`
 `<...> (...producers: PullProducer<...>[]) => <T>(mainProducer: PullProducer<T>) => PullProducer<[T, ...]>`
 ```js
-import { pullWithLatest } from 'async-iterama'
+import { pullWithLatest } from 'promise-streams'
 ```
 
 ## `pushWithLatest`
 `<...> (...producers: PushProducer<...>[]) => <T> (mainProducer: PushProducer<T>) => PushProducer<T, ...>`
 ```js
-import { pushWithLatest } from 'async-iterama'
+import { pushWithLatest } from 'promise-streams'
 ```
 
 ## `pullZip`
 `<...> (...producers: PullProducer<...>[]) => PullProducer<[...]>`
 ```js
-import { pullZip } from 'async-iterama'
+import { pullZip } from 'promise-streams'
 ```
 
 ## `pushZip`
 `<...> (...producers: PushProducer<...>[]) => PushProducer<[...]>`
 ```js
-import { pushZip } from 'async-iterama'
+import { pushZip } from 'promise-streams'
 ```
 
 # Filtering
@@ -422,97 +422,97 @@ import { pushZip } from 'async-iterama'
 ## `pullFilter`
 `<T> (predicate: (arg: T) => Promise<boolean> | boolean) => (producer: PullProducer<T>) => PullProducer<T>`
 ```js
-import { pullFilter } from 'async-iterama'
+import { pullFilter } from 'promise-streams'
 ```
 
 ## `pushFilter`
 `<T> (predicate: (arg: T) => Promise<boolean> | boolean) => (consumer: PushConsumer<T>) => PushConsumer<T>`
 ```js
-import { pushFilter } from 'async-iterama'
+import { pushFilter } from 'promise-streams'
 ```
 
 ## `pullDistinct`
 `<T> (isAllowed: (prev: T, next: T) => Promise<boolean> | boolean) => (producer: PullProducer<T>) => PullProducer<T>`
 ```js
-import { pullDistinct } from 'async-iterama'
+import { pullDistinct } from 'promise-streams'
 ```
 
 ## `pushDistinct`
 `<T> (isAllowed: (prev: T, next: T) => Promise<boolean> | boolean) => (consumer: PushConsumer<T>) => PushConsumer<T>`
 ```js
-import { pushDistinct } from 'async-iterama'
+import { pushDistinct } from 'promise-streams'
 ```
 
 ## `pullDistinctUntilChanged`
 `<T> (producer: PullProducer<T>) => PullProducer<T>`
 ```js
-import { pullDistinctUntilChanged } from 'async-iterama'
+import { pullDistinctUntilChanged } from 'promise-streams'
 ```
 
 ## `pushDistinctUntilChanged`
 `<T> (consumer: PushConsumer<T>) => PushConsumer<T>`
 ```js
-import { pushDistinctUntilChanged } from 'async-iterama'
+import { pushDistinctUntilChanged } from 'promise-streams'
 ```
 
 ## `pullUnique`
 `<T> (producer: PullProducer<T>) => PullProducer<T>`
 ```js
-import { pullUnique } from 'async-iterama'
+import { pullUnique } from 'promise-streams'
 ```
 
 ## `pushUnique`
 `<T> (consumer: PushConsumer<T>) => PushConsumer<T>`
 ```js
-import { pushUnique } from 'async-iterama'
+import { pushUnique } from 'promise-streams'
 ```
 
 ## `pushDebounce`
 `(wait: WaitFn) => <T> (consumer: PushConsumer<T>): PushConsumer<T>`
 ```js
-import { pushDebounce } from 'async-iterama'
+import { pushDebounce } from 'promise-streams'
 ```
 
 ## `pushDebounceTime`
 `(ms: number) => <T> (consumer: PushConsumer<T>) => PushConsumer<T>`
 ```js
-import { pushDebounceTime } from 'async-iterama'
+import { pushDebounceTime } from 'promise-streams'
 ```
 
 ## `pushThrottle`
 `(wait: WaitFn) => <T> (consumer: PushConsumer<T>) => PushConsumer<T>`
 ```js
-import { pushThrottle } from 'async-iterama'
+import { pushThrottle } from 'promise-streams'
 ```
 
 ## `pushThrottleTime`
 `(ms: number) => <T> (consumer: PushConsumer<T>) => PushConsumer<T>`
 ```js
-import { pushThrottleTime } from 'async-iterama'
+import { pushThrottleTime } from 'promise-streams'
 ```
 
 ## `pullSkip`
 `(numSkip: number) => <T> (producer: PullProducer<T>) => PullProducer<T>`
 ```js
-import { pullSkip } from 'async-iterama'
+import { pullSkip } from 'promise-streams'
 ```
 
 ## `pushSkip`
 `(numSkip: number) => <T> (consumer: PushConsumer<T>) => PushConsumer<T>`
 ```js
-import { pushSkip } from 'async-iterama'
+import { pushSkip } from 'promise-streams'
 ```
 
 ## `pullTake`
 `(numTake: number) => <T> (producer: PullProducer<T>) => PullProducer<T>`
 ```js
-import { pullTake } from 'async-iterama'
+import { pullTake } from 'promise-streams'
 ```
 
 ## `pushTake`
 `(numTake: number) => <T> (consumer: PushConsumer<T>) => PushConsumer<T>`
 ```js
-import { pushTake } from 'async-iterama'
+import { pushTake } from 'promise-streams'
 ```
 
 # Transformation
@@ -520,35 +520,35 @@ import { pushTake } from 'async-iterama'
 ## `pullMap`
 `<T, R> (xf: (arg: T) => Promise<R> | R) => (producer: PullProducer<T>) => PullProducer<R>`
 ```js
-import { pullMap } from 'async-iterama'
+import { pullMap } from 'promise-streams'
 ```
 
 ## `pushMap`
 `<T, R> (xf: (arg: T) => Promise<R> | R) => (consumer: PushConsumer<R>) => PushConsumer<T>`
 ```js
-import { pushMap } from 'async-iterama'
+import { pushMap } from 'promise-streams'
 ```
 
 ## `pullReduce`
 `<S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) => (producer: PullProducer<T>) => PullProducer<S>`
 ```js
-import { pullReduce } from 'async-iterama'
+import { pullReduce } from 'promise-streams'
 ```
 
 ## `pushReduce`
 `<S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) => (consumer: PushConsumer<S>) => PushConsumer<T>`
 ```js
-import { pushReduce } from 'async-iterama'
+import { pushReduce } from 'promise-streams'
 ```
 
 ## `pullScan`
 `<S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) => (producer: PullProducer<T>) => PullProducer<S>`
 ```js
-import { pullScan } from 'async-iterama'
+import { pullScan } from 'promise-streams'
 ```
 
 ## `pushScan`
 `<S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) => (consumer: PushConsumer<S>) => PushConsumer<T>`
 ```js
-import { pushScan } from 'async-iterama'
+import { pushScan } from 'promise-streams'
 ```

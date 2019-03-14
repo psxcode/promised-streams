@@ -3,7 +3,7 @@ import { expect } from 'chai'
 import debug from 'debug'
 import fn from 'test-fn'
 import { waitTimePromise as wait } from '@psxcode/wait'
-import { pushConsumer, pushProducer } from 'async-iterama-test/src'
+import { pushConsumer, pushProducer } from 'promise-streams-test/src'
 import { pushFilter } from '../src'
 import makeNumbers from './make-numbers'
 

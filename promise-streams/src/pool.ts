@@ -1,4 +1,4 @@
-import isPositiveNumber from '../../async-iterama-test/src/is-positive-number'
+import isPositiveNumber from '../../promise-streams-test/src/is-positive-number'
 import { IPool, IPoolOptions } from './types'
 import noop from './noop'
 

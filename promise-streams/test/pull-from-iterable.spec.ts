@@ -2,7 +2,7 @@ import { describe, it } from 'mocha'
 import { expect } from 'chai'
 import debug from 'debug'
 import fn from 'test-fn'
-import { pullConsumer } from 'async-iterama-test/src'
+import { pullConsumer } from 'promise-streams-test/src'
 import { pullFromIterable } from '../src'
 import makeNumbers from './make-numbers'
 
@@ -25,27 +25,5 @@ describe('[ pullIterable ]', () => {
       [{ value: 3, done: false }],
       [{ value: undefined, done: true }],
     ])
-  })
-
-  it.only('should work', async () => {
-    async function sleep (ms: number): Promise<void> {
-      return new Promise<void>((resolve) => {
-        setTimeout(resolve, ms)
-      })
-    }
-
-    type A = AsyncIterableIterator
-
-    async function* asyncGenerator () {
-      yield 1
-      await sleep(1000)
-      yield 2
-    }
-
-    (async () => {
-      for await (const num of asyncGenerator()) {
-        console.log(num)
-      }
-    })().catch((e) => console.error(e))
   })
 })
