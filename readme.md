@@ -217,18 +217,23 @@ try {
 import { pushFromIterable } from 'promise-streams'
 
 const data = [0, 1, 2, 3]
-const producer = pushFromIterable(data)
+const pushProducer = pushFromIterable(data)
 
-await producer(async (result) => {
+/* subscribe to PushProducer */
+await pushProducer(async (result) => {
   try {
+    /* unwrap the value */
     const { value, done } = await result
 
+    /* check if done */
     if (done) {
       return
     }
 
+    /* consume the value */
     console.log(value)
   } catch (e) {
+    /* catch errors */
     console.error(e)
 
     /* cancel subscription */
@@ -266,18 +271,23 @@ try {
 import { pushFromStream } from 'promise-streams'
 
 const readable = createStream()
-const producer = pushFromStream()
+const pushProducer = pushFromStream()
 
-await producer(async (result) => {
+/* subscribe to PushProducer */
+await pushProducer(async (result) => {
   try {
+    /* unwrap the value */
     const { value, done } = await result
 
+    /* check if done */
     if (done) {
       return
     }
 
+    /* consume the value */
     console.log(value)
   } catch (e) {
+    /* catch errors */
     console.error(e)
 
     /* cancel subscription */
@@ -289,6 +299,7 @@ await producer(async (result) => {
 # Conversion
 
 ## `pool`
+Converts `Push` type producer to `Pull` type producer.
 `<T> (options: IPoolOptions) => IPool<T>`
 ```js
 import { pool, pushFromIterable } from 'promise-streams'
@@ -316,25 +327,33 @@ try {
 ```
 
 ## `pump`
+Converts `Pull` type producer to `Push` type producer.
 `<T> (producer: PullProducer<T>) => PushProducer<T>`
 ```js
 import { pump } from 'promise-streams'
 
+/* create PullProducer */
 const data = [0, 1, 2, 3]
 const pullProducer = pullFromIterable(data)
 
+/* create PushProducer from PullProducer */
 const pushProducer = pump(pullProducer)
 
+/* subscribe to PushProducer */
 await pushProducer(async (result) => {
   try {
+    /* unwrap the value */
     const { value, done } = await result
 
+    /* check if done */
     if (done) {
       return
     }
 
+    /* consume the value */
     console.log(value)
   } catch (e) {
+    /* catch errors */
     console.error(e)
 
     /* cancel subscription */
@@ -352,9 +371,39 @@ import { pullConcat } from 'promise-streams'
 ```
 
 ## `pushConcat`
+Concatenates all `Push` producers, creating single `Push` producer, which delivers the data from each, excluding `done`. End of stream is delivered once, at the end.
 `<T> (...producers: PushProducer<T>[]) => PushProducer<T>`
 ```js
 import { pushConcat } from 'promise-streams'
+
+const pp0 = getPushProducer()
+const pp1 = getPushProducer()
+const pp2 = getPushProducer()
+
+/* create concatenated PushProducer */
+const concatenatedProducer = pushConcat(pp0, pp1, pp2)
+
+/* subscribe to PushProducer */
+await concatenatedProducer(async (result) => {
+  try {
+    /* unwrap the value */
+    const { value, done } = await result
+
+    /* check if done */
+    if (done) {
+      return
+    }
+
+    /* consume the value */
+    console.log(value)
+  } catch (e) {
+    /* catch errors */
+    console.error(e)
+
+    /* cancel subscription */
+    return Promise.reject()
+  }
+})
 ```
 
 ## `pullCombine`
@@ -364,9 +413,38 @@ import { pullCombine } from 'promise-streams'
 ```
 
 ## `pushCombine`
-`<T> (...producers: PushProducer<T>[]) => PushProducer<T>`
+`<...> (...producers: PushProducer<...>[]) => PushProducer<[...]>`
 ```js
 import { pushCombine } from 'promise-streams'
+
+const pp0 = getPushProducer()
+const pp1 = getPushProducer()
+const pp2 = getPushProducer()
+
+/* create combined PushProducer */
+const combinedProducer = pushCombine(pp0, pp1, pp2)
+
+/* subscribe to PushProducer */
+await combinedProducer(async (result) => {
+  try {
+    /* unwrap the value */
+    const { value, done } = await result
+
+    /* check if done */
+    if (done) {
+      return
+    }
+
+    /* consume the value */
+    console.log(value)
+  } catch (e) {
+    /* catch errors */
+    console.error(e)
+
+    /* cancel subscription */
+    return Promise.reject()
+  }
+})
 ```
 
 ## `pullMerge`
@@ -379,6 +457,35 @@ import { pullMerge } from 'promise-streams'
 `<T> (...producers: PushProducer<T>[]) => PushProducer<T>`
 ```js
 import { pushMerge } from 'promise-streams'
+
+const pp0 = getPushProducer()
+const pp1 = getPushProducer()
+const pp2 = getPushProducer()
+
+/* create merged PushProducer */
+const mergedProducer = pushMerge(pp0, pp1, pp2)
+
+/* subscribe to PushProducer */
+await mergedProducer(async (result) => {
+  try {
+    /* unwrap the value */
+    const { value, done } = await result
+
+    /* check if done */
+    if (done) {
+      return
+    }
+
+    /* consume the value */
+    console.log(value)
+  } catch (e) {
+    /* catch errors */
+    console.error(e)
+
+    /* cancel subscription */
+    return Promise.reject()
+  }
+})
 ```
 
 ## `pullStartWith`
@@ -391,6 +498,32 @@ import { pullStartWith } from 'promise-streams'
 `<T> (...values: T[]) => (consumer: PushConsumer<T>) => PushConsumer<T>`
 ```js
 import { pushStartWith } from 'promise-streams'
+
+const producer = getPushProducer()
+
+const startWithProducer = pushStartWith(1, 2, 3)(producer)
+
+/* subscribe to PushProducer */
+await startWithProducer(async (result) => {
+  try {
+    /* unwrap the value */
+    const { value, done } = await result
+
+    /* check if done */
+    if (done) {
+      return
+    }
+
+    /* consume the value */
+    console.log(value)
+  } catch (e) {
+    /* catch errors */
+    console.error(e)
+
+    /* cancel subscription */
+    return Promise.reject()
+  }
+})
 ```
 
 ## `pullWithLatest`
@@ -403,6 +536,35 @@ import { pullWithLatest } from 'promise-streams'
 `<...> (...producers: PushProducer<...>[]) => <T> (mainProducer: PushProducer<T>) => PushProducer<T, ...>`
 ```js
 import { pushWithLatest } from 'promise-streams'
+
+const pp0 = getPushProducer()
+const pp1 = getPushProducer()
+const pp2 = getPushProducer()
+const mainProducer = getPushProducer()
+
+const withLatestProducer = (pp0, pp1, pp2)(mainProducer)
+
+/* subscribe to PushProducer */
+await withLatestProducer(async (result) => {
+  try {
+    /* unwrap the value */
+    const { value, done } = await result
+
+    /* check if done */
+    if (done) {
+      return
+    }
+
+    /* consume the value */
+    console.log(value)
+  } catch (e) {
+    /* catch errors */
+    console.error(e)
+
+    /* cancel subscription */
+    return Promise.reject()
+  }
+})
 ```
 
 ## `pullZip`
@@ -415,6 +577,35 @@ import { pullZip } from 'promise-streams'
 `<...> (...producers: PushProducer<...>[]) => PushProducer<[...]>`
 ```js
 import { pushZip } from 'promise-streams'
+
+const pp0 = getPushProducer()
+const pp1 = getPushProducer()
+const pp2 = getPushProducer()
+
+/* create zip PushProducer */
+const zippedProducer = pushZip(pp0, pp1, pp2)
+
+/* subscribe to PushProducer */
+await zippedProducer(async (result) => {
+  try {
+    /* unwrap the value */
+    const { value, done } = await result
+
+    /* check if done */
+    if (done) {
+      return
+    }
+
+    /* consume the value */
+    console.log(value)
+  } catch (e) {
+    /* catch errors */
+    console.error(e)
+
+    /* cancel subscription */
+    return Promise.reject()
+  }
+})
 ```
 
 # Filtering
@@ -429,6 +620,35 @@ import { pullFilter } from 'promise-streams'
 `<T> (predicate: (arg: T) => Promise<boolean> | boolean) => (consumer: PushConsumer<T>) => PushConsumer<T>`
 ```js
 import { pushFilter } from 'promise-streams'
+
+const producer = getPushProducer()
+
+const isEven = x => x % 2 === 0
+
+/* create filtered producer */
+const filteredProducer = pushFilter(isEven)(producer)
+
+/* subscribe to PushProducer */
+await filteredProducer(async (result) => {
+  try {
+    /* unwrap the value */
+    const { value, done } = await result
+
+    /* check if done */
+    if (done) {
+      return
+    }
+
+    /* consume the value */
+    console.log(value)
+  } catch (e) {
+    /* catch errors */
+    console.error(e)
+
+    /* cancel subscription */
+    return Promise.reject()
+  }
+})
 ```
 
 ## `pullDistinct`
@@ -441,6 +661,34 @@ import { pullDistinct } from 'promise-streams'
 `<T> (isAllowed: (prev: T, next: T) => Promise<boolean> | boolean) => (consumer: PushConsumer<T>) => PushConsumer<T>`
 ```js
 import { pushDistinct } from 'promise-streams'
+
+const isAllowed = (prev, next) => prev !== next
+
+const producer = getPushProducer()
+/* create filtered producer */
+const filteredProducer = pushDistinct(isAllowed)(producer)
+
+/* subscribe to PushProducer */
+await filteredProducer(async (result) => {
+  try {
+    /* unwrap the value */
+    const { value, done } = await result
+
+    /* check if done */
+    if (done) {
+      return
+    }
+
+    /* consume the value */
+    console.log(value)
+  } catch (e) {
+    /* catch errors */
+    console.error(e)
+
+    /* cancel subscription */
+    return Promise.reject()
+  }
+})
 ```
 
 ## `pullDistinctUntilChanged`
@@ -453,6 +701,32 @@ import { pullDistinctUntilChanged } from 'promise-streams'
 `<T> (consumer: PushConsumer<T>) => PushConsumer<T>`
 ```js
 import { pushDistinctUntilChanged } from 'promise-streams'
+
+const producer = getPushProducer()
+/* create filtered producer */
+const filteredProducer = pushDistinctUntilChanged(producer)
+
+/* subscribe to PushProducer */
+await pushProducer(async (result) => {
+  try {
+    /* unwrap the value */
+    const { value, done } = await result
+
+    /* check if done */
+    if (done) {
+      return
+    }
+
+    /* consume the value */
+    console.log(value)
+  } catch (e) {
+    /* catch errors */
+    console.error(e)
+
+    /* cancel subscription */
+    return Promise.reject()
+  }
+})
 ```
 
 ## `pullUnique`
@@ -465,30 +739,163 @@ import { pullUnique } from 'promise-streams'
 `<T> (consumer: PushConsumer<T>) => PushConsumer<T>`
 ```js
 import { pushUnique } from 'promise-streams'
+
+const producer = getPushProducer()
+/* create filtered producer */
+const filteredProducer = pushUnique(producer)
+
+/* subscribe to PushProducer */
+await filteredProducer(async (result) => {
+  try {
+    /* unwrap the value */
+    const { value, done } = await result
+
+    /* check if done */
+    if (done) {
+      return
+    }
+
+    /* consume the value */
+    console.log(value)
+  } catch (e) {
+    /* catch errors */
+    console.error(e)
+
+    /* cancel subscription */
+    return Promise.reject()
+  }
+})
 ```
 
 ## `pushDebounce`
 `(wait: WaitFn) => <T> (consumer: PushConsumer<T>): PushConsumer<T>`
 ```js
 import { pushDebounce } from 'promise-streams'
+
+const waitFn = () => new Promise((resolve) => setTimeout(resolve, 1000))
+
+const producer = getPushProducer()
+/* create debounced producer */
+const debouncedProducer = pushDebounce(waitFn)(producer)
+
+/* subscribe to PushProducer */
+await debouncedProducer(async (result) => {
+  try {
+    /* unwrap the value */
+    const { value, done } = await result
+
+    /* check if done */
+    if (done) {
+      return
+    }
+
+    /* consume the value */
+    console.log(value)
+  } catch (e) {
+    /* catch errors */
+    console.error(e)
+
+    /* cancel subscription */
+    return Promise.reject()
+  }
+})
 ```
 
 ## `pushDebounceTime`
 `(ms: number) => <T> (consumer: PushConsumer<T>) => PushConsumer<T>`
 ```js
 import { pushDebounceTime } from 'promise-streams'
+
+const producer = getPushProducer()
+/* create debounced producer */
+const debouncedProducer = pushDebounceTime(1000)(producer)
+
+/* subscribe to PushProducer */
+await debouncedProducer(async (result) => {
+  try {
+    /* unwrap the value */
+    const { value, done } = await result
+
+    /* check if done */
+    if (done) {
+      return
+    }
+
+    /* consume the value */
+    console.log(value)
+  } catch (e) {
+    /* catch errors */
+    console.error(e)
+
+    /* cancel subscription */
+    return Promise.reject()
+  }
+})
 ```
 
 ## `pushThrottle`
 `(wait: WaitFn) => <T> (consumer: PushConsumer<T>) => PushConsumer<T>`
 ```js
 import { pushThrottle } from 'promise-streams'
+
+const waitFn = () => new Promise((resolve) => setTimeout(resolve, 100))
+
+const producer = getPushProducer()
+/* create throttled producer */
+const throttledProducer = pushThrottle(waitFn)(producer)
+
+/* subscribe to PushProducer */
+await throttledProducer(async (result) => {
+  try {
+    /* unwrap the value */
+    const { value, done } = await result
+
+    /* check if done */
+    if (done) {
+      return
+    }
+
+    /* consume the value */
+    console.log(value)
+  } catch (e) {
+    /* catch errors */
+    console.error(e)
+
+    /* cancel subscription */
+    return Promise.reject()
+  }
+})
 ```
 
 ## `pushThrottleTime`
 `(ms: number) => <T> (consumer: PushConsumer<T>) => PushConsumer<T>`
 ```js
 import { pushThrottleTime } from 'promise-streams'
+
+const producer = getPushProducer()
+const throttledProducer = pushThrottleTime(100)(producer)
+
+/* subscribe to PushProducer */
+await throttledProducer(async (result) => {
+  try {
+    /* unwrap the value */
+    const { value, done } = await result
+
+    /* check if done */
+    if (done) {
+      return
+    }
+
+    /* consume the value */
+    console.log(value)
+  } catch (e) {
+    /* catch errors */
+    console.error(e)
+
+    /* cancel subscription */
+    return Promise.reject()
+  }
+})
 ```
 
 ## `pullSkip`
@@ -501,6 +908,30 @@ import { pullSkip } from 'promise-streams'
 `(numSkip: number) => <T> (consumer: PushConsumer<T>) => PushConsumer<T>`
 ```js
 import { pushSkip } from 'promise-streams'
+
+const producer = getPushProducer()
+
+/* subscribe to PushProducer */
+await pushProducer(async (result) => {
+  try {
+    /* unwrap the value */
+    const { value, done } = await result
+
+    /* check if done */
+    if (done) {
+      return
+    }
+
+    /* consume the value */
+    console.log(value)
+  } catch (e) {
+    /* catch errors */
+    console.error(e)
+
+    /* cancel subscription */
+    return Promise.reject()
+  }
+})
 ```
 
 ## `pullTake`
