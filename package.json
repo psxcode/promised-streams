@@ -11,8 +11,8 @@
     "cover": "NODE_ENV=test nyc mocha './*/test/*.spec.ts'",
     "test": "NODE_ENV=test mocha --require register.js './*/test/*.spec.ts'",
     "copy": "scripts/copy.sh",
-    "build:ps": "scripts/build.sh promise-streams",
-    "build:pst": "scripts/build.sh promise-streams-test"
+    "build:ps": "scripts/build.sh p-streams",
+    "build:pst": "scripts/build.sh p-streams-test"
   },
   "engines": {
     "node": ">=8"
