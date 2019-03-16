@@ -11,4 +11,5 @@ install:
 
 script:
   - yarn cover
+  - yarn nyc report --reporter=json
   - codecov -f coverage/*.json
