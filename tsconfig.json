@@ -10,7 +10,7 @@
     "inlineSourceMap": true
   },
   "include": [
-    "p-streams/src",
-    "p-streams-test/src",
+    "promised-streams/src",
+    "promised-streams-test/src",
   ]
 }
