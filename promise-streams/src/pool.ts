@@ -1,6 +1,6 @@
-import isPositiveNumber from '../../promise-streams-test/src/is-positive-number'
 import { IPool, IPoolOptions } from './types'
 import noop from './noop'
+import isPositiveNumber from './is-positive-number'
 
 const defaultOptions = {
   highWatermark: 64,
