@@ -1,6 +1,9 @@
 # Promise Streams
 Promise-based Streams with lots of RxJS-like operators
 
+[![codecov](https://codecov.io/gh/psxcode/promise-streams/branch/master/graph/badge.svg)](https://codecov.io/gh/psxcode/promise-streams)
+[![Build Status](https://travis-ci.org/psxcode/promise-streams.svg?branch=master)](https://travis-ci.org/psxcode/promise-streams)
+
 ## Install
 
 ```sh
