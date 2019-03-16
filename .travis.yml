@@ -5,4 +5,9 @@ node_js:
 
 cache: yarn
 
-script: yarn test
+install:
+  - npm install -g codecov
+
+script:
+  - yarn install && yarn cover
+  - codecov -f coverage/*.json
