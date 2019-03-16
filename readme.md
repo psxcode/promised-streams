@@ -96,7 +96,7 @@ This protocol implements lazy `Pull` type stream of values, with several limitat
 - Synchronous delivery, so data must be available at the moment of request
 
 ## Async Iterator Protocol
-Adding Javascript Promises to the Iterator Protocol, allows to carry additional information
+Adding Javascript Promises to the Iterator Protocol allows to carry additional information
 ```js
 const iterator = getIterator(data)
 
@@ -172,8 +172,6 @@ await consumeChunk(chunk.value)
 Thus making `producer` to wait for chunk to be actually processed, before sending next one.
 
 ## Interfaces
-`type AsyncIteratorResult <T> = Promise<IteratorResult<T>>`  
-Just a Promise to a standard IteratorResult object
 
 `type PushConsumer <T> = (value: Promise<IteratorResult<T>>) => Promise<void>`  
 `PushConsumer` is just a function which accepts a value and returns a `Promise` to have time to consume the chunk. This promise can be `rejected` to indicate error during data processing, or unsubscribe. Producer will immediately stop data delivery to unsubscribed consumer.
@@ -189,14 +187,17 @@ Just a Promise to a standard IteratorResult object
 
 # Creation
 ## `pullFromIterable`
-`<T> (iterable: Iterable<T>) => PullProducer<T>`
+Creates `Pull` type producer, which will stream data from standard Iterable.  
+> `<T> (iterable: Iterable<T>) => PullProducer<T>`
 ```js
 import { pullFromIterable } from 'promise-streams'
 
 const data = [0, 1, 2, 3]
+/* create PullProducer */
 const producer = pullFromIterable(data)
 
 try {
+  /* consume PullProducer */
   while (true) {
     const { value, done } = await producer()
 
@@ -212,7 +213,8 @@ try {
 ```
 
 ## `pushFromIterable`
-`<T> (iterable: Iterable<T>) => PushProducer<T>`
+Creates `Push` type producer, which will stream data from standard Iterable.  
+> `<T> (iterable: Iterable<T>) => PushProducer<T>`
 ```js
 import { pushFromIterable } from 'promise-streams'
 
@@ -243,7 +245,8 @@ await pushProducer(async (result) => {
 ```
 
 ## `pullFromStream`
-`<T> (stream: NodeJS.ReadableStream) => PullProducer<T>`
+Creates `Pull` type producer, which will deliver data from NodeJS stream.  
+> `<T> (stream: NodeJS.ReadableStream) => PullProducer<T>`
 ```js
 import { pullFromStream } from 'promise-streams'
 
@@ -251,6 +254,7 @@ const readable = createStream()
 const producer = pullFromStream(readable)
 
 try {
+  /* consume PullProducer */
   while (true) {
     const { value, done } = await producer()
 
@@ -266,7 +270,8 @@ try {
 ```
 
 ## `pushFromStream`
-`<T> (stream: NodeJS.ReadableStream) => PushProducer<T>`
+Creates `Push` type producer, which will deliver data from NodeJS stream.  
+> `<T> (stream: NodeJS.ReadableStream) => PushProducer<T>`
 ```js
 import { pushFromStream } from 'promise-streams'
 
@@ -299,19 +304,22 @@ await pushProducer(async (result) => {
 # Conversion
 
 ## `pool`
-Converts `Push` type producer to `Pull` type producer.
-`<T> (options: IPoolOptions) => IPool<T>`
+Converts `Push` type producer to `Pull` type producer.  
+> `<T> (options: IPoolOptions) => IPool<T>`
 ```js
 import { pool, pushFromIterable } from 'promise-streams'
 
 const data = [0, 1, 2, 3]
 const producer = pushFromIterable(data)
 
+/* create Pool, returning PullProducer and PushConsumer */
 const { pull, push } = pool({ highWatermark: 32 })
 
+/* begin pushing to Pool's PushConsumer */
 producer(push)
 
 try {
+  /* consume Pool's PullProducer */
   while (true) {
     const { value, done } = await pull()
 
@@ -327,8 +335,8 @@ try {
 ```
 
 ## `pump`
-Converts `Pull` type producer to `Push` type producer.
-`<T> (producer: PullProducer<T>) => PushProducer<T>`
+Converts `Pull` type producer to `Push` type producer.  
+> `<T> (producer: PullProducer<T>) => PushProducer<T>`
 ```js
 import { pump } from 'promise-streams'
 
@@ -365,14 +373,37 @@ await pushProducer(async (result) => {
 # Combination
 
 ## `pullConcat`
-`<T> (...producers: PullProducers<T>[]) => PullProducer<T>`
+Creates concatenated `Pull` producer, which will deliver data from provided producers sequentially. Once first producer is `done`, stream will switch to the next one. `done` chunk will be delivered once, when all producers are complete.
+> `<T> (...producers: PullProducers<T>[]) => PullProducer<T>`
 ```js
 import { pullConcat } from 'promise-streams'
+
+const pp0 = getPullProducer()
+const pp1 = getPullProducer()
+const pp2 = getPullProducer()
+
+/* create concatenated PullProducer */
+const concatenatedProducer = pullConcat(pp0, pp1, pp2)
+
+try {
+  /* consume PullProducer */
+  while (true) {
+    const { value, done } = await concatenatedProducer()
+
+    if (done) {
+      break
+    }
+
+    console.log(value)
+  }
+} catch (e) {
+  console.error(e)
+}
 ```
 
 ## `pushConcat`
 Concatenates all `Push` producers, creating single `Push` producer, which delivers the data from each, excluding `done`. End of stream is delivered once, at the end.
-`<T> (...producers: PushProducer<T>[]) => PushProducer<T>`
+> `<T> (...producers: PushProducer<T>[]) => PushProducer<T>`
 ```js
 import { pushConcat } from 'promise-streams'
 
@@ -407,19 +438,51 @@ await concatenatedProducer(async (result) => {
 ```
 
 ## `pullCombine`
-`<T> (...producers: PullProducers<T>[]) => PullProducer<T>`
+Creates combined `Pull` producer. Each latest chunk from provided producers is combined with others into an array, which is updated and delivered each time any of producers has new value. If one of producers ends, its latest value is remembered, and is delivered with values from other producers. Once all producers are `done`, the stream completes.
+> `<...> (...producers: PullProducers<...>[]) => PullProducer<[...]>`
 ```js
 import { pullCombine } from 'promise-streams'
+
+const pp0 = getPullProducer() // [0, 1]
+const pp1 = getPullProducer() // [2, 3]
+const pp2 = getPullProducer() // [4, 5]
+
+/* create PullProducer */
+const combinedProducer = pullCombine(pp0, pp1, pp2)
+
+try {
+  /* consume PullProducer */
+  while (true) {
+    const { value, done } = await combinedProducer()
+
+    if (done) {
+      break
+    }
+
+    console.log(value)
+
+    /* Values will be delivered in order */
+    // [0, undefined, undefined]
+    // [0, 2, undefined]
+    // [0, 2, 4]
+    // [1, 2, 4]
+    // [1, 3, 4]
+    // [1, 3, 5]
+  }
+} catch (e) {
+  console.error(e)
+}
 ```
 
 ## `pushCombine`
-`<...> (...producers: PushProducer<...>[]) => PushProducer<[...]>`
+Creates combined `Push` producer. Each latest chunk from provided producers is combined with others into an array, which is updated and delivered each time any of producers has new value. If one of producers ends, its latest value is remembered, and is delivered with values from other producers. Once all producers are `done`, the stream completes.
+> `<...> (...producers: PushProducer<...>[]) => PushProducer<[...]>`
 ```js
 import { pushCombine } from 'promise-streams'
 
-const pp0 = getPushProducer()
-const pp1 = getPushProducer()
-const pp2 = getPushProducer()
+const pp0 = getPushProducer() // [0, 1]
+const pp1 = getPushProducer() // [2, 3]
+const pp2 = getPushProducer() // [4, 5]
 
 /* create combined PushProducer */
 const combinedProducer = pushCombine(pp0, pp1, pp2)
@@ -437,6 +500,14 @@ await combinedProducer(async (result) => {
 
     /* consume the value */
     console.log(value)
+
+    /* Values will be delivered in order */
+    // [0, undefined, undefined]
+    // [0, 2, undefined]
+    // [0, 2, 4]
+    // [1, 2, 4]
+    // [1, 3, 4]
+    // [1, 3, 5]
   } catch (e) {
     /* catch errors */
     console.error(e)
@@ -448,13 +519,37 @@ await combinedProducer(async (result) => {
 ```
 
 ## `pullMerge`
-`<T> (...producers: PullProducers<T>[]) => PullProducer<T>`
+Creates `Pull` producer, which delivers values from provided producers as soon as available, so the values from all producers are mixed with each other in the resulting stream. Stream ends when all producers are complete.
+> `<...> (...producers: PullProducers<...>[]) => PullProducer<...>`
 ```js
 import { pullMerge } from 'promise-streams'
+
+const pp0 = getPullProducer()
+const pp1 = getPullProducer()
+const pp2 = getPullProducer()
+
+/* create merged PullProducer */
+const mergedProducer = pullMerge(pp0, pp1, pp2)
+
+try {
+  /* consume PullProducer */
+  while (true) {
+    const { value, done } = await mergedProducer()
+
+    if (done) {
+      break
+    }
+
+    console.log(value)
+  }
+} catch (e) {
+  console.error(e)
+}
 ```
 
 ## `pushMerge`
-`<T> (...producers: PushProducer<T>[]) => PushProducer<T>`
+Creates `Push` producer, which delivers values from provided producers as soon as available, so the values from all producers are mixed with each other in the resulting stream. Stream ends when all producers are complete.
+> `<...> (...producers: PushProducer<...>[]) => PushProducer<...>`
 ```js
 import { pushMerge } from 'promise-streams'
 
@@ -489,13 +584,34 @@ await mergedProducer(async (result) => {
 ```
 
 ## `pullStartWith`
-`<T> (...values: T[]) => (producer: PullProducer<T>) => PullProducer<T>`
+Creates `Pull` producer, which will stream values starting with provided ones.
+> `<T> (...values: T[]) => (producer: PullProducer<T>) => PullProducer<T>`
 ```js
 import { pullStartWith } from 'promise-streams'
+
+const producer = getPullProducer()
+/* create PullProducer */
+const startWithProducer = pullStartWith(producer)
+
+try {
+  /* consume PullProducer */
+  while (true) {
+    const { value, done } = await startWithProducer()
+
+    if (done) {
+      break
+    }
+
+    console.log(value)
+  }
+} catch (e) {
+  console.error(e)
+}
 ```
 
 ## `pushStartWith`
-`<T> (...values: T[]) => (consumer: PushConsumer<T>) => PushConsumer<T>`
+Creates `Push` producer, which will stream values starting with provided ones.
+> `<T> (...values: T[]) => (consumer: PushConsumer<T>) => PushConsumer<T>`
 ```js
 import { pushStartWith } from 'promise-streams'
 
@@ -527,13 +643,38 @@ await startWithProducer(async (result) => {
 ```
 
 ## `pullWithLatest`
-`<...> (...producers: PullProducer<...>[]) => <T>(mainProducer: PullProducer<T>) => PullProducer<[T, ...]>`
+Creates `Pull` producer, which streams values from `mainProducer`, combined with latest values from provided producers. Only `mainProducer` can initiate chunk delivery. Stream ends when `mainProducer` completes.
+> `<...> (...producers: PullProducer<...>[]) => <T>(mainProducer: PullProducer<T>) => PullProducer<[T, ...]>`
 ```js
 import { pullWithLatest } from 'promise-streams'
+
+const pp0 = getPullProducer()
+const pp1 = getPullProducer()
+const pp2 = getPullProducer()
+const mainProducer = getPullProducer()
+
+/* create PullProducer */
+const withLatestProducer = pullWithLatest(pp0, pp1, pp2)(mainProducer)
+
+try {
+  /* consume PullProducer */
+  while (true) {
+    const { value, done } = await withLatestProducer()
+
+    if (done) {
+      break
+    }
+
+    console.log(value)
+  }
+} catch (e) {
+  console.error(e)
+}
 ```
 
 ## `pushWithLatest`
-`<...> (...producers: PushProducer<...>[]) => <T> (mainProducer: PushProducer<T>) => PushProducer<T, ...>`
+Creates `Push` producer, which streams values from `mainProducer`, combined with latest values from provided producers. Only `mainProducer` can initiate chunk delivery. Stream ends when `mainProducer` completes.
+> `<...> (...producers: PushProducer<...>[]) => <T> (mainProducer: PushProducer<T>) => PushProducer<T, ...>`
 ```js
 import { pushWithLatest } from 'promise-streams'
 
@@ -568,13 +709,37 @@ await withLatestProducer(async (result) => {
 ```
 
 ## `pullZip`
-`<...> (...producers: PullProducer<...>[]) => PullProducer<[...]>`
+Creates `Pull` producer, which combines values from provided producers, to be delivered strictly in sync. Stream ends when one of producers completes.
+> `<...> (...producers: PullProducer<...>[]) => PullProducer<[...]>`
 ```js
 import { pullZip } from 'promise-streams'
+
+const pp0 = getPullProducer()
+const pp1 = getPullProducer()
+const pp2 = getPullProducer()
+
+/* create PullProducer */
+const zippedProducer = pullZip(pp0, pp1, pp2)
+
+try {
+  /* consume PullProducer */
+  while (true) {
+    const { value, done } = await zippedProducer()
+
+    if (done) {
+      break
+    }
+
+    console.log(value)
+  }
+} catch (e) {
+  console.error(e)
+}
 ```
 
 ## `pushZip`
-`<...> (...producers: PushProducer<...>[]) => PushProducer<[...]>`
+Creates `Push` producer, which combines values from provided producers, to be delivered strictly in sync. Stream ends when one of producers completes.
+> `<...> (...producers: PushProducer<...>[]) => PushProducer<[...]>`
 ```js
 import { pushZip } from 'promise-streams'
 
@@ -611,13 +776,37 @@ await zippedProducer(async (result) => {
 # Filtering
 
 ## `pullFilter`
-`<T> (predicate: (arg: T) => Promise<boolean> | boolean) => (producer: PullProducer<T>) => PullProducer<T>`
+Creates `Pull` producer, which streams data, filtered by provided predicate function.
+> `<T> (predicate: (arg: T) => Promise<boolean> | boolean) => (producer: PullProducer<T>) => PullProducer<T>`
 ```js
 import { pullFilter } from 'promise-streams'
+
+const producer = getPullProducer()
+
+const isEven = x => x % 2 === 0
+
+/* create filtered producer */
+const filteredProducer = pullFilter(isEven)(producer)
+
+try {
+  /* consume PullProducer */
+  while (true) {
+    const { value, done } = await filteredProducer()
+
+    if (done) {
+      break
+    }
+
+    console.log(value)
+  }
+} catch (e) {
+  console.error(e)
+}
 ```
 
 ## `pushFilter`
-`<T> (predicate: (arg: T) => Promise<boolean> | boolean) => (consumer: PushConsumer<T>) => PushConsumer<T>`
+Creates `Push` producer, which streams data, filtered by provided predicate function.
+> `<T> (predicate: (arg: T) => Promise<boolean> | boolean) => (consumer: PushConsumer<T>) => PushConsumer<T>`
 ```js
 import { pushFilter } from 'promise-streams'
 
@@ -652,13 +841,36 @@ await filteredProducer(async (result) => {
 ```
 
 ## `pullDistinct`
-`<T> (isAllowed: (prev: T, next: T) => Promise<boolean> | boolean) => (producer: PullProducer<T>) => PullProducer<T>`
+Creates `Pull` producer, which streams data, filtered by provided `isAllowed` function.
+> `<T> (isAllowed: (prev: T, next: T) => Promise<boolean> | boolean) => (producer: PullProducer<T>) => PullProducer<T>`
 ```js
 import { pullDistinct } from 'promise-streams'
+
+const isAllowed = (prev, next) => prev !== next
+
+const producer = getPullProducer()
+/* create filtered PullProducer */
+const filteredProducer = pullDistinct(isAllowed)(producer)
+
+try {
+  /* consume PullProducer */
+  while (true) {
+    const { value, done } = await filteredProducer()
+
+    if (done) {
+      break
+    }
+
+    console.log(value)
+  }
+} catch (e) {
+  console.error(e)
+}
 ```
 
 ## `pushDistinct`
-`<T> (isAllowed: (prev: T, next: T) => Promise<boolean> | boolean) => (consumer: PushConsumer<T>) => PushConsumer<T>`
+Creates `Push` producer, which streams data, filtered by provided `isAllowed` function.
+> `<T> (isAllowed: (prev: T, next: T) => Promise<boolean> | boolean) => (consumer: PushConsumer<T>) => PushConsumer<T>`
 ```js
 import { pushDistinct } from 'promise-streams'
 
@@ -692,13 +904,34 @@ await filteredProducer(async (result) => {
 ```
 
 ## `pullDistinctUntilChanged`
+Creates `Pull` producer, passing only chunks which are different than previous one.
 `<T> (producer: PullProducer<T>) => PullProducer<T>`
 ```js
 import { pullDistinctUntilChanged } from 'promise-streams'
+
+const producer = getPullProducer()
+/* create filtered PullProducer */
+const filteredProducer = pullDistinctUntilChanged(producer)
+
+try {
+  /* consume PullProducer */
+  while (true) {
+    const { value, done } = await filteredProducer()
+
+    if (done) {
+      break
+    }
+
+    console.log(value)
+  }
+} catch (e) {
+  console.error(e)
+}
 ```
 
 ## `pushDistinctUntilChanged`
-`<T> (consumer: PushConsumer<T>) => PushConsumer<T>`
+Creates `Push` producer, passing only chunks which are different than previous one.
+> `<T> (consumer: PushConsumer<T>) => PushConsumer<T>`
 ```js
 import { pushDistinctUntilChanged } from 'promise-streams'
 
@@ -730,13 +963,34 @@ await pushProducer(async (result) => {
 ```
 
 ## `pullUnique`
-`<T> (producer: PullProducer<T>) => PullProducer<T>`
+Creates `Pull` producer, passing only chunks which are unique to whole previous sequence.
+> `<T> (producer: PullProducer<T>) => PullProducer<T>`
 ```js
 import { pullUnique } from 'promise-streams'
+
+const producer = getPullProducer()
+/* create filtered PullProducer */
+const filteredProducer = pullUnique(producer)
+
+try {
+  /* consume PullProducer */
+  while (true) {
+    const { value, done } = await filteredProducer()
+
+    if (done) {
+      break
+    }
+
+    console.log(value)
+  }
+} catch (e) {
+  console.error(e)
+}
 ```
 
 ## `pushUnique`
-`<T> (consumer: PushConsumer<T>) => PushConsumer<T>`
+Creates `Push` producer, passing only chunks which are unique to whole previous sequence.
+> `<T> (consumer: PushConsumer<T>) => PushConsumer<T>`
 ```js
 import { pushUnique } from 'promise-streams'
 
@@ -768,7 +1022,8 @@ await filteredProducer(async (result) => {
 ```
 
 ## `pushDebounce`
-`(wait: WaitFn) => <T> (consumer: PushConsumer<T>): PushConsumer<T>`
+Creates `Push` producer, debouncing the sequence of chunks by `WaitFn` function.
+> `(wait: WaitFn) => <T> (consumer: PushConsumer<T>): PushConsumer<T>`
 ```js
 import { pushDebounce } from 'promise-streams'
 
@@ -802,7 +1057,8 @@ await debouncedProducer(async (result) => {
 ```
 
 ## `pushDebounceTime`
-`(ms: number) => <T> (consumer: PushConsumer<T>) => PushConsumer<T>`
+Creates `Push` producer, debouncing the sequence of chunks by time interval provided.
+> `(ms: number) => <T> (consumer: PushConsumer<T>) => PushConsumer<T>`
 ```js
 import { pushDebounceTime } from 'promise-streams'
 
@@ -834,7 +1090,8 @@ await debouncedProducer(async (result) => {
 ```
 
 ## `pushThrottle`
-`(wait: WaitFn) => <T> (consumer: PushConsumer<T>) => PushConsumer<T>`
+Creates `Push` producer, throttling the sequence of chunks by `WaitFn` function.
+> `(wait: WaitFn) => <T> (consumer: PushConsumer<T>) => PushConsumer<T>`
 ```js
 import { pushThrottle } from 'promise-streams'
 
@@ -868,7 +1125,8 @@ await throttledProducer(async (result) => {
 ```
 
 ## `pushThrottleTime`
-`(ms: number) => <T> (consumer: PushConsumer<T>) => PushConsumer<T>`
+Creates `Push` producer, throttling the sequence of chunks by time interval provided.
+> `(ms: number) => <T> (consumer: PushConsumer<T>) => PushConsumer<T>`
 ```js
 import { pushThrottleTime } from 'promise-streams'
 
@@ -899,17 +1157,205 @@ await throttledProducer(async (result) => {
 ```
 
 ## `pullSkip`
-`(numSkip: number) => <T> (producer: PullProducer<T>) => PullProducer<T>`
+Creates `Pull` provider, which skips certain number of chunks in the beginning of sequence. If negative skip value was provided, the chunks will be skipped from the end of sequence.
+> `(numSkip: number) => <T> (producer: PullProducer<T>) => PullProducer<T>`
 ```js
 import { pullSkip } from 'promise-streams'
+
+const producer = getPullProducer()
+/* skip first 3 items */
+const filteredProducer = pullSkip(3)(producer)
+
+try {
+  /* consume PullProducer */
+  while (true) {
+    const { value, done } = await filteredProducer()
+
+    if (done) {
+      break
+    }
+
+    console.log(value)
+  }
+} catch (e) {
+  console.error(e)
+}
+```
+If negative skip value was provided, the chunks will be skipped from the end of sequence.
+```js
+import { pullSkip } from 'promise-streams'
+
+const producer = getPullProducer()
+/* skip last 3 items */
+const filteredProducer = pullSkip(-3)(producer)
+
+try {
+  /* consume PullProducer */
+  while (true) {
+    const { value, done } = await filteredProducer()
+
+    if (done) {
+      break
+    }
+
+    console.log(value)
+  }
+} catch (e) {
+  console.error(e)
+}
 ```
 
 ## `pushSkip`
-`(numSkip: number) => <T> (consumer: PushConsumer<T>) => PushConsumer<T>`
+Creates `Push` provider, which skips certain number of chunks in the beginning of sequence. If negative skip value was provided, the chunks will be skipped from the end of sequence.
+> `(numSkip: number) => <T> (consumer: PushConsumer<T>) => PushConsumer<T>`
 ```js
 import { pushSkip } from 'promise-streams'
 
 const producer = getPushProducer()
+/* skip first 3 items */
+const skippedProducer = pushSkip(3)(producer)
+
+/* subscribe to PushProducer */
+await skippedProducer(async (result) => {
+  try {
+    /* unwrap the value */
+    const { value, done } = await result
+
+    /* check if done */
+    if (done) {
+      return
+    }
+
+    /* consume the value */
+    console.log(value)
+  } catch (e) {
+    /* catch errors */
+    console.error(e)
+
+    /* cancel subscription */
+    return Promise.reject()
+  }
+})
+```
+If negative skip value was provided, the chunks will be skipped from the end of sequence.
+```js
+import { pushSkip } from 'promise-streams'
+
+const producer = getPushProducer()
+/* skip last 3 items */
+const skippedProducer = pushSkip(-3)(producer)
+
+/* subscribe to PushProducer */
+await skippedProducer(async (result) => {
+  try {
+    /* unwrap the value */
+    const { value, done } = await result
+
+    /* check if done */
+    if (done) {
+      return
+    }
+
+    /* consume the value */
+    console.log(value)
+  } catch (e) {
+    /* catch errors */
+    console.error(e)
+
+    /* cancel subscription */
+    return Promise.reject()
+  }
+})
+```
+
+## `pullTake`
+Creates `Pull` provider, which takes only certain number of chunks in the beginning of sequence. If negative take value was provided, the chunks will be taken from the end of sequence.
+> `(numTake: number) => <T> (producer: PullProducer<T>) => PullProducer<T>`
+```js
+import { pullTake } from 'promise-streams'
+
+const producer = getPullIterable()
+/* take first 3 items */
+const filteredProducer = pullTake(3)(producer)
+
+try {
+  /* consume PullProducer */
+  while (true) {
+    const { value, done } = await filteredProducer()
+
+    if (done) {
+      break
+    }
+
+    console.log(value)
+  }
+} catch (e) {
+  console.error(e)
+}
+```
+If negative take value was provided, the chunks will be taken from the end of sequence.
+```js
+import { pullTake } from 'promise-streams'
+
+const producer = getPullIterable()
+/* take last 3 items */
+const filteredProducer = pullTake(-3)(producer)
+
+try {
+  /* consume PullProducer */
+  while (true) {
+    const { value, done } = await filteredProducer()
+
+    if (done) {
+      break
+    }
+
+    console.log(value)
+  }
+} catch (e) {
+  console.error(e)
+}
+```
+
+## `pushTake`
+Creates `Push` provider, which skips certain number of chunks in the beginning of sequence. If negative skip value was provided, the chunks will be skipped from the end of sequence.
+> `(numTake: number) => <T> (consumer: PushConsumer<T>) => PushConsumer<T>`
+```js
+import { pushTake } from 'promise-streams'
+
+const producer = getPushProducer()
+/* take first 3 items */
+const takeProducer = pushTake(3)(producer)
+
+/* subscribe to PushProducer */
+await pushProducer(async (result) => {
+  try {
+    /* unwrap the value */
+    const { value, done } = await result
+
+    /* check if done */
+    if (done) {
+      return
+    }
+
+    /* consume the value */
+    console.log(value)
+  } catch (e) {
+    /* catch errors */
+    console.error(e)
+
+    /* cancel subscription */
+    return Promise.reject()
+  }
+})
+```
+If negative take value was provided, the chunks will be taken from the end of sequence.
+```js
+import { pushTake } from 'promise-streams'
+
+const producer = getPushProducer()
+/* take last 3 items */
+const takeProducer = pushTake(-3)(producer)
 
 /* subscribe to PushProducer */
 await pushProducer(async (result) => {
@@ -934,52 +1380,187 @@ await pushProducer(async (result) => {
 })
 ```
 
-## `pullTake`
-`(numTake: number) => <T> (producer: PullProducer<T>) => PullProducer<T>`
-```js
-import { pullTake } from 'promise-streams'
-```
-
-## `pushTake`
-`(numTake: number) => <T> (consumer: PushConsumer<T>) => PushConsumer<T>`
-```js
-import { pushTake } from 'promise-streams'
-```
-
 # Transformation
 
 ## `pullMap`
-`<T, R> (xf: (arg: T) => Promise<R> | R) => (producer: PullProducer<T>) => PullProducer<R>`
+Creates `Pull` producer, which streams chunks transformed by `xf` function.
+> `<T, R> (xf: (arg: T) => Promise<R> | R) => (producer: PullProducer<T>) => PullProducer<R>`
 ```js
 import { pullMap } from 'promise-streams'
+
+const producer = getPullProducer()
+/* create PullProducer */
+const transformProducer = pullMap(x => x * 2)(producer)
+
+try {
+  /* consume PullProducer */
+  while (true) {
+    const { value, done } = await transformProducer()
+
+    if (done) {
+      break
+    }
+
+    console.log(value)
+  }
+} catch (e) {
+  console.error(e)
+}
 ```
 
 ## `pushMap`
-`<T, R> (xf: (arg: T) => Promise<R> | R) => (consumer: PushConsumer<R>) => PushConsumer<T>`
+Creates `Push` producer, which streams chunks transformed by `xf` function.
+> `<T, R> (xf: (arg: T) => Promise<R> | R) => (consumer: PushConsumer<R>) => PushConsumer<T>`
 ```js
 import { pushMap } from 'promise-streams'
+
+const producer = getPushProducer()
+/* create PushProducer */
+const transformProducer = pushMap(x => x * 2)(producer)
+
+/* subscribe to PushProducer */
+await transformProducer(async (result) => {
+  try {
+    /* unwrap the value */
+    const { value, done } = await result
+
+    /* check if done */
+    if (done) {
+      return
+    }
+
+    /* consume the value */
+    console.log(value)
+  } catch (e) {
+    /* catch errors */
+    console.error(e)
+
+    /* cancel subscription */
+    return Promise.reject()
+  }
+})
 ```
 
 ## `pullReduce`
-`<S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) => (producer: PullProducer<T>) => PullProducer<S>`
+Creates `Pull` producer, which will transform chunks by provided `reducer` function. The `reducer` will be invoked first time with no values provided, to get the initial state. The resulting stream will deliver exactly one chunk, at the end of sequence, with all values transformed through `reducer`, and the final state returned.
+> `<S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) => (producer: PullProducer<T>) => PullProducer<S>`
 ```js
 import { pullReduce } from 'promise-streams'
+
+const reducer = (acc, value) => acc !== undefined ? acc + value : 0
+
+const producer = getPullProducer(data)
+/* create PullProducer */
+const reducedProducer = pullReduce(reducer)(producer)
+
+try {
+  /* consume PullProducer */
+  while (true) {
+    const { value, done } = await reducedProducer()
+
+    if (done) {
+      break
+    }
+
+    console.log(value)
+  }
+} catch (e) {
+  console.error(e)
+}
 ```
 
 ## `pushReduce`
-`<S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) => (consumer: PushConsumer<S>) => PushConsumer<T>`
+Creates `Push` producer, which will transform chunks by provided `reducer` function. The `reducer` will be invoked first time with no values provided, to get the initial state. The resulting stream will deliver exactly one chunk, at the end of sequence, with all values transformed through `reducer`, and the final state returned.
+> `<S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) => (consumer: PushConsumer<S>) => PushConsumer<T>`
 ```js
 import { pushReduce } from 'promise-streams'
+
+const reducer = (acc, value) => acc !== undefined ? acc + value : 0
+
+const producer = getPushProducers()
+const reducedProducer = pushReduce(reducer)(producer)
+
+/* subscribe to PushProducer */
+await reducedProducer(async (result) => {
+  try {
+    /* unwrap the value */
+    const { value, done } = await result
+
+    /* check if done */
+    if (done) {
+      return
+    }
+
+    /* consume the value */
+    console.log(value)
+  } catch (e) {
+    /* catch errors */
+    console.error(e)
+
+    /* cancel subscription */
+    return Promise.reject()
+  }
+})
 ```
 
 ## `pullScan`
-`<S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) => (producer: PullProducer<T>) => PullProducer<S>`
+Creates `Pull` producer, which streams chunks transformed by `reducer` function. The `reducer` will be invoked first time with no values provided, to get the initial state. The resulting stream will deliver state on every new chunk passed to the `reducer`.
+> `<S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) => (producer: PullProducer<T>) => PullProducer<S>`
 ```js
 import { pullScan } from 'promise-streams'
+
+const reducer = (acc, value) => acc !== undefined ? acc + value : 0
+
+const producer = getPullProducer(data)
+/* create PullProducer */
+const reducedProducer = pullScan(reducer)(producer)
+
+try {
+  /* consume PullProducer */
+  while (true) {
+    const { value, done } = await reducedProducer()
+
+    if (done) {
+      break
+    }
+
+    console.log(value)
+  }
+} catch (e) {
+  console.error(e)
+}
 ```
 
 ## `pushScan`
-`<S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) => (consumer: PushConsumer<S>) => PushConsumer<T>`
+Creates `Push` producer, which streams chunks transformed by `reducer` function. The `reducer` will be invoked first time with no values provided, to get the initial state. The resulting stream will deliver state on every new chunk passed to the `reducer`.
+> `<S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) => (consumer: PushConsumer<S>) => PushConsumer<T>`
 ```js
 import { pushScan } from 'promise-streams'
+
+const reducer = (acc, value) => acc !== undefined ? acc + value : 0
+
+const producer = getPushProducers()
+const reducedProducer = pushScan(reducer)(producer)
+
+/* subscribe to PushProducer */
+await reducedProducer(async (result) => {
+  try {
+    /* unwrap the value */
+    const { value, done } = await result
+
+    /* check if done */
+    if (done) {
+      return
+    }
+
+    /* consume the value */
+    console.log(value)
+  } catch (e) {
+    /* catch errors */
+    console.error(e)
+
+    /* cancel subscription */
+    return Promise.reject()
+  }
+})
 ```

@@ -5,6 +5,7 @@ import fn from 'test-fn'
 import { pushConsumer, pushProducer } from 'promise-streams-test/src'
 import { pushMerge } from '../src'
 import makeNumbers from './make-numbers'
+import makeStrings from './make-strings'
 
 const consumerLog = debug('ai:consumer')
 const sinkLog = debug('ai:sink')
@@ -14,7 +15,7 @@ const producerLog = () => debug(`ai:producer${logIndex++}`)
 describe('[ pushMerge ]', () => {
   it('should work', async () => {
     const data0 = makeNumbers(2)
-    const data1 = makeNumbers(2)
+    const data1 = makeStrings(2)
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog })(spy)
     const r = pushMerge(
@@ -26,9 +27,9 @@ describe('[ pushMerge ]', () => {
 
     expect(spy.calls).deep.eq([
       [{ value: 0, done: false }],
-      [{ value: 0, done: false }],
+      [{ value: '0', done: false }],
       [{ value: 1, done: false }],
-      [{ value: 1, done: false }],
+      [{ value: '1', done: false }],
       [{ value: undefined, done: true }],
     ])
   })

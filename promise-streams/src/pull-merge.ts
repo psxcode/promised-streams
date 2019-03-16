@@ -4,14 +4,20 @@ import noop from './noop'
 
 const isValid = (obj: any) => !!obj
 
-const pullMerge = <T> (...producers: PullProducer<T>[]): PullProducer<T> => {
-  const activeProducers: (PullProducer<T> | null)[] = producers.slice()
-  const promises: (Promise<IteratorResult<T>> | null)[] = producers.map(() => null)
+function pullMerge (): PullProducer<any>
+function pullMerge <T0> (p0: PullProducer<T0>): PullProducer<T0>
+function pullMerge <T0, T1> (p0: PullProducer<T0>, p1: PullProducer<T1>): PullProducer<T0 | T1>
+function pullMerge <T0, T1, T2> (p0: PullProducer<T0>, p1: PullProducer<T1>, p2: PullProducer<T2>): PullProducer<T0 | T1 | T2>
+function pullMerge <T0, T1, T2, T3> (p0: PullProducer<T0>, p1: PullProducer<T1>, p2: PullProducer<T2>, p3: PullProducer<T3>): PullProducer<T0 | T1 | T2 | T3>
+
+function pullMerge (...producers: PullProducer<any>[]): PullProducer<any> {
+  const activeProducers: (PullProducer<any> | null)[] = producers.slice()
+  const promises: (Promise<IteratorResult<any>> | null)[] = producers.map(() => null)
   const race = racePromises()
 
   return async () => {
     while (activeProducers.some(isValid)) {
-      let result: IteratorResult<T>
+      let result: IteratorResult<any>
       let winnerIndex: number
 
       for (let i = 0 ; i < activeProducers.length; ++i) {
