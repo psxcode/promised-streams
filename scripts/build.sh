@@ -1,17 +1,28 @@
 #!/bin/bash
-usage(){
+usage() {
 	echo "Usage: $0 path"
 	exit 1
 }
 
-is_package_dir(){
+is_package_dir() {
 	local f="$1/package.json"
+
 	[[ -f "$f" ]] && return 0 || return 1
 }
 
-remove_build_dir(){
+remove_build_dir() {
   local f="$1/build"
+
   [[ -d "$f" ]] && rm -r "$f"
+}
+
+fix_src_suffix() {
+  local dir="$1"
+
+  for filename in "$dir"/*.{d.ts,js}; do
+    [ -e "$filename" ] || continue
+    sed -i '' "s/\/src'/'/g" "$filename"
+  done
 }
 
 # invoke  usage
@@ -22,12 +33,11 @@ remove_build_dir(){
 if ( is_package_dir "$1" )
 then
   remove_build_dir "$1"
-  srcPath="$1/src"
-  outDir="$1/build"
-  configPath="$PWD/$1/tsconfig.build.json"
 
-  node_modules/.bin/tsc -p $configPath
-  BABEL_ENV=production node_modules/.bin/babel $srcPath -d $outDir -x '.ts'
+  node_modules/.bin/tsc -p "$1/tsconfig.build.json"
+  BABEL_ENV=production node_modules/.bin/babel "$1/src" -d "$1/build" -x '.ts'
+
+  fix_src_suffix "$1/build"
 else
  echo "File not found"
  exit 1
