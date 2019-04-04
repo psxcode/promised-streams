@@ -1,13 +1,13 @@
 #!/bin/bash
 usage() {
-	echo "Usage: $0 path"
-	exit 1
+  echo "Usage: $0 path"
+  exit 1
 }
 
 is_package_dir() {
-	local f="$1/package.json"
+  local f="$1/package.json"
 
-	[[ -f "$f" ]] && return 0 || return 1
+  [[ -f "$f" ]] && return 0 || return 1
 }
 
 remove_build_dir() {
@@ -30,8 +30,7 @@ fix_src_suffix() {
 [[ $# -eq 0 ]] && usage
 
 # Invoke is_file_exits
-if ( is_package_dir "$1" )
-then
+if (is_package_dir "$1"); then
   remove_build_dir "$1"
 
   node_modules/.bin/tsc -p "$1/tsconfig.build.json"
@@ -39,6 +38,6 @@ then
 
   fix_src_suffix "$1/build"
 else
- echo "File not found"
- exit 1
+  echo "File not found"
+  exit 1
 fi
