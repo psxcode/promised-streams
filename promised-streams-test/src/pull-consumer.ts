@@ -18,6 +18,10 @@ const pullConsumer = ({ log = noop, delay, continueOnError }: AsyncPullConsumerO
 
     return async <T> (producer: PullProducer<T>) => {
       while (true) {
+        if (isPositiveNumber(delay)) {
+          await wait(delay)
+        }
+
         log(`pulling value ${i}`)
         let air: Promise<IteratorResult<T>>
         try {
@@ -57,10 +61,6 @@ const pullConsumer = ({ log = noop, delay, continueOnError }: AsyncPullConsumerO
         log(ir.done
           ? `resolved to done at step ${i}`
           : `resolved value at step ${i}`)
-
-        if (isPositiveNumber(delay)) {
-          await wait(delay)
-        }
 
         sink(ir)
 
