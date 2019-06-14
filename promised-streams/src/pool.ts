@@ -3,7 +3,7 @@ import noop from './noop'
 import isPositiveNumber from './is-positive-number'
 
 const defaultOptions = {
-  highWatermark: 64,
+  highWatermark: 0,
 }
 
 const pool = <T> ({ highWatermark }: IPoolOptions = defaultOptions): IPool<T> => {
@@ -22,6 +22,7 @@ const pool = <T> ({ highWatermark }: IPoolOptions = defaultOptions): IPool<T> =>
       }
 
       values.push(result)
+
       if (consumerResolve) {
         consumerResolve(values.shift()!)
         consumerResolve = undefined
@@ -31,7 +32,7 @@ const pool = <T> ({ highWatermark }: IPoolOptions = defaultOptions): IPool<T> =>
         return consumerCancel
       }
 
-      if (isPositiveNumber(highWatermark) && highWatermark > 0 && values.length >= highWatermark) {
+      if (isPositiveNumber(highWatermark) && values.length > 0 && values.length >= highWatermark) {
         return new Promise((resolve) => {
           producerResolve = resolve
         })
