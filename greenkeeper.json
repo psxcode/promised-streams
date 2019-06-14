@@ -1,0 +1,10 @@
+{
+  "groups": {
+    "default": {
+      "packages": [
+        "package.json",
+        "promised-streams/package.json"
+      ]
+    }
+  }
+}
