@@ -12,12 +12,10 @@ module.exports = function (api) {
           },
         ],
         '@babel/preset-typescript',
-        'minify',
       ],
       plugins: [
         '@babel/plugin-transform-runtime',
       ],
-      sourceMaps: 'inline',
     }
   case 'test': {
     return {
