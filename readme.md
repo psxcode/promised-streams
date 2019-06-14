@@ -29,7 +29,7 @@ const pullProducer = pipedTransforms(
 /* consume PullProducer */
 while (true) {
   /* unwrap the value */
-  const { value, done } = await producer()
+  const { value, done } = await pullProducer()
 
   /* check if done */
   if (done) {
