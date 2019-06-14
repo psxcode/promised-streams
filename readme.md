@@ -2,7 +2,7 @@
 Promise-based Streams with `pressure` control, `Error` delivery and lots of `RxJS`-like operators.
 
 [![codecov](https://codecov.io/gh/psxcode/promised-streams/branch/master/graph/badge.svg)](https://codecov.io/gh/psxcode/promised-streams)
-[![Build Status](https://travis-ci.org/psxcode/promised-streams.svg?branch=master)](https://travis-ci.org/psxcode/promised-streams)
+[![Build Status](https://travis-ci.org/psxcode/promised-streams.svg?branch=master)](https://travis-ci.org/psxcode/promised-streams) [![Greenkeeper badge](https://badges.greenkeeper.io/psxcode/promised-streams.svg)](https://greenkeeper.io/)
 
 ## Install
 
