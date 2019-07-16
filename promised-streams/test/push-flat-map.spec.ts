@@ -4,17 +4,18 @@ import debug from 'debug'
 import fn from 'test-fn'
 import { waitTimePromise as wait } from '@psxcode/wait'
 import { pushConsumer, pushProducer } from 'promised-streams-test/src'
-import { pushFlatMap, pushFromIterable } from '../src'
+import { pushFlatMap } from '../src'
 import makeNumbers from './make-numbers'
 
 const producerLog = debug('ai:producer')
+const hoproducerLog = debug('ai:hoproducer')
 const consumerLog = debug('ai:consumer')
 const mapLog = debug('ai:map')
 const sinkLog = debug('ai:sink')
 const mult2 = (value: number) => {
   mapLog('mapping value')
 
-  return pushFromIterable([value, value])
+  return pushProducer({ log: hoproducerLog })([value, value])
 }
 
 const amult2 = async (value: number) => {
@@ -22,7 +23,7 @@ const amult2 = async (value: number) => {
   await wait(50)
   mapLog('mapping value done')
 
-  return pushFromIterable([value, value])
+  return pushProducer({ log: hoproducerLog })([value, value])
 }
 
 const emult2 = () => {
@@ -75,7 +76,7 @@ describe('[ pushFlatMap ]', () => {
     ])
   })
 
-  it('should deliver consumer cancel', async () => {
+  it.only('should deliver consumer cancel', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog, cancelAtStep: 1 })(spy)
