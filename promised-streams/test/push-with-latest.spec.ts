@@ -207,7 +207,7 @@ describe('[ pushWithLatest ]', () => {
     await r(w)
 
     expect(spy.calls).deep.eq([
-      [{ value: [0, 1, undefined], done: false }],
+      [{ value: [0, 3, undefined], done: false }],
       [{ value: [1, 3, 1], done: false }],
       [{ value: undefined, done: true }],
     ])

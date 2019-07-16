@@ -81,7 +81,7 @@ function pushMerge (...producers: PushProducer<any>[]): PushProducer<any> {
 
     await Promise.all(
       producers.map((p) => p(
-        (result) => new Promise(async (resolve) => {
+        (result) => new Promise((resolve) => {
           values.push({ result, resolve })
           consumeNextValue()
         })
