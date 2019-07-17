@@ -17,8 +17,8 @@ import { pullFromIterable, pullMap, pullFilter, pullTake } from 'promised-stream
 const data = [0, 1, 2, 3, 4]
 
 const pipedTransforms = pipe(
-  pullFilter(x => x % 2 === 0)
-  pullMap(x => x * 2)
+  pullFilter(x => x % 2 === 0),
+  pullMap(x => x * 2),
   pullTake(-1)
 )
 
@@ -49,8 +49,8 @@ const data = [0, 1, 2, 3, 4]
 
 const composedProducer = compose(
   pushFromIterable(data),
-  pushFilter(x => x % 2 === 0)
-  pushMap(x => x * 2)
+  pushFilter(x => x % 2 === 0),
+  pushMap(x => x * 2),
   pushTake(-1)
 )
 
@@ -1633,4 +1633,71 @@ await reducedProducer(async (result) => {
     return Promise.reject()
   }
 })
+```
+
+## `pushFlatten`
+Creates `Push` producer, 
+> `<T> (consumer: PushConsumer<T>) => PushConsumer<PushProducer<T>>`
+```js
+import { pushFlatten } from 'promised-streams'
+
+/* Get the Higher Order producer somehow */
+const producer = getHigherOrderPushProducer()
+
+/* subscribe to PushProducer */
+await producer(pushFlatten(async (result) => {
+  try {
+    /* unwrap the value */
+    const { value, done } = await result
+
+    /* check if done */
+    if (done) {
+      return
+    }
+
+    /* consume the value */
+    console.log(value)
+  } catch (e) {
+    /* catch errors */
+    console.error(e)
+
+    /* cancel subscription */
+    return Promise.reject()
+  }
+}))
+```
+
+## `pushFlatMap`
+Creates `Push` producer, 
+> <T, R> (xf: (arg: T) => Promise<PushProducer<R>> | PushProducer<R>) => (consumer: PushConsumer<R>): PushConsumer<T>
+```js
+import { pushFlatMap } from 'promised-streams'
+
+const producer = getPushProducer()
+const mapAndFlatten = pushFlatMap(
+  /* map to another pushProducer, creating Higher Order producer, and Flatten */
+  (value: number) => getPushProducer(value)
+)
+
+/* subscribe to PushProducer */
+await producer(mapAndFlatten(async (result) => {
+  try {
+    /* unwrap the value */
+    const { value, done } = await result
+
+    /* check if done */
+    if (done) {
+      return
+    }
+
+    /* consume the value */
+    console.log(value)
+  } catch (e) {
+    /* catch errors */
+    console.error(e)
+
+    /* cancel subscription */
+    return Promise.reject()
+  }
+}))
 ```
