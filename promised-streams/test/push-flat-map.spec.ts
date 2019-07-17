@@ -76,7 +76,7 @@ describe('[ pushFlatMap ]', () => {
     ])
   })
 
-  it.only('should deliver consumer cancel', async () => {
+  it('should deliver consumer cancel', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog, cancelAtStep: 1 })(spy)

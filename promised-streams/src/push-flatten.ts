@@ -15,6 +15,17 @@ const stripDone = (consumer: PushConsumer<any>): PushConsumer<any> => async (res
   return consumer(result)
 }
 
+const pushDoResult = (doFunction: (result: Promise<void>) => void) => (consumer: PushConsumer<any>): PushConsumer<any> => async (result) => {
+  const consumerResult = consumer(result)
+
+  try {
+    doFunction(consumerResult)
+  } catch {
+  }
+
+  return consumerResult
+}
+
 const pushFlatten = <T> (consumer: PushConsumer<T>): PushConsumer<PushProducer<T>> =>
   async (result) => {
     let ir: IteratorResult<PushProducer<T>>
@@ -28,7 +39,10 @@ const pushFlatten = <T> (consumer: PushConsumer<T>): PushConsumer<PushProducer<T
       return consumer(result as any)
     }
 
-    return ir.value(stripDone(consumer))
+    let consumerResult = Promise.resolve()
+    await ir.value(pushDoResult((result) => consumerResult = result)(stripDone(consumer)))
+
+    return consumerResult
   }
 
 export default pushFlatten
