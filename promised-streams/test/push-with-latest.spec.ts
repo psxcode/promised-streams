@@ -193,13 +193,13 @@ describe('[ pushWithLatest ]', () => {
 
   it('should propagate producer error to consumer and continue', async () => {
     const data0 = makeNumbers(4)
-    const data1 = makeNumbers(2)
-    const dataMain = makeNumbers(2)
+    const data1 = makeNumbers(3)
+    const dataMain = makeNumbers(3)
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog, continueOnError: true })(spy)
     const r = pushWithLatest(
       pushProducer({ log: producerLog() })(data0),
-      pushProducer({ log: producerLog(), errorAtStep: 0 })(data1)
+      pushProducer({ log: producerLog(), errorAtStep: 1 })(data1)
     )(
       pushProducer({ log: mainProducerLog() })(dataMain)
     )
@@ -207,8 +207,9 @@ describe('[ pushWithLatest ]', () => {
     await r(w)
 
     expect(spy.calls).deep.eq([
-      [{ value: [0, 1, undefined], done: false }],
-      [{ value: [1, 3, 1], done: false }],
+      [{ value: [0, 0, 0], done: false }],
+      [{ value: [1, 3, 0], done: false }],
+      [{ value: [2, 3, 2], done: false }],
       [{ value: undefined, done: true }],
     ])
   })
