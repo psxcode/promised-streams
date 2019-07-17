@@ -123,7 +123,9 @@ await composedProducer(async (result) => {
   - [`pushReduce`](#pushreduce)
   - [`pullScan`](#pullscan)
   - [`pushScan`](#pushscan)
+  - [`pullFlatten`](#pullflatten)
   - [`pushFlatten`](#pushflatten)
+  - [`pullFlatMap`](#pullflatmap)
   - [`pushFlatMap`](#pushflatmap)
 
 
