@@ -24,7 +24,7 @@ const addReducer = (state: string, value: number) => {
 }
 
 describe('[ composition ]', () => {
-  it('should work', async () => {
+  it('piped pull consumer', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
     const w = pullConsumer({ log: consumerLog })(spy)
@@ -43,7 +43,7 @@ describe('[ composition ]', () => {
     ])
   })
 
-  it('should work', async () => {
+  it('piped pull producer', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
     const w = pullConsumer({ log: consumerLog })(spy)
@@ -62,7 +62,7 @@ describe('[ composition ]', () => {
     ])
   })
 
-  it('should work', async () => {
+  it('composed push producer', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
     const w: PushConsumer<string> = pushConsumer({ log: consumerLog })(spy)
@@ -70,10 +70,10 @@ describe('[ composition ]', () => {
     const t1 = pushReduce(addReducer)
     const r = pushProducer({ log: producerLog, dataResolveDelay: 50 })(data)
 
-    const pipedTransforms = compose(t0, t1)
-    const pipedProducer = compose(r, t0, pipedTransforms)
+    const composedTransforms = compose(t0, t1)
+    const composedProducer = compose(r, t0, composedTransforms)
 
-    await pipedProducer(w)
+    await composedProducer(w)
 
     expect(spy.calls).deep.eq([
       [{ value: '04812', done: false }],
@@ -81,7 +81,7 @@ describe('[ composition ]', () => {
     ])
   })
 
-  it('should work', async () => {
+  it('composed push consumer', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
     const w: PushConsumer<string> = pushConsumer({ log: consumerLog })(spy)
@@ -89,10 +89,10 @@ describe('[ composition ]', () => {
     const t1 = pushReduce(addReducer)
     const r = pushProducer({ log: producerLog, dataResolveDelay: 50 })(data)
 
-    const pipedTransforms = compose(t0, t1)
-    const pipedConsumer = compose(t0, pipedTransforms)(w)
+    const composedTransforms = compose(t0, t1)
+    const composedConsumer = compose(t0, composedTransforms)(w)
 
-    await r(pipedConsumer)
+    await r(composedConsumer)
 
     expect(spy.calls).deep.eq([
       [{ value: '04812', done: false }],
