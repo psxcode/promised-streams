@@ -9,6 +9,8 @@ export { default as pushDistinctUntilChanged } from './push-distinct-until-chang
 export { default as pullDistinctUntilChanged } from './pull-distinct-until-changed'
 export { default as pushDistinct } from './push-distinct'
 export { default as pullDistinct } from './pull-distinct'
+export { default as pullDo } from './pull-do'
+export { default as pushDo } from './push-do'
 export { default as pushFilter } from './push-filter'
 export { default as pullFilter } from './pull-filter'
 export { default as pushFromIterable } from './push-from-iterable'
