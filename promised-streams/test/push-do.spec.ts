@@ -26,7 +26,7 @@ const errorDoFunc = () => {
 }
 
 
-describe.only('[ pushDo ]', () => {
+describe('[ pushDo ]', () => {
   it('should work', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)

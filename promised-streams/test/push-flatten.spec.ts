@@ -162,44 +162,45 @@ describe('[ pushFlatten ]', () => {
 
     expect(spy.calls).deep.eq([])
   })
-})
 
-it('should deliver sub-producer error to consumer and continue', async () => {
-  const data = makeNumbers(4)
-  const spy = fn(sinkLog)
-  const w = pushConsumer({ log: consumerLog, continueOnError: true })(spy)
-  const t0 = pushMap((value: number) => {
-    mapLog('mapping value')
+  it('should deliver sub-producer error to consumer and continue', async () => {
+    const data = makeNumbers(4)
+    const spy = fn(sinkLog)
+    const w = pushConsumer({ log: consumerLog, continueOnError: true })(spy)
+    const t0 = pushMap((value: number) => {
+      mapLog('mapping value')
 
-    return pushProducer({ log: hoproducerLog, errorAtStep: 1 })([value, value])
+      return pushProducer({ log: hoproducerLog, errorAtStep: 1 })([value, value])
+    })
+    const t1 = pushFlatten
+    const r = pushProducer({ log: producerLog })(data)
+
+    await r(t0(t1(w)))
+
+    expect(spy.calls).deep.eq([
+      [{ value: 0, done: false }],
+      [{ value: 1, done: false }],
+      [{ value: 2, done: false }],
+      [{ value: 3, done: false }],
+      [{ value: undefined, done: true }],
+    ])
   })
-  const t1 = pushFlatten
-  const r = pushProducer({ log: producerLog })(data)
 
-  await r(t0(t1(w)))
+  it('should deliver mapper error to consumer and continue', async () => {
+    const data = makeNumbers(2)
+    const spy = fn(sinkLog)
+    const w = pushConsumer({ log: consumerLog, continueOnError: true })(spy)
+    const t0 = pushMap(emult2)
+    const t1 = pushFlatten
+    const r = pushProducer({ log: producerLog })(data)
 
-  expect(spy.calls).deep.eq([
-    [{ value: 0, done: false }],
-    [{ value: 1, done: false }],
-    [{ value: 2, done: false }],
-    [{ value: 3, done: false }],
-    [{ value: undefined, done: true }],
-  ])
+    await r(t0(t1(w)))
+
+    expect(spy.calls).deep.eq([
+      [{ value: 1, done: false }],
+      [{ value: 1, done: false }],
+      [{ value: undefined, done: true }],
+    ])
+  })
 })
 
-it('should deliver mapper error to consumer and continue', async () => {
-  const data = makeNumbers(2)
-  const spy = fn(sinkLog)
-  const w = pushConsumer({ log: consumerLog, continueOnError: true })(spy)
-  const t0 = pushMap(emult2)
-  const t1 = pushFlatten
-  const r = pushProducer({ log: producerLog })(data)
-
-  await r(t0(t1(w)))
-
-  expect(spy.calls).deep.eq([
-    [{ value: 1, done: false }],
-    [{ value: 1, done: false }],
-    [{ value: undefined, done: true }],
-  ])
-})

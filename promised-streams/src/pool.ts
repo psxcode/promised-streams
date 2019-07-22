@@ -3,7 +3,7 @@ import noop from './noop'
 import isPositiveNumber from './is-positive-number'
 
 const defaultOptions = {
-  highWatermark: 0,
+  highWatermark: -1,
 }
 
 const pool = <T> ({ highWatermark }: IPoolOptions = defaultOptions): IPool<T> => {

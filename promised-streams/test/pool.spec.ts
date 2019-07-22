@@ -30,7 +30,7 @@ describe('[ pool ]', () => {
     ])
   })
 
-  it('should handle separate connection', async () => {
+  it('should handle separate connection: consumer then producer', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
     const w = pullConsumer({ log: consumerLog })(spy)
@@ -58,7 +58,7 @@ describe('[ pool ]', () => {
     ])
   })
 
-  it('should handle separate connection', async () => {
+  it('should handle separate connection: producer then consumer', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
     const w = pullConsumer({ log: consumerLog })(spy)
