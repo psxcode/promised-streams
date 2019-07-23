@@ -127,9 +127,9 @@ await composedProducer(async (result) => {
   - [`pushFlatten`](#pushflatten)
   - [`pullFlatMap`](#pullflatmap)
   - [`pushFlatMap`](#pushflatmap)
-- [Side Effects](#sideeffects)
-  -[`pullDo`](#pulldo)
-  -[`pushDo`](#pushdo)
+- [Side Effects](#side-effects)
+  - [`pullDo`](#pulldo)
+  - [`pushDo`](#pushdo)
 
 
 ## Terminology
