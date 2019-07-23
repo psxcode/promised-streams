@@ -127,6 +127,9 @@ await composedProducer(async (result) => {
   - [`pushFlatten`](#pushflatten)
   - [`pullFlatMap`](#pullflatmap)
   - [`pushFlatMap`](#pushflatmap)
+- [Side Effects](#sideeffects)
+  -[`pullDo`](#pulldo)
+  -[`pushDo`](#pushdo)
 
 
 ## Terminology
@@ -1915,7 +1918,7 @@ const producer = pullFromIterable([0, 1, 2])
 
 const mapAndFlatten = pullFlatMap(
   /* map to another pullProducer, creating Higher Order producer, and Flatten */
-  (value: number) => pullFromIterable([value, value])
+  (value) => pullFromIterable([value, value])
 )
 
 const flattenedProducer = mapAndFlatten(producer)
@@ -1954,7 +1957,7 @@ const producer = pushFromIterable([0, 1, 2])
 
 const mapAndFlatten = pushFlatMap(
   /* map to another pushProducer, creating Higher Order producer, and Flatten */
-  (value: number) => pushFromIterable([value, value])
+  (value) => pushFromIterable([value, value])
 )
 
 const flattenedProducer = compose(
@@ -1992,3 +1995,85 @@ await flattenedProducer(async (result) => {
   }
 })
 ```
+
+# Side Effects
+
+## `pullDo`
+Creates `Pull` producer, 
+> \<T> (doFunction: (arg: T) => Promise<void> | void) => (producer: PullProducer<T>): PullProducer<T>
+```js
+import { pullDo, pullFromIterable } from 'promised-streams'
+
+const producer = pullFromIterable([0, 1, 2, 3])
+
+const sideEffectProducer = pullDo(
+  /* waits until fetch promise resolves */
+  (value) => fetch(`http://hostname:3000?value=${value}`)
+)(producer)
+
+try {
+  /* consume PullProducer */
+  while (true) {
+    const { value, done } = await sideEffectProducer()
+
+    if (done) {
+      break
+    }
+
+    console.log(value)
+
+    /* Values will be delivered in order */
+    // 0
+    // 1
+    // 2
+    // 3
+  }
+} catch (e) {
+  console.error(e)
+}
+```
+## `pushDo`
+Creates `Push` producer, 
+> <T> (doFunction: (result: T) => void | Promise<void>) => (consumer: PushConsumer<T>): PushConsumer<T>
+```js
+import { pushDo, pushFromIterable } from 'promised-streams'
+
+const producer = pushFromIterable([0, 1, 2, 3])
+
+const sideEffects = pushDo(
+  /* waits until fetch promise resolves */
+  (value) => fetch(`http://hostname:3000?value=${value}`)
+)
+
+const sideEffectProducer = compose(
+  producer,
+  sideEffects
+)
+
+/* subscribe to PushProducer */
+await sideEffectProducer(async (result) => {
+  try {
+    /* unwrap the value */
+    const { value, done } = await result
+
+    /* check if done */
+    if (done) {
+      return
+    }
+
+    /* consume the value */
+    console.log(value)
+
+    /* Values will be delivered in order */
+    // 0
+    // 1
+    // 2
+    // 3
+  } catch (e) {
+    /* catch errors */
+    console.error(e)
+
+    /* cancel subscription */
+    return Promise.reject()
+  }
+})
