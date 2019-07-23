@@ -198,18 +198,18 @@ describe('[ pushWithLatest ]', () => {
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog, continueOnError: true })(spy)
     const r = pushWithLatest(
-      pushProducer({ log: producerLog() })(data0),
-      pushProducer({ log: producerLog(), errorAtStep: 1 })(data1)
+      pushProducer({ log: producerLog(), dataResolveDelay: 8 })(data0),
+      pushProducer({ log: producerLog(), dataResolveDelay: 8, errorAtStep: 1 })(data1)
     )(
-      pushProducer({ log: mainProducerLog() })(dataMain)
+      pushProducer({ log: mainProducerLog(), dataResolveDelay: 10 })(dataMain)
     )
 
     await r(w)
 
     expect(spy.calls).deep.eq([
       [{ value: [0, 0, 0], done: false }],
-      [{ value: [1, 3, 0], done: false }],
-      [{ value: [2, 3, 2], done: false }],
+      [{ value: [1, 1, 0], done: false }],
+      [{ value: [2, 2, 2], done: false }],
       [{ value: undefined, done: true }],
     ])
   })
