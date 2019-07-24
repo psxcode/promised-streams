@@ -4,7 +4,7 @@ import debug from 'debug'
 import fn from 'test-fn'
 import { waitTimePromise as wait } from '@psxcode/wait'
 import { pushConsumer, pushProducer } from 'promised-streams-test/src'
-import { pushMap, pushFlatten } from '../src'
+import { pushMap, pushHoFlatten } from '../src'
 import makeNumbers from './make-numbers'
 
 const producerLog = debug('ai:producer')
@@ -35,13 +35,13 @@ const emult2 = (value: number) => {
 }
 
 
-describe('[ pushFlatten ]', () => {
+describe('[ pushHoFlatten ]', () => {
   it('should work', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog })(spy)
     const t0 = pushMap(mult2)
-    const t1 = pushFlatten
+    const t1 = pushHoFlatten
     const r = pushProducer({ log: producerLog })(data)
 
     await r(t0(t1(w)))
@@ -64,7 +64,7 @@ describe('[ pushFlatten ]', () => {
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog })(spy)
     const t0 = pushMap(amult2)
-    const t1 = pushFlatten
+    const t1 = pushHoFlatten
     const r = pushProducer({ log: producerLog })(data)
 
     await r(t0(t1(w)))
@@ -87,7 +87,7 @@ describe('[ pushFlatten ]', () => {
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog, cancelAtStep: 1 })(spy)
     const t0 = pushMap(mult2)
-    const t1 = pushFlatten
+    const t1 = pushHoFlatten
     const r = pushProducer({ log: producerLog })(data)
 
     await r(t0(t1(w)))
@@ -103,7 +103,7 @@ describe('[ pushFlatten ]', () => {
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog, crashAtStep: 1 })(spy)
     const t0 = pushMap(mult2)
-    const t1 = pushFlatten
+    const t1 = pushHoFlatten
     const r = pushProducer({ log: producerLog })(data)
 
     await r(t0(t1(w)))
@@ -118,7 +118,7 @@ describe('[ pushFlatten ]', () => {
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog })(spy)
     const t0 = pushMap(mult2)
-    const t1 = pushFlatten
+    const t1 = pushHoFlatten
     const r = pushProducer({ log: producerLog, errorAtStep: 2 })(data)
 
     await r(t0(t1(w)))
@@ -140,7 +140,7 @@ describe('[ pushFlatten ]', () => {
 
       return pushProducer({ log: hoproducerLog, errorAtStep: 1 })([value, value])
     })
-    const t1 = pushFlatten
+    const t1 = pushHoFlatten
     const r = pushProducer({ log: producerLog })(data)
 
     await r(t0(t1(w)))
@@ -155,7 +155,7 @@ describe('[ pushFlatten ]', () => {
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog })(spy)
     const t0 = pushMap(emult2)
-    const t1 = pushFlatten
+    const t1 = pushHoFlatten
     const r = pushProducer({ log: producerLog })(data)
 
     await r(t0(t1(w)))
@@ -172,7 +172,7 @@ describe('[ pushFlatten ]', () => {
 
       return pushProducer({ log: hoproducerLog, errorAtStep: 1 })([value, value])
     })
-    const t1 = pushFlatten
+    const t1 = pushHoFlatten
     const r = pushProducer({ log: producerLog })(data)
 
     await r(t0(t1(w)))
@@ -191,7 +191,7 @@ describe('[ pushFlatten ]', () => {
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog, continueOnError: true })(spy)
     const t0 = pushMap(emult2)
-    const t1 = pushFlatten
+    const t1 = pushHoFlatten
     const r = pushProducer({ log: producerLog })(data)
 
     await r(t0(t1(w)))

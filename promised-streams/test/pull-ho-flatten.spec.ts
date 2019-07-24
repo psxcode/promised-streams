@@ -4,7 +4,7 @@ import debug from 'debug'
 import fn from 'test-fn'
 import { waitTimePromise as wait } from '@psxcode/wait'
 import { pullConsumer, pullProducer } from 'promised-streams-test/src'
-import { pullFlatten, pullMap } from '../src'
+import { pullHoFlatten, pullMap } from '../src'
 import makeNumbers from './make-numbers'
 
 const producerLog = debug('ai:producer')
@@ -31,13 +31,13 @@ const emult2 = () => {
 }
 
 
-describe('[ pullFlatten ]', () => {
+describe('[ pullHoFlatten ]', () => {
   it('should work', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
     const w = pullConsumer({ log: consumerLog })(spy)
     const t0 = pullMap(mult2)
-    const t1 = pullFlatten
+    const t1 = pullHoFlatten
     const r = pullProducer({ log: producerLog })(data)
 
     await w(t1(t0(r)))
@@ -60,7 +60,7 @@ describe('[ pullFlatten ]', () => {
     const spy = fn(sinkLog)
     const w = pullConsumer({ log: consumerLog })(spy)
     const t0 = pullMap(amult2)
-    const t1 = pullFlatten
+    const t1 = pullHoFlatten
     const r = pullProducer({ log: producerLog })(data)
 
     await w(t1(t0(r)))
@@ -83,7 +83,7 @@ describe('[ pullFlatten ]', () => {
     const spy = fn(sinkLog)
     const w = pullConsumer({ log: consumerLog })(spy)
     const t0 = pullMap(emult2)
-    const t1 = pullFlatten
+    const t1 = pullHoFlatten
     const r = pullProducer({ log: producerLog, errorAtStep: 2 })(data)
 
     try {
@@ -100,7 +100,7 @@ describe('[ pullFlatten ]', () => {
     const spy = fn(sinkLog)
     const w = pullConsumer({ log: consumerLog })(spy)
     const t0 = pullMap(mult2)
-    const t1 = pullFlatten
+    const t1 = pullHoFlatten
     const r = pullProducer({ log: producerLog, errorAtStep: 2 })(data)
 
     try {
@@ -122,7 +122,7 @@ describe('[ pullFlatten ]', () => {
     const spy = fn(sinkLog)
     const w = pullConsumer({ log: consumerLog, continueOnError: true })(spy)
     const t0 = pullMap(mult2)
-    const t1 = pullFlatten
+    const t1 = pullHoFlatten
     const r = pullProducer({ log: producerLog, errorAtStep: 2 })(data)
 
     await w(t1(t0(r)))
@@ -143,7 +143,7 @@ describe('[ pullFlatten ]', () => {
     const spy = fn(sinkLog)
     const w = pullConsumer({ log: consumerLog })(spy)
     const t0 = pullMap(mult2)
-    const t1 = pullFlatten
+    const t1 = pullHoFlatten
     const r = pullProducer({ log: producerLog, crashAtStep: 2 })(data)
 
     try {
