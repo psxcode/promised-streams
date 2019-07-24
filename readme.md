@@ -123,8 +123,8 @@ await composedProducer(async (result) => {
   - [`pushReduce`](#pushreduce)
   - [`pullScan`](#pullscan)
   - [`pushScan`](#pushscan)
-  - [`pullFlatten`](#pullflatten)
-  - [`pushFlatten`](#pushflatten)
+  - [`pullHoFlatten`](#pullhoflatten)
+  - [`pushHoFlatten`](#pushhoflatten)
   - [`pullFlatMap`](#pullflatmap)
   - [`pushFlatMap`](#pushflatmap)
 - [Side Effects](#side-effects)
@@ -1826,11 +1826,11 @@ await reducedProducer(async (result) => {
 })
 ```
 
-## `pullFlatten`
-Creates `Pull` producer, 
+## `pullHoFlatten`
+Creates `Pull` producer, which consumes stream of producers, and provides the stream of values from these producers, subscribing to them sequentially.
 > `<T> (producer: PullProducer<PullProducer<T>>): PullProducer<T>`
 ```js
-import { pullFlatten, pullFromIterable } from 'promised-streams'
+import { pullHoFlatten, pullFromIterable } from 'promised-streams'
 
 /* Get the Higher Order producer somehow */
 const producer = pullFromIterable([
@@ -1838,7 +1838,7 @@ const producer = pullFromIterable([
   pullFromIterable([2, 3])
 ])
 
-const flattendedProducer = pullFlatten(producer)
+const flattendedProducer = pullHoFlatten(producer)
 
 try {
   /* consume PullProducer */
@@ -1862,11 +1862,11 @@ try {
 }
 ```
 
-## `pushFlatten`
-Creates `Push` producer, 
+## `pushHoFlatten`
+Creates `Push` producer, which consumes stream of producers, and provides the stream of values from these producers, subscribing to them sequentially.
 > `<T> (consumer: PushConsumer<T>) => PushConsumer<PushProducer<T>>`
 ```js
-import { pushFlatten, pushFromIterable } from 'promised-streams'
+import { pushHoFlatten, pushFromIterable } from 'promised-streams'
 
 /* Get the Higher Order producer somehow */
 const producer = pushFromIterable([
@@ -1876,7 +1876,7 @@ const producer = pushFromIterable([
 
 const flattendedProducer = compose(
   producer,
-  pushFlatten
+  pushHoFlatten
 )
 
 /* subscribe to PushProducer */
@@ -1909,7 +1909,7 @@ await flattenedProducer(async (result) => {
 ```
 
 ## `pullFlatMap`
-Creates `Pull` producer, 
+Creates `Pull` producer, which transforms stream of values to stream of producers through `xf`, and provides the stream of values from these producers, subscribing to them sequentially.
 > <T, R> (xf: (arg: T) => Promise<PushProducer<R>> | PushProducer<R>) => (consumer: PushConsumer<R>): PushConsumer<T>
 ```js
 import { pullFlatMap, pullFromIterable } from 'promised-streams'
@@ -1948,7 +1948,7 @@ try {
 ```
 
 ## `pushFlatMap`
-Creates `Push` producer, 
+Creates `Push` producer, which transforms stream of values to stream of producers through `xf`, and provides the stream of values from these producers, subscribing to them sequentially.
 > <T, R> (xf: (arg: T) => Promise<PushProducer<R>> | PushProducer<R>) => (consumer: PushConsumer<R>): PushConsumer<T>
 ```js
 import { pushFlatMap, pushFromIterable } from 'promised-streams'
@@ -1999,7 +1999,7 @@ await flattenedProducer(async (result) => {
 # Side Effects
 
 ## `pullDo`
-Creates `Pull` producer, 
+Creates `Pull` producer, which passes incoming values to `doFunction`, waiting for promise if neccessary, ignoring the exceptions, then continues unchanged value to the stream.
 > \<T> (doFunction: (arg: T) => Promise<void> | void) => (producer: PullProducer<T>): PullProducer<T>
 ```js
 import { pullDo, pullFromIterable } from 'promised-streams'
@@ -2033,8 +2033,8 @@ try {
 }
 ```
 ## `pushDo`
-Creates `Push` producer, 
-> <T> (doFunction: (result: T) => void | Promise<void>) => (consumer: PushConsumer<T>): PushConsumer<T>
+Creates `Push` producer, which passes incoming values to `doFunction`, waiting for promise if neccessary, ignoring the exceptions, then continues unchanged value to the stream.
+> <T> (doFunction: (result: T) => Promise<void> | void) => (consumer: PushConsumer<T>): PushConsumer<T>
 ```js
 import { pushDo, pushFromIterable } from 'promised-streams'
 
