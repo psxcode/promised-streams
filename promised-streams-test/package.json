@@ -1,6 +1,6 @@
 {
   "name": "promised-streams-test",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "main": "index.js",
   "module": "index",
   "typings": "index.d.ts",
@@ -16,6 +16,6 @@
     "iterama": "^0.1.1"
   },
   "peerDependencies": {
-    "promised-streams": "^0.1.0"
+    "promised-streams": "^0.2.0"
   }
 }
