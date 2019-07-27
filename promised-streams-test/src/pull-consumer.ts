@@ -1,7 +1,7 @@
 import { waitTimePromise as wait } from '@psxcode/wait'
 import { PullProducer } from 'promised-streams/src'
-import noop from './noop'
-import isPositiveNumber from './is-positive-number'
+import { noop } from './noop'
+import { isPositiveNumber } from './is-positive-number'
 
 const MAX_ERROR_RETRIES = 2
 
@@ -11,7 +11,7 @@ export type AsyncPullConsumerOptions = {
   continueOnError?: boolean,
 }
 
-const pullConsumer = ({ log = noop, delay, continueOnError }: AsyncPullConsumerOptions = {}) =>
+export const pullConsumer = ({ log = noop, delay, continueOnError }: AsyncPullConsumerOptions = {}) =>
   (sink: (chunk: IteratorResult<any>) => void) => {
     let i = 0
     let errorRetries = 0
@@ -72,5 +72,3 @@ const pullConsumer = ({ log = noop, delay, continueOnError }: AsyncPullConsumerO
       }
     }
   }
-
-export default pullConsumer

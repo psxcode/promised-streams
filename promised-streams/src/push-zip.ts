@@ -1,19 +1,20 @@
+/* eslint-disable import/export */
 import { PushProducer } from './types'
 import { errorAsyncIteratorResult, asyncIteratorResult, doneAsyncIteratorResult } from './helpers'
-import noop from './noop'
+import { noop } from './noop'
 
 type ProducerValue = {
   result: Promise<IteratorResult<any>>,
   resolve: (arg: any) => void
 }
 
-function pushZip (): PushProducer<[]>
-function pushZip<T0> (p0: PushProducer<T0>): PushProducer<[T0]>
-function pushZip<T0, T1> (p0: PushProducer<T0>, p1: PushProducer<T1>): PushProducer<[T0, T1]>
-function pushZip<T0, T1, T2> (p0: PushProducer<T0>, p1: PushProducer<T1>, p2: PushProducer<T2>): PushProducer<[T0, T1, T2]>
-function pushZip<T0, T1, T2, T3> (p0: PushProducer<T0>, p1: PushProducer<T1>, p2: PushProducer<T2>, p3: PushProducer<T3>): PushProducer<[T0, T1, T2, T3]>
+export function pushZip (): PushProducer<[]>
+export function pushZip<T0> (p0: PushProducer<T0>): PushProducer<[T0]>
+export function pushZip<T0, T1> (p0: PushProducer<T0>, p1: PushProducer<T1>): PushProducer<[T0, T1]>
+export function pushZip<T0, T1, T2> (p0: PushProducer<T0>, p1: PushProducer<T1>, p2: PushProducer<T2>): PushProducer<[T0, T1, T2]>
+export function pushZip<T0, T1, T2, T3> (p0: PushProducer<T0>, p1: PushProducer<T1>, p2: PushProducer<T2>, p3: PushProducer<T3>): PushProducer<[T0, T1, T2, T3]>
 
-function pushZip (...producers: PushProducer<any>[]): PushProducer<any> {
+export function pushZip (...producers: PushProducer<any>[]): PushProducer<any> {
   const values: ProducerValue[][] = producers.map(() => [])
 
   return async (consumer): Promise<void> => {
@@ -111,5 +112,3 @@ function pushZip (...producers: PushProducer<any>[]): PushProducer<any> {
     )))
   }
 }
-
-export default pushZip

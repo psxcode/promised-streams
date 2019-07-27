@@ -5,7 +5,7 @@ import fn from 'test-fn'
 import { pipe, compose } from '@psxcode/compose'
 import { pullConsumer, pullProducer, pushConsumer, pushProducer } from 'promised-streams-test/src'
 import { pullMap, pullReduce, pushMap, pushReduce, PushConsumer } from '../src'
-import makeNumbers from './make-numbers'
+import { makeNumbers } from './make-numbers'
 
 const producerLog = debug('ai:producer')
 const consumerLog = debug('ai:consumer')

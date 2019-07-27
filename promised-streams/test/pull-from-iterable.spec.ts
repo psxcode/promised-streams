@@ -4,7 +4,7 @@ import debug from 'debug'
 import fn from 'test-fn'
 import { pullConsumer } from 'promised-streams-test/src'
 import { pullFromIterable } from '../src'
-import makeNumbers from './make-numbers'
+import { makeNumbers } from './make-numbers'
 
 const consumerLog = debug('ai:consumer')
 const sinkLog = debug('ai:sink')

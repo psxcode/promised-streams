@@ -1,7 +1,7 @@
 import { PullProducer } from './types'
 import { asyncIteratorResult } from './helpers'
 
-const pullStartWith = <T> (...values: T[]) => (producer: PullProducer<T>): PullProducer<T> => {
+export const pullStartWith = <T> (...values: T[]) => (producer: PullProducer<T>): PullProducer<T> => {
   let i = 0
 
   return async () => {
@@ -12,5 +12,3 @@ const pullStartWith = <T> (...values: T[]) => (producer: PullProducer<T>): PullP
     return producer()
   }
 }
-
-export default pullStartWith

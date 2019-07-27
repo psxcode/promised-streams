@@ -4,8 +4,8 @@ import debug from 'debug'
 import fn from 'test-fn'
 import { pullConsumer, pullProducer } from 'promised-streams-test/src'
 import { pullMerge } from '../src'
-import makeNumbers from './make-numbers'
-import makeStrings from './make-strings'
+import { makeNumbers } from './make-numbers'
+import { makeStrings } from './make-strings'
 
 const consumerLog = debug('ai:consumer')
 const sinkLog = debug('ai:sink') as (arg: IteratorResult<number>) => void

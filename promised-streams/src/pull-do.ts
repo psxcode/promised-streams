@@ -1,6 +1,6 @@
 import { PullProducer } from './types'
 
-const pullDo = <T> (doFunction: (arg: T) => Promise<void> | void) =>
+export const pullDo = <T> (doFunction: (arg: T) => Promise<void> | void) =>
   (producer: PullProducer<T>): PullProducer<T> =>
     async () => {
       const ir = await producer()
@@ -15,5 +15,3 @@ const pullDo = <T> (doFunction: (arg: T) => Promise<void> | void) =>
 
       return ir
     }
-
-export default pullDo

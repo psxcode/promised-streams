@@ -56,10 +56,8 @@ const pullTakeLast = (numTake: number) => <T> (producer: PullProducer<T>): PullP
   }
 }
 
-const pullTake = (numTake: number) => (
+export const pullTake = (numTake: number) => (
   numTake < 0
     ? pullTakeLast(-numTake)
     : pullTakeFirst(numTake)
 )
-
-export default pullTake

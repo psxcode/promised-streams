@@ -1,8 +1,8 @@
 import { PullProducer, PushProducer } from './types'
 import { errorAsyncIteratorResult } from './helpers'
-import noop from './noop'
+import { noop } from './noop'
 
-const pump = <T> (producer: PullProducer<T>): PushProducer<T> =>
+export const pump = <T> (producer: PullProducer<T>): PushProducer<T> =>
   async (consumer) => {
     let done = false
 
@@ -23,5 +23,3 @@ const pump = <T> (producer: PullProducer<T>): PushProducer<T> =>
       }
     }
   }
-
-export default pump

@@ -1,7 +1,7 @@
 import { PushConsumer } from './types'
 import { doneAsyncIteratorResult, errorAsyncIteratorResult, asyncIteratorResult } from './helpers'
 
-const pushScan = <S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) =>
+export const pushScan = <S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) =>
   (consumer: PushConsumer<S>): PushConsumer<T> => {
     let isInit = false
     let state: S
@@ -38,5 +38,3 @@ const pushScan = <S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) =>
       }
     }
   }
-
-export default pushScan

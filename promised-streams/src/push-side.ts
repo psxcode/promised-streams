@@ -1,7 +1,7 @@
 import { PushConsumer } from './types'
 import { errorAsyncIteratorResult } from './helpers'
 
-const pushSide = <T> (sideFn: (value: T) => Promise<void> | void) => (consumer: PushConsumer<T>): PushConsumer<T> =>
+export const pushSide = <T> (sideFn: (value: T) => Promise<void> | void) => (consumer: PushConsumer<T>): PushConsumer<T> =>
   async (result) => {
     let ir: IteratorResult<T>
     try {
@@ -22,5 +22,3 @@ const pushSide = <T> (sideFn: (value: T) => Promise<void> | void) => (consumer: 
 
     return consumer(result)
   }
-
-export default pushSide

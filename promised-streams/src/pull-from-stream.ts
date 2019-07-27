@@ -2,7 +2,7 @@ import { subscribeAsync } from 'node-streams'
 import { PullProducer } from './types'
 import { doneAsyncIteratorResult, errorAsyncIteratorResult, asyncIteratorResult } from './helpers'
 
-const pullFromStream = <T> (stream: NodeJS.ReadableStream): PullProducer<T> => {
+export const pullFromStream = <T> (stream: NodeJS.ReadableStream): PullProducer<T> => {
   let hasValue: (() => void) | undefined = undefined
   const values: (() => Promise<IteratorResult<T>>)[] = []
 
@@ -35,5 +35,3 @@ const pullFromStream = <T> (stream: NodeJS.ReadableStream): PullProducer<T> => {
     }
   }).then(() => values.shift()!())
 }
-
-export default pullFromStream

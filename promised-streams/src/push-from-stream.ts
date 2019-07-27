@@ -2,7 +2,7 @@ import { subscribeAsync } from 'node-streams'
 import { PushProducer } from './types'
 import { doneAsyncIteratorResult, errorAsyncIteratorResult, asyncIteratorResult } from './helpers'
 
-const pushFromStream = <T> (stream: NodeJS.ReadableStream): PushProducer<T> =>
+export const pushFromStream = <T> (stream: NodeJS.ReadableStream): PushProducer<T> =>
   (consumer) => new Promise((resolve) => {
     const onReject = () => {
       unsub()
@@ -31,5 +31,3 @@ const pushFromStream = <T> (stream: NodeJS.ReadableStream): PushProducer<T> =>
       },
     })(stream)
   })
-
-export default pushFromStream

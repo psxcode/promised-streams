@@ -1,7 +1,7 @@
 import { WaitFn, PushConsumer, UnsubscribeFn } from './types'
-import noop from './noop'
+import { noop } from './noop'
 
-const pushDebounce = (wait: WaitFn) => <T> (consumer: PushConsumer<T>): PushConsumer<T> => {
+export const pushDebounce = (wait: WaitFn) => <T> (consumer: PushConsumer<T>): PushConsumer<T> => {
   let last0: Promise<IteratorResult<T>> | undefined
   let last1: Promise<IteratorResult<T>> | undefined
   let unsub: UnsubscribeFn
@@ -51,5 +51,3 @@ const pushDebounce = (wait: WaitFn) => <T> (consumer: PushConsumer<T>): PushCons
     })
   }
 }
-
-export default pushDebounce

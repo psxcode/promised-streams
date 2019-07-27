@@ -1,7 +1,7 @@
 import { waitTimePromise as wait } from '@psxcode/wait'
 import { PushConsumer } from 'promised-streams/src'
-import noop from './noop'
-import isPositiveNumber from './is-positive-number'
+import { noop } from './noop'
+import { isPositiveNumber } from './is-positive-number'
 
 export type PushConsumerOptions = {
   log?: typeof console.log,
@@ -11,7 +11,7 @@ export type PushConsumerOptions = {
   crashAtStep?: number,
 }
 
-const pushConsumer = ({ log = noop, delay, cancelAtStep, continueOnError, crashAtStep }: PushConsumerOptions = {}) =>
+export const pushConsumer = ({ log = noop, delay, cancelAtStep, continueOnError, crashAtStep }: PushConsumerOptions = {}) =>
   <T> (sink: (result: IteratorResult<T>) => void): PushConsumer<T> => {
     let i = 0
 
@@ -63,5 +63,3 @@ const pushConsumer = ({ log = noop, delay, cancelAtStep, continueOnError, crashA
       })
     }
   }
-
-export default pushConsumer

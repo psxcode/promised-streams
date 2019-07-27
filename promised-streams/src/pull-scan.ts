@@ -1,7 +1,7 @@
 import { PullProducer } from './types'
 import { doneAsyncIteratorResult, asyncIteratorResult } from './helpers'
 
-const pullScan = <S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) =>
+export const pullScan = <S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) =>
   (producer: PullProducer<T>): PullProducer<S> => {
     let isInit = false
     let state: S
@@ -25,5 +25,3 @@ const pullScan = <S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) =>
       return asyncIteratorResult(state)
     }
   }
-
-export default pullScan

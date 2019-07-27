@@ -1,16 +1,17 @@
+/* eslint-disable import/export */
 import { PullProducer } from './types'
 import { racePromises, asyncIteratorResult, errorAsyncIteratorResult, doneAsyncIteratorResult } from './helpers'
-import noop from './noop'
+import { noop } from './noop'
 
 const isValid = (obj: any) => !!obj
 
-function pullCombine (): PullProducer<[]>
-function pullCombine <T1>(p1: PullProducer<T1>): PullProducer<[T1]>
-function pullCombine <T1, T2>(p1: PullProducer<T1>, p2: PullProducer<T2>): PullProducer<[T1, T2]>
-function pullCombine <T1, T2, T3>(p1: PullProducer<T1>, p2: PullProducer<T2>, p3: PullProducer<T3>): PullProducer<[T1, T2, T3]>
-function pullCombine <T1, T2, T3, T4>(p1: PullProducer<T1>, p2: PullProducer<T2>, p3: PullProducer<T3>, p4: PullProducer<T4>): PullProducer<[T1, T2, T3, T4]>
+export function pullCombine (): PullProducer<[]>
+export function pullCombine <T1>(p1: PullProducer<T1>): PullProducer<[T1]>
+export function pullCombine <T1, T2>(p1: PullProducer<T1>, p2: PullProducer<T2>): PullProducer<[T1, T2]>
+export function pullCombine <T1, T2, T3>(p1: PullProducer<T1>, p2: PullProducer<T2>, p3: PullProducer<T3>): PullProducer<[T1, T2, T3]>
+export function pullCombine <T1, T2, T3, T4>(p1: PullProducer<T1>, p2: PullProducer<T2>, p3: PullProducer<T3>, p4: PullProducer<T4>): PullProducer<[T1, T2, T3, T4]>
 
-function pullCombine (...producers: PullProducer<any>[]): PullProducer<any[]> {
+export function pullCombine (...producers: PullProducer<any>[]): PullProducer<any[]> {
   const activeProducers: (PullProducer<any> | null)[] = producers.slice()
   const values: any[] = producers.map(() => undefined)
   const promises: (Promise<IteratorResult<any>> | null)[] = producers.map(() => null)
@@ -66,5 +67,3 @@ function pullCombine (...producers: PullProducer<any>[]): PullProducer<any[]> {
     return doneAsyncIteratorResult()
   }
 }
-
-export default pullCombine

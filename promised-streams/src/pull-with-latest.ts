@@ -1,15 +1,16 @@
+/* eslint-disable import/export */
 import { PullProducer } from './types'
 import { racePromises, asyncIteratorResult, errorAsyncIteratorResult } from './helpers'
-import noop from './noop'
+import { noop } from './noop'
 
 const isValid = (obj: any) => !!obj
 
-function pullWithLatest (): <T>(main: PullProducer<T>) => PullProducer<[T]>
-function pullWithLatest <T1>(p1: PullProducer<T1>): <T>(main: PullProducer<T>) => PullProducer<[T, T1]>
-function pullWithLatest <T1, T2>(p1: PullProducer<T1>, p2: PullProducer<T2>): <T>(main: PullProducer<T>) => PullProducer<[T, T1, T2]>
-function pullWithLatest <T1, T2, T3>(p1: PullProducer<T1>, p2: PullProducer<T2>, p3: PullProducer<T3>): <T>(main: PullProducer<T>) => PullProducer<[T, T1, T2, T3]>
+export function pullWithLatest (): <T>(main: PullProducer<T>) => PullProducer<[T]>
+export function pullWithLatest <T1>(p1: PullProducer<T1>): <T>(main: PullProducer<T>) => PullProducer<[T, T1]>
+export function pullWithLatest <T1, T2>(p1: PullProducer<T1>, p2: PullProducer<T2>): <T>(main: PullProducer<T>) => PullProducer<[T, T1, T2]>
+export function pullWithLatest <T1, T2, T3>(p1: PullProducer<T1>, p2: PullProducer<T2>, p3: PullProducer<T3>): <T>(main: PullProducer<T>) => PullProducer<[T, T1, T2, T3]>
 
-function pullWithLatest (...producers: PullProducer<any>[]) {
+export function pullWithLatest (...producers: PullProducer<any>[]) {
   return (mainProducer: PullProducer<any>): PullProducer<any[]> => {
     const activeProducers: (PullProducer<any> | null)[] = producers.slice()
     const values: any[] = producers.map(() => undefined)
@@ -92,5 +93,3 @@ function pullWithLatest (...producers: PullProducer<any>[]) {
     }
   }
 }
-
-export default pullWithLatest

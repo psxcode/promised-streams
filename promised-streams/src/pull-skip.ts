@@ -75,10 +75,8 @@ const pullSkipLast = (numSkip: number) => <T> (producer: PullProducer<T>): PullP
   }
 }
 
-const pullSkip = (numSkip: number) => (
+export const pullSkip = (numSkip: number) => (
   numSkip < 0
     ? pullSkipLast(-numSkip)
     : pullSkipFirst(numSkip)
 )
-
-export default pullSkip

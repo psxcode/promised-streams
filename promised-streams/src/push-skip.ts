@@ -44,10 +44,8 @@ const pushSkipLast = (numSkip: number) => <T> (consumer: PushConsumer<T>): PushC
   }
 }
 
-const pushSkip = (numSkip: number) => (
+export const pushSkip = (numSkip: number) => (
   numSkip < 0
     ? pushSkipLast(-numSkip)
     : pushSkipFirst(numSkip)
 )
-
-export default pushSkip

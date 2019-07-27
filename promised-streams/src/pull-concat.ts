@@ -1,7 +1,7 @@
 import { PullProducer } from './types'
 import { doneIteratorResult } from './helpers'
 
-const pullConcat = <T> (...producers: PullProducer<T>[]): PullProducer<T> => {
+export const pullConcat = <T> (...producers: PullProducer<T>[]): PullProducer<T> => {
   let i = 0
 
   return async () => {
@@ -21,5 +21,3 @@ const pullConcat = <T> (...producers: PullProducer<T>[]): PullProducer<T> => {
     return doneIteratorResult()
   }
 }
-
-export default pullConcat

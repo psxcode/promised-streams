@@ -1,7 +1,7 @@
 import { PushConsumer } from './types'
 import { errorAsyncIteratorResult, asyncIteratorResult } from './helpers'
 
-const pushMap = <T, R> (xf: (arg: T) => Promise<R> | R) =>
+export const pushMap = <T, R> (xf: (arg: T) => Promise<R> | R) =>
   (consumer: PushConsumer<R>): PushConsumer<T> =>
     async (result) => {
       let ir: IteratorResult<T>
@@ -24,5 +24,3 @@ const pushMap = <T, R> (xf: (arg: T) => Promise<R> | R) =>
 
       return consumer(asyncIteratorResult(transformed))
     }
-
-export default pushMap

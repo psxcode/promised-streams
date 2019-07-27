@@ -5,7 +5,7 @@ import fn from 'test-fn'
 import { pushConsumer } from 'promised-streams-test/src'
 import { readable } from 'node-stream-test'
 import { pushFromStream } from '../src'
-import makeNumbers from './make-numbers'
+import { makeNumbers } from './make-numbers'
 
 const producerLog = debug('ai:producer')
 const consumerLog = debug('ai:consumer')

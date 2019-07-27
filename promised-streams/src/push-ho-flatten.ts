@@ -26,7 +26,7 @@ const pushDoResult = (doFunction: (result: Promise<void>) => void) => (consumer:
   return consumerResult
 }
 
-const pushHoFlatten = <T> (consumer: PushConsumer<T>): PushConsumer<PushProducer<T>> =>
+export const pushHoFlatten = <T> (consumer: PushConsumer<T>): PushConsumer<PushProducer<T>> =>
   async (result) => {
     let ir: IteratorResult<PushProducer<T>>
     try {
@@ -44,5 +44,3 @@ const pushHoFlatten = <T> (consumer: PushConsumer<T>): PushConsumer<PushProducer
 
     return consumerResult
   }
-
-export default pushHoFlatten

@@ -13,9 +13,6 @@ module.exports = function (api) {
         ],
         '@babel/preset-typescript',
       ],
-      plugins: [
-        '@babel/plugin-transform-runtime',
-      ],
     }
   case 'test': {
     return {

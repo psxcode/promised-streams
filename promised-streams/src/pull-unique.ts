@@ -1,6 +1,6 @@
 import { PullProducer } from './types'
 
-const pullUnique = <T> (producer: PullProducer<T>): PullProducer<T> => {
+export const pullUnique = <T> (producer: PullProducer<T>): PullProducer<T> => {
   const last = new Set<T>()
 
   return async () => {
@@ -15,5 +15,3 @@ const pullUnique = <T> (producer: PullProducer<T>): PullProducer<T> => {
     }
   }
 }
-
-export default pullUnique

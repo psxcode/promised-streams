@@ -5,7 +5,7 @@ import fn from 'test-fn'
 import { waitTimePromise as wait } from '@psxcode/wait'
 import { pushConsumer, pushProducer } from 'promised-streams-test/src'
 import { pushSide } from '../src'
-import makeNumbers from './make-numbers'
+import { makeNumbers } from './make-numbers'
 
 const producerLog = debug('ai:producer')
 const consumerLog = debug('ai:consumer')

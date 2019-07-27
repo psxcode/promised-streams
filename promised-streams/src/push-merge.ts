@@ -1,13 +1,14 @@
+/* eslint-disable import/export */
 import { PushProducer } from './types'
 import { doneAsyncIteratorResult } from './helpers'
 
-function pushMerge (): PushProducer<any>
-function pushMerge <T0> (p0: PushProducer<T0>): PushProducer<T0>
-function pushMerge <T0, T1> (p0: PushProducer<T0>, p1: PushProducer<T1>): PushProducer<T0 | T1>
-function pushMerge <T0, T1, T2> (p0: PushProducer<T0>, p1: PushProducer<T1>, p2: PushProducer<T2>): PushProducer<T0 | T1 | T2>
-function pushMerge <T0, T1, T2, T3> (p0: PushProducer<T0>, p1: PushProducer<T1>, p2: PushProducer<T2>, p3: PushProducer<T3>): PushProducer<T0 | T1 | T2 | T3>
+export function pushMerge (): PushProducer<any>
+export function pushMerge <T0> (p0: PushProducer<T0>): PushProducer<T0>
+export function pushMerge <T0, T1> (p0: PushProducer<T0>, p1: PushProducer<T1>): PushProducer<T0 | T1>
+export function pushMerge <T0, T1, T2> (p0: PushProducer<T0>, p1: PushProducer<T1>, p2: PushProducer<T2>): PushProducer<T0 | T1 | T2>
+export function pushMerge <T0, T1, T2, T3> (p0: PushProducer<T0>, p1: PushProducer<T1>, p2: PushProducer<T2>, p3: PushProducer<T3>): PushProducer<T0 | T1 | T2 | T3>
 
-function pushMerge (...producers: PushProducer<any>[]): PushProducer<any> {
+export function pushMerge (...producers: PushProducer<any>[]): PushProducer<any> {
   let numDoneProducers = 0
   const values: {result: Promise<IteratorResult<any>>, resolve: (arg?: any) => void}[] = []
   let consumerCancel: Promise<void> | undefined = undefined
@@ -89,5 +90,3 @@ function pushMerge (...producers: PushProducer<any>[]): PushProducer<any> {
     )
   }
 }
-
-export default pushMerge

@@ -5,7 +5,7 @@ import fn from 'test-fn'
 import { pullConsumer, pullProducer } from 'promised-streams-test/src'
 import { waitTimePromise as wait } from '@psxcode/wait'
 import { pullCombine } from '../src'
-import makeNumbers from './make-numbers'
+import { makeNumbers } from './make-numbers'
 
 const consumerLog = debug('ai:consumer')
 const sinkLog = debug('ai:sink')

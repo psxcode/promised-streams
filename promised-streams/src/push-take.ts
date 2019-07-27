@@ -1,7 +1,7 @@
 import FixedArray from 'circularr'
 import { PushConsumer } from './types'
 import { doneAsyncIteratorResult } from './helpers'
-import noop from './noop'
+import { noop } from './noop'
 
 const pushTakeFirst = (numTake: number) => <T> (consumer: PushConsumer<T>): PushConsumer<T> => {
   let i = 0
@@ -41,10 +41,8 @@ const pushTakeLast = (numTake: number) => <T> (consumer: PushConsumer<T>): PushC
   }
 }
 
-const pushTake = (numTake: number) => (
+export const pushTake = (numTake: number) => (
   numTake < 0
     ? pushTakeLast(-numTake)
     : pushTakeFirst(numTake)
 )
-
-export default pushTake

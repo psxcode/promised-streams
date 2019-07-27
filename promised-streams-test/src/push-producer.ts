@@ -1,8 +1,8 @@
 import { waitTimePromise as wait } from '@psxcode/wait'
 import { PushProducer } from 'promised-streams/src'
 import { iteratorResult, doneAsyncIteratorResult, errorAsyncIteratorResult } from './helpers'
-import noop from './noop'
-import isPositiveNumber from './is-positive-number'
+import { noop } from './noop'
+import { isPositiveNumber } from './is-positive-number'
 
 export type PushProducerOptions = {
   log?: typeof console.log
@@ -11,7 +11,7 @@ export type PushProducerOptions = {
   errorAtStep?: number,
 }
 
-const pushProducer = ({ log = noop, dataResolveDelay, dataPrepareDelay, errorAtStep }: PushProducerOptions = {}) =>
+export const pushProducer = ({ log = noop, dataResolveDelay, dataPrepareDelay, errorAtStep }: PushProducerOptions = {}) =>
   <T> (data: Iterable<T>): PushProducer<T> => {
     let i = 0
 
@@ -73,5 +73,3 @@ const pushProducer = ({ log = noop, dataResolveDelay, dataPrepareDelay, errorAtS
       }
     }
   }
-
-export default pushProducer

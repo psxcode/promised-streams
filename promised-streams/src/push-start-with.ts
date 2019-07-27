@@ -1,7 +1,7 @@
 import { PushConsumer } from './types'
 import { asyncIteratorResult } from './helpers'
 
-const pushStartWith = <T> (...values: T[]) => (consumer: PushConsumer<T>): PushConsumer<T> => {
+export const pushStartWith = <T> (...values: T[]) => (consumer: PushConsumer<T>): PushConsumer<T> => {
   let isInit = false
 
   return async (result) => {
@@ -15,5 +15,3 @@ const pushStartWith = <T> (...values: T[]) => (consumer: PushConsumer<T>): PushC
     return consumer(result)
   }
 }
-
-export default pushStartWith

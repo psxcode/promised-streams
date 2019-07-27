@@ -1,6 +1,6 @@
 import { PushConsumer } from './types'
 
-const pushDo = <T> (doFunction: (result: T) => void | Promise<void>) => (consumer: PushConsumer<T>): PushConsumer<T> =>
+export const pushDo = <T> (doFunction: (result: T) => void | Promise<void>) => (consumer: PushConsumer<T>): PushConsumer<T> =>
   async (result) => {
     let ir: IteratorResult<T>
     try {
@@ -21,4 +21,3 @@ const pushDo = <T> (doFunction: (result: T) => void | Promise<void>) => (consume
     return consumer(result)
   }
 
-export default pushDo

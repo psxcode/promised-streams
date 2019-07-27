@@ -1,13 +1,14 @@
+/* eslint-disable import/export */
 import { PushProducer } from './types'
 import { errorAsyncIteratorResult, asyncIteratorResult } from './helpers'
-import noop from './noop'
+import { noop } from './noop'
 
-function pushWithLatest (): <T>(main: PushProducer<T>) => PushProducer<[T]>
-function pushWithLatest <T1>(p1: PushProducer<T1>): <T>(main: PushProducer<T>) => PushProducer<[T, T1]>
-function pushWithLatest <T1, T2>(p1: PushProducer<T1>, p2: PushProducer<T2>): <T>(main: PushProducer<T>) => PushProducer<[T, T1, T2]>
-function pushWithLatest <T1, T2, T3>(p1: PushProducer<T1>, p2: PushProducer<T2>, p3: PushProducer<T3>): <T>(main: PushProducer<T>) => PushProducer<[T, T1, T2, T3]>
+export function pushWithLatest (): <T>(main: PushProducer<T>) => PushProducer<[T]>
+export function pushWithLatest <T1>(p1: PushProducer<T1>): <T>(main: PushProducer<T>) => PushProducer<[T, T1]>
+export function pushWithLatest <T1, T2>(p1: PushProducer<T1>, p2: PushProducer<T2>): <T>(main: PushProducer<T>) => PushProducer<[T, T1, T2]>
+export function pushWithLatest <T1, T2, T3>(p1: PushProducer<T1>, p2: PushProducer<T2>, p3: PushProducer<T3>): <T>(main: PushProducer<T>) => PushProducer<[T, T1, T2, T3]>
 
-function pushWithLatest (...producers: PushProducer<any>[]) {
+export function pushWithLatest (...producers: PushProducer<any>[]) {
   return (mainProducer: PushProducer<any>): PushProducer<any[]> => {
     const latest: any[] = producers.map(() => undefined)
     let consumerResult: Promise<void> = Promise.resolve()
@@ -79,5 +80,3 @@ function pushWithLatest (...producers: PushProducer<any>[]) {
     }
   }
 }
-
-export default pushWithLatest

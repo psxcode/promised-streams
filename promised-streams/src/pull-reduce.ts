@@ -1,7 +1,7 @@
 import { PullProducer } from './types'
 import { doneIteratorResult, iteratorResult } from './helpers'
 
-const pullReduce = <S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) =>
+export const pullReduce = <S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) =>
   (producer: PullProducer<T>): PullProducer<S> => {
     let isDone = false
     let isInit = false
@@ -32,5 +32,3 @@ const pullReduce = <S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) =>
       }
     }
   }
-
-export default pullReduce

@@ -3,7 +3,7 @@ import { expect } from 'chai'
 import debug from 'debug'
 import fn from 'test-fn'
 import { pullProducer, pullConsumer } from '../src'
-import makeNumbers from './make-numbers'
+import { makeNumbers } from './make-numbers'
 
 const producerLog = debug('ait:producer')
 const consumerLog = debug('ait:consumer')

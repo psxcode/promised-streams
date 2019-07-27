@@ -4,7 +4,7 @@ import debug from 'debug'
 import fn from 'test-fn'
 import { pushConsumer, pushProducer } from 'promised-streams-test/src'
 import { pushConcat } from '../src'
-import makeNumbers from './make-numbers'
+import { makeNumbers } from './make-numbers'
 
 const consumerLog = debug('ai:consumer')
 const sinkLog = debug('ai:sink')

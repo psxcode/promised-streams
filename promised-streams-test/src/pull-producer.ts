@@ -1,8 +1,8 @@
 import { waitTimePromise as wait } from '@psxcode/wait'
 import { iterate } from 'iterama'
 import { PullProducer } from 'promised-streams/src'
-import noop from './noop'
-import isPositiveNumber from './is-positive-number'
+import { noop } from './noop'
+import { isPositiveNumber } from './is-positive-number'
 
 export type PullProducerOptions = {
   log?: typeof console.log,
@@ -12,7 +12,7 @@ export type PullProducerOptions = {
   crashAtStep?: number,
 }
 
-const pullProducer = ({ log = noop, dataPrepareDelay, dataResolveDelay, errorAtStep, crashAtStep }: PullProducerOptions = {}) =>
+export const pullProducer = ({ log = noop, dataPrepareDelay, dataResolveDelay, errorAtStep, crashAtStep }: PullProducerOptions = {}) =>
   <T> (data: Iterable<T>): PullProducer<T> => {
     let i = 0
     const it = iterate(data)
@@ -64,5 +64,3 @@ const pullProducer = ({ log = noop, dataPrepareDelay, dataResolveDelay, errorAtS
       return getNextValue()
     }
   }
-
-export default pullProducer

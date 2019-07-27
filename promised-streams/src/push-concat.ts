@@ -1,8 +1,8 @@
 import { PushProducer } from './types'
 import { doneAsyncIteratorResult } from './helpers'
-import noop from './noop'
+import { noop } from './noop'
 
-const pushConcat = <T> (...producers: PushProducer<T>[]): PushProducer<T> =>
+export const pushConcat = <T> (...producers: PushProducer<T>[]): PushProducer<T> =>
   async (consumer) => {
     let consumerError: Promise<void> | undefined
 
@@ -42,5 +42,3 @@ const pushConcat = <T> (...producers: PushProducer<T>[]): PushProducer<T> =>
       return consumer(doneAsyncIteratorResult())
     }
   }
-
-export default pushConcat

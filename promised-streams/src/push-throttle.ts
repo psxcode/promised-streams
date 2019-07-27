@@ -1,7 +1,7 @@
 import { WaitFn, PushConsumer, UnsubscribeFn } from './types'
-import noop from './noop'
+import { noop } from './noop'
 
-const pushThrottle = (wait: WaitFn) => <T> (consumer: PushConsumer<T>): PushConsumer<T> => {
+export const pushThrottle = (wait: WaitFn) => <T> (consumer: PushConsumer<T>): PushConsumer<T> => {
   let last0: Promise<IteratorResult<T>> | undefined
   let last1: Promise<IteratorResult<T>> | undefined
   let consumerResult: Promise<void> | undefined
@@ -49,5 +49,3 @@ const pushThrottle = (wait: WaitFn) => <T> (consumer: PushConsumer<T>): PushCons
     })
   }
 }
-
-export default pushThrottle

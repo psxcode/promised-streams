@@ -1,16 +1,17 @@
+/* eslint-disable import/export */
 import { PullProducer } from './types'
 import { doneAsyncIteratorResult, racePromises, errorAsyncIteratorResult } from './helpers'
-import noop from './noop'
+import { noop } from './noop'
 
 const isValid = (obj: any) => !!obj
 
-function pullMerge (): PullProducer<any>
-function pullMerge <T0> (p0: PullProducer<T0>): PullProducer<T0>
-function pullMerge <T0, T1> (p0: PullProducer<T0>, p1: PullProducer<T1>): PullProducer<T0 | T1>
-function pullMerge <T0, T1, T2> (p0: PullProducer<T0>, p1: PullProducer<T1>, p2: PullProducer<T2>): PullProducer<T0 | T1 | T2>
-function pullMerge <T0, T1, T2, T3> (p0: PullProducer<T0>, p1: PullProducer<T1>, p2: PullProducer<T2>, p3: PullProducer<T3>): PullProducer<T0 | T1 | T2 | T3>
+export function pullMerge (): PullProducer<any>
+export function pullMerge <T0> (p0: PullProducer<T0>): PullProducer<T0>
+export function pullMerge <T0, T1> (p0: PullProducer<T0>, p1: PullProducer<T1>): PullProducer<T0 | T1>
+export function pullMerge <T0, T1, T2> (p0: PullProducer<T0>, p1: PullProducer<T1>, p2: PullProducer<T2>): PullProducer<T0 | T1 | T2>
+export function pullMerge <T0, T1, T2, T3> (p0: PullProducer<T0>, p1: PullProducer<T1>, p2: PullProducer<T2>, p3: PullProducer<T3>): PullProducer<T0 | T1 | T2 | T3>
 
-function pullMerge (...producers: PullProducer<any>[]): PullProducer<any> {
+export function pullMerge (...producers: PullProducer<any>[]): PullProducer<any> {
   const activeProducers: (PullProducer<any> | null)[] = producers.slice()
   const promises: (Promise<IteratorResult<any>> | null)[] = producers.map(() => null)
   const race = racePromises()
@@ -61,5 +62,3 @@ function pullMerge (...producers: PullProducer<any>[]): PullProducer<any> {
     return doneAsyncIteratorResult()
   }
 }
-
-export default pullMerge
