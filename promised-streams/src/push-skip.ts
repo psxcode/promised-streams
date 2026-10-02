@@ -27,12 +27,21 @@ const pushSkipLast =
   <T>(consumer: PushConsumer<T>): PushConsumer<T> => {
     const values = new FixedArray<Promise<IteratorResult<T>>>(numSkip)
     let i = 0
+    let terminated = false
 
     return async (result) => {
+      /* once an error terminated the stream the remaining chunks pass through */
+      if (terminated) {
+        return consumer(result)
+      }
+
       let done: boolean | undefined = false
+      let failed = false
       try {
         done = (await result).done
-      } catch {}
+      } catch {
+        failed = true
+      }
 
       if (done) {
         values.clear()
@@ -43,7 +52,13 @@ const pushSkipLast =
       const value = values.shift(result)
 
       if (i++ >= numSkip) {
-        return consumer(value)
+        await consumer(value)
+      }
+
+      if (failed) {
+        terminated = true
+
+        return consumer(result)
       }
     }
   }

@@ -4,6 +4,7 @@ import { debug } from './helpers/debug.ts'
 import { fn } from './helpers/fn.ts'
 import { pushConsumer, pushProducer } from '../../promised-streams-test/src/index.ts'
 import { pushSkip } from '../src/index.ts'
+import type { PushConsumer } from '../src/index.ts'
 import { makeNumbers } from './make-numbers.ts'
 
 const producerLog = debug('ai:producer')
@@ -241,7 +242,7 @@ describe('[ pushSkip ]', () => {
     assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }]])
   })
 
-  it('should NOT deliver producer error to consumer on negative on complete', async () => {
+  it('should deliver producer error to consumer and stop on negative on complete', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog })(spy)
@@ -250,14 +251,10 @@ describe('[ pushSkip ]', () => {
 
     await r(t(w))
 
-    assert.deepStrictEqual(spy.calls, [
-      [{ value: 0, done: false }],
-      [{ value: 1, done: false }],
-      [{ value: undefined, done: true }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }]])
   })
 
-  it('should skip producer error on negative', async () => {
+  it('should deliver producer error to consumer after buffered values on negative', async () => {
     const data = makeNumbers(4)
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog })(spy)
@@ -266,11 +263,7 @@ describe('[ pushSkip ]', () => {
 
     await r(t(w))
 
-    assert.deepStrictEqual(spy.calls, [
-      [{ value: 0, done: false }],
-      [{ value: 1, done: false }],
-      [{ value: undefined, done: true }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }], [{ value: 1, done: false }]])
   })
 
   it('should deliver error to consumer and continue', async () => {
@@ -300,7 +293,35 @@ describe('[ pushSkip ]', () => {
 
     assert.deepStrictEqual(spy.calls, [
       [{ value: 1, done: false }],
+      [{ value: 2, done: false }],
+      [{ value: 3, done: false }],
       [{ value: undefined, done: true }],
     ])
+  })
+
+  it('should deliver producer error to consumer on negative on complete', async () => {
+    const data = makeNumbers(4)
+    const values: IteratorResult<number>[] = []
+    const errors: unknown[] = []
+    const w: PushConsumer<number> = async (result) => {
+      try {
+        values.push(await result)
+      } catch (e) {
+        errors.push(e)
+
+        throw e
+      }
+    }
+    const t = pushSkip(-2)
+    const r = pushProducer({ log: producerLog, errorAtStep: 4 })(data)
+
+    await r(t(w))
+
+    assert.deepStrictEqual(values, [
+      { value: 0, done: false },
+      { value: 1, done: false },
+      { value: 2, done: false },
+    ])
+    assert.deepStrictEqual(errors, [new Error('error at complete')])
   })
 })
