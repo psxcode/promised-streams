@@ -12,7 +12,7 @@
   "scripts": {
     "test": "node --test \"promised-streams/test/*.spec.ts\" \"promised-streams-test/test/*.spec.ts\"",
     "test:watch": "node --test --watch \"promised-streams/test/*.spec.ts\" \"promised-streams-test/test/*.spec.ts\"",
-    "test:coverage": "node --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=coverage/lcov.info --test-coverage-include='**/src/**' \"promised-streams/test/*.spec.ts\" \"promised-streams-test/test/*.spec.ts\"",
+    "test:coverage": "node -e \"require('node:fs').mkdirSync('coverage',{recursive:true})\" && node --test --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=coverage/lcov.info --test-coverage-include='**/src/**' \"promised-streams/test/*.spec.ts\" \"promised-streams-test/test/*.spec.ts\"",
     "typecheck": "tsc",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
