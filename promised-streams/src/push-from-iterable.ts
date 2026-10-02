@@ -8,7 +8,13 @@ export const pushFromIterable =
 
     while (true) {
       const ir = it.next()
-      await consumer(Promise.resolve(ir))
+
+      try {
+        await consumer(Promise.resolve(ir))
+      } catch {
+        /* consumer unsubscribed: stop pushing, the producer promise must not reject */
+        return
+      }
 
       if (ir.done) {
         return
