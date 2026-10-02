@@ -1,5 +1,5 @@
 import { subscribeAsync } from './internal.ts'
-import type { PushProducer } from './types.ts'
+import type { PushProducer, ReadableStream } from './types.ts'
 import {
   doneAsyncIteratorResult,
   errorAsyncIteratorResult,
@@ -7,7 +7,7 @@ import {
 } from './helpers.ts'
 
 export const pushFromStream =
-  <T>(stream: NodeJS.ReadableStream): PushProducer<T> =>
+  <T>(stream: ReadableStream): PushProducer<T> =>
   (consumer) =>
     new Promise<void>((resolve) => {
       const onReject = () => {

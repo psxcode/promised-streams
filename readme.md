@@ -317,7 +317,7 @@ await pushProducer(async (result) => {
 
 ## `pullFromStream`
 Creates `Pull` type producer, which will deliver data from NodeJS stream.  
-> `<T> (stream: NodeJS.ReadableStream) => PullProducer<T>`
+> `<T> (stream: ReadableStream) => PullProducer<T>`
 ```js
 import { pullFromStream } from 'promised-streams'
 
@@ -342,7 +342,7 @@ try {
 
 ## `pushFromStream`
 Creates `Push` type producer, which will deliver data from NodeJS stream.  
-> `<T> (stream: NodeJS.ReadableStream) => PushProducer<T>`
+> `<T> (stream: ReadableStream) => PushProducer<T>`
 ```js
 import { pushFromStream } from 'promised-streams'
 

@@ -1,12 +1,12 @@
 import { subscribeAsync } from './internal.ts'
-import type { PullProducer } from './types.ts'
+import type { PullProducer, ReadableStream } from './types.ts'
 import {
   doneAsyncIteratorResult,
   errorAsyncIteratorResult,
   asyncIteratorResult,
 } from './helpers.ts'
 
-export const pullFromStream = <T>(stream: NodeJS.ReadableStream): PullProducer<T> => {
+export const pullFromStream = <T>(stream: ReadableStream): PullProducer<T> => {
   const waiters: (() => void)[] = []
   const values: (() => Promise<IteratorResult<T>>)[] = []
   let isDone = false

@@ -3,6 +3,8 @@
  * `circularr`, `iterama`, `node-streams` and `@psxcode/wait` packages.
  */
 
+import type { ReadableStream } from './types.ts'
+
 const createData = <T>(length: number): (T | undefined)[] =>
   Array.from({ length }, () => undefined as T | undefined)
 
@@ -106,7 +108,7 @@ export type AsyncObserver<T> = {
  */
 export const subscribeAsync =
   <T>(observer: AsyncObserver<T>) =>
-  (stream: NodeJS.ReadableStream): (() => void) => {
+  (stream: ReadableStream): (() => void) => {
     let promise: Promise<void> = Promise.resolve()
     let consumerRejected = false
     let inProgress = false
