@@ -2,7 +2,6 @@
 Promise-based Streams with `pressure` control, `Error` delivery and lots of `RxJS`-like operators.
 
 [![codecov](https://codecov.io/gh/psxcode/promised-streams/branch/master/graph/badge.svg)](https://codecov.io/gh/psxcode/promised-streams)
-[![Build Status](https://travis-ci.org/psxcode/promised-streams.svg?branch=master)](https://travis-ci.org/psxcode/promised-streams)
 
 ## Install
 
@@ -130,6 +129,8 @@ await composedProducer(async (result) => {
 - [Side Effects](#side-effects)
   - [`pullDo`](#pulldo)
   - [`pushDo`](#pushdo)
+  - [`pullSide`](#pullside)
+  - [`pushSide`](#pushside)
 
 
 ## Terminology
@@ -2081,3 +2082,74 @@ await sideEffectProducer(async (result) => {
     return Promise.reject()
   }
 })
+
+## `pullSide`
+Creates `Pull` producer, which passes incoming values to `sideFunction`, waiting for the promise if necessary, and delivers a rejection of `sideFunction` to the stream as an error. Unlike `pullDo`, a failing side effect is not ignored.
+> `<T> (sideFunction: (value: T) => Promise<void> | void) => (producer: PullProducer<T>): PullProducer<T>`
+```js
+import { pullSide, pullFromIterable } from 'promised-streams'
+
+const producer = pullFromIterable([0, 1, 2, 3])
+
+const sideEffectProducer = pullSide(
+  /* waits until fetch promise resolves */
+  (value) => fetch(`http://hostname:3000?value=${value}`)
+)(producer)
+
+try {
+  /* consume PullProducer */
+  while (true) {
+    const { value, done } = await sideEffectProducer()
+
+    if (done) {
+      break
+    }
+
+    console.log(value)
+  }
+} catch (e) {
+  /* a rejected side effect terminates the stream */
+  console.error(e)
+}
+```
+
+## `pushSide`
+Creates `Push` producer, which passes incoming values to `sideFunction`, waiting for the promise if necessary, and delivers a rejection of `sideFunction` to the stream as an error. Unlike `pushDo`, a failing side effect is not ignored.
+> `<T> (sideFunction: (value: T) => Promise<void> | void) => (consumer: PushConsumer<T>): PushConsumer<T>`
+```js
+import { pushSide, pushFromIterable } from 'promised-streams'
+
+const producer = pushFromIterable([0, 1, 2, 3])
+
+const sideEffects = pushSide(
+  /* waits until fetch promise resolves */
+  (value) => fetch(`http://hostname:3000?value=${value}`)
+)
+
+const sideEffectProducer = compose(
+  producer,
+  sideEffects
+)
+
+/* subscribe to PushProducer */
+await sideEffectProducer(async (result) => {
+  try {
+    /* unwrap the value */
+    const { value, done } = await result
+
+    /* check if done */
+    if (done) {
+      return
+    }
+
+    /* consume the value */
+    console.log(value)
+  } catch (e) {
+    /* catch errors */
+    console.error(e)
+
+    /* cancel subscription */
+    return Promise.reject()
+  }
+})
+```
