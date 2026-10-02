@@ -3,7 +3,8 @@ import assert from 'node:assert/strict'
 import { debug } from './helpers/debug.ts'
 import { fn } from './helpers/fn.ts'
 import { pushConsumer, pushProducer } from '../../promised-streams-test/src/index.ts'
-import { pushMerge } from '../src/index.ts'
+import { pushMerge, pushFromIterable } from '../src/index.ts'
+import type { PushProducer } from '../src/index.ts'
 import { makeNumbers } from './make-numbers.ts'
 import { makeStrings } from './make-strings.ts'
 
@@ -11,6 +12,11 @@ const consumerLog = debug('ai:consumer')
 const sinkLog = debug('ai:sink')
 let logIndex = 0
 const producerLog = () => debug(`ai:producer${logIndex++}`)
+
+/* pushes a single value and returns, never sending a done chunk */
+const stopsEarly: PushProducer<number> = async (consumer) => {
+  await consumer(Promise.resolve({ value: 1, done: false }))
+}
 
 describe('[ pushMerge ]', () => {
   it('should work', async () => {
@@ -138,6 +144,39 @@ describe('[ pushMerge ]', () => {
     await r(w)
 
     assert.deepStrictEqual(spy.calls, [
+      [{ value: 0, done: false }],
+      [{ value: 1, done: false }],
+      [{ value: 1, done: false }],
+      [{ value: undefined, done: true }],
+    ])
+  })
+
+  it('should deliver done when a producer stops without a done chunk', async () => {
+    const seen: unknown[] = []
+    const r = pushMerge(stopsEarly, pushFromIterable(makeNumbers(2)))
+
+    await r(async (result) => {
+      const ir = await result
+      seen.push(ir.done ? 'DONE' : ir.value)
+    })
+
+    assert.deepStrictEqual(seen, [1, 0, 1, 'DONE'])
+  })
+
+  it('should deliver done when producers end with an error on complete', async () => {
+    const data0 = makeNumbers(2)
+    const data1 = makeNumbers(2)
+    const spy = fn(sinkLog)
+    const w = pushConsumer({ log: consumerLog, continueOnError: true })(spy)
+    const r = pushMerge(
+      pushProducer({ log: producerLog(), errorAtStep: 2 })(data0),
+      pushProducer({ log: producerLog(), errorAtStep: 2 })(data1),
+    )
+
+    await r(w)
+
+    assert.deepStrictEqual(spy.calls, [
+      [{ value: 0, done: false }],
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: 1, done: false }],

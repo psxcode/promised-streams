@@ -1,5 +1,6 @@
 import type { PushProducer } from './types.ts'
 import { doneAsyncIteratorResult } from './helpers.ts'
+import { noop } from './noop.ts'
 
 export function pushMerge(): PushProducer<any>
 export function pushMerge<T0>(p0: PushProducer<T0>): PushProducer<T0>
@@ -17,7 +18,6 @@ export function pushMerge<T0, T1, T2, T3>(
 ): PushProducer<T0 | T1 | T2 | T3>
 
 export function pushMerge(...producers: PushProducer<any>[]): PushProducer<any> {
-  let numDoneProducers = 0
   const values: { result: Promise<IteratorResult<any>>; resolve: (arg?: any) => void }[] = []
   let consumerCancel: Promise<void> | undefined = undefined
 
@@ -27,6 +27,28 @@ export function pushMerge(...producers: PushProducer<any>[]): PushProducer<any> 
     }
 
     let consumingInProgress = false
+    let canceled = false
+    let finishedProducers = 0
+    let consumerDone: Promise<void> = Promise.resolve()
+
+    /*
+     * The terminal done is emitted once every producer is gone, however it
+     * ended: with a done chunk, with an error chunk or just by returning.
+     */
+    const finishProducer = (): void => {
+      if (++finishedProducers < producers.length || canceled) {
+        return
+      }
+
+      canceled = true
+
+      try {
+        consumerDone = Promise.resolve(consumer(doneAsyncIteratorResult())).catch(noop)
+      } catch {
+        /* consumer unsubscribed */
+      }
+    }
+
     const consumeNextValue = async (): Promise<void> => {
       if (consumingInProgress) {
         return
@@ -45,9 +67,8 @@ export function pushMerge(...producers: PushProducer<any>[]): PushProducer<any> 
       const { result, resolve } = nextValue
 
       /* has consumer canceled */
-      if (consumerCancel) {
+      if (canceled) {
         resolve(consumerCancel)
-
         consumingInProgress = false
         setImmediate(consumeNextValue)
 
@@ -61,10 +82,7 @@ export function pushMerge(...producers: PushProducer<any>[]): PushProducer<any> 
       } catch {}
 
       if (done) {
-        ++numDoneProducers
-
-        resolve(numDoneProducers === producers.length ? consumer(result) : undefined)
-
+        resolve(undefined)
         consumingInProgress = false
         setImmediate(consumeNextValue)
 
@@ -75,7 +93,8 @@ export function pushMerge(...producers: PushProducer<any>[]): PushProducer<any> 
       try {
         await (consumerResult = consumer(result))
       } catch (e) {
-        consumerCancel = consumerResult = Promise.reject(e)
+        canceled = true
+        ;(consumerCancel = consumerResult = Promise.reject(e)).catch(noop)
       }
 
       resolve(consumerResult)
@@ -84,16 +103,19 @@ export function pushMerge(...producers: PushProducer<any>[]): PushProducer<any> 
       setImmediate(consumeNextValue)
     }
 
-    await Promise.all(
-      producers.map((p) =>
-        p(
-          (result) =>
-            new Promise((resolve) => {
-              values.push({ result, resolve })
-              consumeNextValue()
-            }),
-        ),
+    const producerResults = producers.map((p) =>
+      p(
+        (result) =>
+          new Promise((resolve) => {
+            values.push({ result, resolve })
+            consumeNextValue()
+          }),
       ),
     )
+
+    await Promise.all(
+      producerResults.map((producerResult) => producerResult.then(finishProducer, finishProducer)),
+    )
+    await consumerDone
   }
 }
