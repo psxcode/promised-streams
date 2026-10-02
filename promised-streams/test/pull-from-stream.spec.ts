@@ -4,7 +4,7 @@ import { debug } from './helpers/debug.ts'
 import { fn } from './helpers/fn.ts'
 import { pullConsumer } from '../../promised-streams-test/src/index.ts'
 import { readable } from './helpers/readable.ts'
-import { pullFromStream } from '../src/index.ts'
+import { pullFromStream, pullZip } from '../src/index.ts'
 import { makeNumbers } from './make-numbers.ts'
 
 const producerLog = debug('ai:producer')
@@ -143,5 +143,29 @@ describe('[ pullFromStream ]', () => {
       [{ value: 3, done: false }],
       [{ value: undefined, done: true }],
     ])
+  })
+
+  it('should support concurrent pulls', async () => {
+    const data = makeNumbers(3)
+    const r = pullFromStream(
+      readable({ log: producerLog, eager: true })({ objectMode: true })(data),
+    )
+
+    assert.deepStrictEqual(await Promise.all([r(), r()]), [
+      { value: 0, done: false },
+      { value: 1, done: false },
+    ])
+  })
+
+  it('should support concurrent pulls by composition operators', async () => {
+    const data = makeNumbers(4)
+    const r = pullFromStream(
+      readable({ log: producerLog, eager: true })({ objectMode: true })(data),
+    )
+    const zipped = pullZip(r, r)
+
+    assert.deepStrictEqual(await zipped(), { value: [0, 1], done: false })
+    assert.deepStrictEqual(await zipped(), { value: [2, 3], done: false })
+    assert.deepStrictEqual(await zipped(), { value: undefined, done: true })
   })
 })

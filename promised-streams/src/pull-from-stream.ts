@@ -7,48 +7,56 @@ import {
 } from './helpers.ts'
 
 export const pullFromStream = <T>(stream: NodeJS.ReadableStream): PullProducer<T> => {
-  let hasValue: (() => void) | undefined = undefined
+  const waiters: (() => void)[] = []
   const values: (() => Promise<IteratorResult<T>>)[] = []
+  let isDone = false
+
+  /* wake exactly one pending pull per delivered chunk */
+  const pushValue = (thunk: () => Promise<IteratorResult<T>>): void => {
+    values.push(thunk)
+    waiters.shift()?.()
+  }
 
   subscribeAsync<T>({
     next(value) {
       return new Promise<void>((resolve) => {
-        values.push(() => {
+        pushValue(() => {
           resolve()
 
           return asyncIteratorResult(value)
         })
-        hasValue?.()
       })
     },
     error(e) {
       return new Promise<void>((resolve) => {
-        values.push(() => {
+        pushValue(() => {
           resolve()
 
           return errorAsyncIteratorResult(e)
         })
-        hasValue?.()
       })
     },
     complete() {
-      return new Promise<void>((resolve) => {
-        values.push(() => {
-          resolve()
+      isDone = true
 
-          return doneAsyncIteratorResult()
-        })
-        hasValue?.()
-      })
+      /* end of stream is terminal: every pending pull must observe it */
+      waiters.splice(0).forEach((wake) => wake())
     },
   })(stream)
 
-  return () =>
-    new Promise<void>((resolve) => {
+  return async () => {
+    while (true) {
       if (values.length > 0) {
-        resolve()
-      } else {
-        hasValue = () => resolve()
+        return values.shift()!()
       }
-    }).then(() => values.shift()!())
+
+      if (isDone) {
+        return doneAsyncIteratorResult()
+      }
+
+      await new Promise<void>((resolve) => {
+        waiters.push(resolve)
+      })
+    }
+  }
 }
