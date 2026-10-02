@@ -1,7 +1,8 @@
-import { PullProducer } from './types'
-import { doneAsyncIteratorResult, asyncIteratorResult } from './helpers'
+import type { PullProducer } from './types.ts'
+import { doneAsyncIteratorResult, asyncIteratorResult } from './helpers.ts'
 
-export const pullScan = <S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) =>
+export const pullScan =
+  <S, T>(reducer: (state?: S, value?: T) => Promise<S> | S) =>
   (producer: PullProducer<T>): PullProducer<S> => {
     let isInit = false
     let state: S

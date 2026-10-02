@@ -1,11 +1,11 @@
-import { describe, it } from 'mocha'
-import { expect } from 'chai'
-import debug from 'debug'
-import fn from 'test-fn'
-import { pullConsumer, pullProducer } from 'promised-streams-test/src'
-import { waitTimePromise as wait } from '@psxcode/wait'
-import { pullWithLatest } from '../src'
-import { makeNumbers } from './make-numbers'
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
+import { debug } from './helpers/debug.ts'
+import { fn } from './helpers/fn.ts'
+import { pullConsumer, pullProducer } from '../../promised-streams-test/src/index.ts'
+import { waitTimePromise as wait } from '../src/internal.ts'
+import { pullWithLatest } from '../src/index.ts'
+import { makeNumbers } from './make-numbers.ts'
 
 const consumerLog = debug('ai:consumer')
 const sinkLog = debug('ai:sink')
@@ -22,14 +22,12 @@ describe('[ pullWithLatest ]', () => {
     const w = pullConsumer({ log: consumerLog })(spy)
     const r = pullWithLatest(
       pullProducer({ log: producerLog() })(data0),
-      pullProducer({ log: producerLog() })(data1)
-    )(
-      pullProducer({ log: mainProducerLog(), dataPrepareDelay: 10 })(dataMain)
-    )
+      pullProducer({ log: producerLog() })(data1),
+    )(pullProducer({ log: mainProducerLog(), dataPrepareDelay: 10 })(dataMain))
 
     await w(r)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: [0, 3, 1], done: false }],
       [{ value: [1, 3, 1], done: false }],
       [{ value: undefined, done: true }],
@@ -40,13 +38,11 @@ describe('[ pullWithLatest ]', () => {
     const data0 = makeNumbers(2)
     const spy = fn(sinkLog)
     const w = pullConsumer({ log: consumerLog })(spy)
-    const r = pullWithLatest()(
-      pullProducer({ log: mainProducerLog() })(data0)
-    )
+    const r = pullWithLatest()(pullProducer({ log: mainProducerLog() })(data0))
 
     await w(r)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: [0], done: false }],
       [{ value: [1], done: false }],
       [{ value: undefined, done: true }],
@@ -61,14 +57,12 @@ describe('[ pullWithLatest ]', () => {
     const w = pullConsumer({ log: consumerLog, delay: 50 })(spy)
     const r = pullWithLatest(
       pullProducer({ log: producerLog(), dataPrepareDelay: 7 })(data0),
-      pullProducer({ log: producerLog(), dataPrepareDelay: 7 })(data1)
-    )(
-      pullProducer({ log: mainProducerLog(), dataPrepareDelay: 10 })(dataMain)
-    )
+      pullProducer({ log: producerLog(), dataPrepareDelay: 7 })(data1),
+    )(pullProducer({ log: mainProducerLog(), dataPrepareDelay: 10 })(dataMain))
 
     await w(r)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: [0, 0, 0], done: false }],
       [{ value: [1, 3, 1], done: false }],
       [{ value: undefined, done: true }],
@@ -83,21 +77,17 @@ describe('[ pullWithLatest ]', () => {
     const w = pullConsumer({ log: consumerLog })(spy)
     const r = pullWithLatest(
       pullProducer({ log: producerLog() })(data0),
-      pullProducer({ log: producerLog(), errorAtStep: 0 })(data1)
-    )(
-      pullProducer({ log: mainProducerLog(), dataPrepareDelay: 10 })(dataMain)
-    )
+      pullProducer({ log: producerLog(), errorAtStep: 0 })(data1),
+    )(pullProducer({ log: mainProducerLog(), dataPrepareDelay: 10 })(dataMain))
 
     try {
       await w(r)
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
       /* drain producers */
       await wait(50)
 
-      expect(spy.calls).deep.eq([
-        [{ value: [0, 3, undefined], done: false }],
-      ])
+      assert.deepStrictEqual(spy.calls, [[{ value: [0, 3, undefined], done: false }]])
     }
   })
 
@@ -109,19 +99,17 @@ describe('[ pullWithLatest ]', () => {
     const w = pullConsumer({ log: consumerLog })(spy)
     const r = pullWithLatest(
       pullProducer({ log: producerLog() })(data0),
-      pullProducer({ log: producerLog() })(data1)
-    )(
-      pullProducer({ log: mainProducerLog(), errorAtStep: 0, dataPrepareDelay: 10 })(dataMain)
-    )
+      pullProducer({ log: producerLog() })(data1),
+    )(pullProducer({ log: mainProducerLog(), errorAtStep: 0, dataPrepareDelay: 10 })(dataMain))
 
     try {
       await w(r)
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
       /* drain producers */
       await wait(50)
 
-      expect(spy.calls).deep.eq([])
+      assert.deepStrictEqual(spy.calls, [])
     }
   })
 
@@ -133,14 +121,12 @@ describe('[ pullWithLatest ]', () => {
     const w = pullConsumer({ log: consumerLog, continueOnError: true })(spy)
     const r = pullWithLatest(
       pullProducer({ log: producerLog() })(data0),
-      pullProducer({ log: producerLog(), errorAtStep: 0 })(data1)
-    )(
-      pullProducer({ log: mainProducerLog(), dataPrepareDelay: 10 })(dataMain)
-    )
+      pullProducer({ log: producerLog(), errorAtStep: 0 })(data1),
+    )(pullProducer({ log: mainProducerLog(), dataPrepareDelay: 10 })(dataMain))
 
     await w(r)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: [0, 3, undefined], done: false }],
       [{ value: [1, 3, undefined], done: false }],
       [{ value: undefined, done: true }],
@@ -155,21 +141,17 @@ describe('[ pullWithLatest ]', () => {
     const w = pullConsumer({ log: consumerLog })(spy)
     const r = pullWithLatest(
       pullProducer({ log: producerLog() })(data0),
-      pullProducer({ log: producerLog(), crashAtStep: 0 })(data1)
-    )(
-      pullProducer({ log: mainProducerLog(), dataPrepareDelay: 10 })(dataMain)
-    )
+      pullProducer({ log: producerLog(), crashAtStep: 0 })(data1),
+    )(pullProducer({ log: mainProducerLog(), dataPrepareDelay: 10 })(dataMain))
 
     try {
       await w(r)
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
       /* drain producers */
       await wait(50)
 
-      expect(spy.calls).deep.eq([
-        [{ value: [0, 3, undefined], done: false }],
-      ])
+      assert.deepStrictEqual(spy.calls, [[{ value: [0, 3, undefined], done: false }]])
     }
   })
 
@@ -181,21 +163,18 @@ describe('[ pullWithLatest ]', () => {
     const w = pullConsumer({ log: consumerLog })(spy)
     const r = pullWithLatest(
       pullProducer({ log: producerLog() })(data0),
-      pullProducer({ log: producerLog() })(data1)
-    )(
-      pullProducer({ log: mainProducerLog(), crashAtStep: 0, dataPrepareDelay: 10 })(dataMain)
-    )
+      pullProducer({ log: producerLog() })(data1),
+    )(pullProducer({ log: mainProducerLog(), crashAtStep: 0, dataPrepareDelay: 10 })(dataMain))
 
     try {
       await w(r)
 
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
       /* drain producers */
       await wait(50)
 
-      expect(spy.calls).deep.eq([
-      ])
+      assert.deepStrictEqual(spy.calls, [])
     }
   })
 })

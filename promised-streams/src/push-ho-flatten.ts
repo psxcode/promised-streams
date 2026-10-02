@@ -1,32 +1,37 @@
-import { PushConsumer, PushProducer } from './types'
+import type { PushConsumer, PushProducer } from './types.ts'
 
-const stripDone = (consumer: PushConsumer<any>): PushConsumer<any> => async (result) => {
-  let ir: IteratorResult<any>
-  try {
-    ir = await result
-  } catch {
-    return consumer(result as any)
+const stripDone =
+  (consumer: PushConsumer<any>): PushConsumer<any> =>
+  async (result) => {
+    let ir: IteratorResult<any>
+    try {
+      ir = await result
+    } catch {
+      return consumer(result as any)
+    }
+
+    if (ir.done) {
+      return
+    }
+
+    return consumer(result)
   }
 
-  if (ir.done) {
-    return
+const pushDoResult =
+  (doFunction: (result: Promise<void>) => void) =>
+  (consumer: PushConsumer<any>): PushConsumer<any> =>
+  async (result) => {
+    const consumerResult = consumer(result)
+
+    try {
+      doFunction(consumerResult)
+    } catch {}
+
+    return consumerResult
   }
 
-  return consumer(result)
-}
-
-const pushDoResult = (doFunction: (result: Promise<void>) => void) => (consumer: PushConsumer<any>): PushConsumer<any> => async (result) => {
-  const consumerResult = consumer(result)
-
-  try {
-    doFunction(consumerResult)
-  } catch {
-  }
-
-  return consumerResult
-}
-
-export const pushHoFlatten = <T> (consumer: PushConsumer<T>): PushConsumer<PushProducer<T>> =>
+export const pushHoFlatten =
+  <T>(consumer: PushConsumer<T>): PushConsumer<PushProducer<T>> =>
   async (result) => {
     let ir: IteratorResult<PushProducer<T>>
     try {
@@ -40,7 +45,7 @@ export const pushHoFlatten = <T> (consumer: PushConsumer<T>): PushConsumer<PushP
     }
 
     let consumerResult = Promise.resolve()
-    await ir.value(pushDoResult((result) => consumerResult = result)(stripDone(consumer)))
+    await ir.value(pushDoResult((nextResult) => (consumerResult = nextResult))(stripDone(consumer)))
 
     return consumerResult
   }

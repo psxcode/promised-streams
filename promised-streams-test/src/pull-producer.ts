@@ -1,19 +1,25 @@
-import { waitTimePromise as wait } from '@psxcode/wait'
-import { iterate } from 'iterama'
-import { PullProducer } from 'promised-streams/src'
-import { noop } from './noop'
-import { isPositiveNumber } from './is-positive-number'
+import { iterate, waitTimePromise as wait } from './internal.ts'
+import type { PullProducer } from 'promised-streams'
+import { noop } from './noop.ts'
+import { isPositiveNumber } from './is-positive-number.ts'
 
 export type PullProducerOptions = {
-  log?: typeof console.log,
-  dataResolveDelay?: number,
-  dataPrepareDelay?: number,
-  errorAtStep?: number,
-  crashAtStep?: number,
+  log?: typeof console.log
+  dataResolveDelay?: number
+  dataPrepareDelay?: number
+  errorAtStep?: number
+  crashAtStep?: number
 }
 
-export const pullProducer = ({ log = noop, dataPrepareDelay, dataResolveDelay, errorAtStep, crashAtStep }: PullProducerOptions = {}) =>
-  <T> (data: Iterable<T>): PullProducer<T> => {
+export const pullProducer =
+  ({
+    log = noop,
+    dataPrepareDelay,
+    dataResolveDelay,
+    errorAtStep,
+    crashAtStep,
+  }: PullProducerOptions = {}) =>
+  <T>(data: Iterable<T>): PullProducer<T> => {
     let i = 0
     const it = iterate(data)
 
@@ -23,26 +29,24 @@ export const pullProducer = ({ log = noop, dataPrepareDelay, dataResolveDelay, e
       if (errorAtStep === i) {
         log(`returning error at step ${i++}`)
 
-        return new Promise(async (_, reject) => {
+        return (async () => {
           if (isPositiveNumber(dataResolveDelay)) {
             await wait(dataResolveDelay)
           }
 
-          reject(new Error('producer error'))
-        })
+          throw new Error('producer error')
+        })()
       }
 
-      log(ir.done
-        ? `returning done at step ${i++}`
-        : `returning chunk ${i++}`)
+      log(ir.done ? `returning done at step ${i++}` : `returning chunk ${i++}`)
 
-      return new Promise(async (resolve) => {
+      return (async () => {
         if (isPositiveNumber(dataResolveDelay)) {
           await wait(dataResolveDelay)
         }
 
-        resolve(ir)
-      })
+        return ir
+      })()
     }
 
     return () => {

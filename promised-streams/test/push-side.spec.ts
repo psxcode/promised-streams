@@ -1,11 +1,11 @@
-import { describe, it } from 'mocha'
-import { expect } from 'chai'
-import debug from 'debug'
-import fn from 'test-fn'
-import { waitTimePromise as wait } from '@psxcode/wait'
-import { pushConsumer, pushProducer } from 'promised-streams-test/src'
-import { pushSide } from '../src'
-import { makeNumbers } from './make-numbers'
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
+import { debug } from './helpers/debug.ts'
+import { fn } from './helpers/fn.ts'
+import { waitTimePromise as wait } from '../src/internal.ts'
+import { pushConsumer, pushProducer } from '../../promised-streams-test/src/index.ts'
+import { pushSide } from '../src/index.ts'
+import { makeNumbers } from './make-numbers.ts'
 
 const producerLog = debug('ai:producer')
 const consumerLog = debug('ai:consumer')
@@ -25,7 +25,6 @@ const errorFn = () => {
   throw new Error('error in mapper')
 }
 
-
 describe('[ pushSide ]', () => {
   it('should work', async () => {
     const data = makeNumbers(4)
@@ -37,7 +36,7 @@ describe('[ pushSide ]', () => {
 
     await r(t(w))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: 2, done: false }],
@@ -45,9 +44,7 @@ describe('[ pushSide ]', () => {
       [{ value: undefined, done: true }],
     ])
 
-    expect(sideSpy.calls).deep.eq([
-      [0], [1], [2], [3],
-    ])
+    assert.deepStrictEqual(sideSpy.calls, [[0], [1], [2], [3]])
   })
 
   it('should work with async map', async () => {
@@ -60,7 +57,7 @@ describe('[ pushSide ]', () => {
 
     await r(t(w))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: 2, done: false }],
@@ -68,9 +65,7 @@ describe('[ pushSide ]', () => {
       [{ value: undefined, done: true }],
     ])
 
-    expect(sideSpy.calls).deep.eq([
-      [0], [1], [2], [3],
-    ])
+    assert.deepStrictEqual(sideSpy.calls, [[0], [1], [2], [3]])
   })
 
   it('should deliver consumer cancel', async () => {
@@ -83,14 +78,9 @@ describe('[ pushSide ]', () => {
 
     await r(t(w))
 
-    expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-      [{ value: 1, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }], [{ value: 1, done: false }]])
 
-    expect(sideSpy.calls).deep.eq([
-      [0], [1],
-    ])
+    assert.deepStrictEqual(sideSpy.calls, [[0], [1]])
   })
 
   it('should deliver consumer crash', async () => {
@@ -103,13 +93,9 @@ describe('[ pushSide ]', () => {
 
     await r(t(w))
 
-    expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }]])
 
-    expect(sideSpy.calls).deep.eq([
-      [0], [1],
-    ])
+    assert.deepStrictEqual(sideSpy.calls, [[0], [1]])
   })
 
   it('should deliver producer error to consumer', async () => {
@@ -122,14 +108,9 @@ describe('[ pushSide ]', () => {
 
     await r(t(w))
 
-    expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-      [{ value: 1, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }], [{ value: 1, done: false }]])
 
-    expect(sideSpy.calls).deep.eq([
-      [0], [1],
-    ])
+    assert.deepStrictEqual(sideSpy.calls, [[0], [1]])
   })
 
   it('should deliver side-effect function error to consumer', async () => {
@@ -142,6 +123,6 @@ describe('[ pushSide ]', () => {
 
     await r(t(w))
 
-    expect(spy.calls).deep.eq([])
+    assert.deepStrictEqual(spy.calls, [])
   })
 })

@@ -1,9 +1,9 @@
-import { describe, it } from 'mocha'
-import { expect } from 'chai'
-import debug from 'debug'
-import fn from 'test-fn'
-import { pushProducer, pushConsumer } from '../src'
-import { makeNumbers } from './make-numbers'
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
+import { debug } from './helpers/debug.ts'
+import { fn } from './helpers/fn.ts'
+import { pushProducer, pushConsumer } from '../src/index.ts'
+import { makeNumbers } from './make-numbers.ts'
 
 const producerLog = debug('ait:producer')
 const consumerLog = debug('ait:consumer')
@@ -18,7 +18,7 @@ describe('[ push-producer / push-consumer ]', () => {
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: undefined, done: true }],
@@ -33,7 +33,7 @@ describe('[ push-producer / push-consumer ]', () => {
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: undefined, done: true }],
@@ -48,7 +48,7 @@ describe('[ push-producer / push-consumer ]', () => {
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: undefined, done: true }],
@@ -63,7 +63,7 @@ describe('[ push-producer / push-consumer ]', () => {
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: undefined, done: true }],
@@ -78,9 +78,7 @@ describe('[ push-producer / push-consumer ]', () => {
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }]])
   })
 
   it('should handle producer error on complete', async () => {
@@ -91,10 +89,7 @@ describe('[ push-producer / push-consumer ]', () => {
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-      [{ value: 1, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }], [{ value: 1, done: false }]])
   })
 
   it('should handle producer error and continue', async () => {
@@ -105,7 +100,7 @@ describe('[ push-producer / push-consumer ]', () => {
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 2, done: false }],
       [{ value: undefined, done: true }],
@@ -120,9 +115,7 @@ describe('[ push-producer / push-consumer ]', () => {
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }]])
   })
 
   it('should handle consumer crash on complete', async () => {
@@ -133,10 +126,7 @@ describe('[ push-producer / push-consumer ]', () => {
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-      [{ value: 1, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }], [{ value: 1, done: false }]])
   })
 
   it('should handle consumer cancel', async () => {
@@ -147,10 +137,7 @@ describe('[ push-producer / push-consumer ]', () => {
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-      [{ value: 1, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }], [{ value: 1, done: false }]])
   })
 
   it('should handle consumer cancel on complete', async () => {
@@ -161,7 +148,7 @@ describe('[ push-producer / push-consumer ]', () => {
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: undefined, done: true }],

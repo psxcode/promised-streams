@@ -1,4 +1,4 @@
-export { pushConsumer } from './push-consumer'
-export { pullConsumer } from './pull-consumer'
-export { pushProducer } from './push-producer'
-export { pullProducer } from './pull-producer'
+export { pushConsumer } from './push-consumer.ts'
+export { pullConsumer } from './pull-consumer.ts'
+export { pushProducer } from './push-producer.ts'
+export { pullProducer } from './pull-producer.ts'

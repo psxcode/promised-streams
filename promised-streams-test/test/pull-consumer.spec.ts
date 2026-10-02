@@ -1,9 +1,9 @@
-import { describe, it } from 'mocha'
-import { expect } from 'chai'
-import debug from 'debug'
-import fn from 'test-fn'
-import { pullProducer, pullConsumer } from '../src'
-import { makeNumbers } from './make-numbers'
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
+import { debug } from './helpers/debug.ts'
+import { fn } from './helpers/fn.ts'
+import { pullProducer, pullConsumer } from '../src/index.ts'
+import { makeNumbers } from './make-numbers.ts'
 
 const producerLog = debug('ait:producer')
 const consumerLog = debug('ait:consumer')
@@ -18,7 +18,7 @@ describe('[ pull-consumer / pull-producer ]', () => {
 
     await w(r)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: undefined, done: true }],
@@ -33,7 +33,7 @@ describe('[ pull-consumer / pull-producer ]', () => {
 
     await w(r)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: undefined, done: true }],
@@ -48,7 +48,7 @@ describe('[ pull-consumer / pull-producer ]', () => {
 
     await w(r)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: undefined, done: true }],
@@ -63,7 +63,7 @@ describe('[ pull-consumer / pull-producer ]', () => {
 
     await w(r)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: undefined, done: true }],
@@ -79,9 +79,9 @@ describe('[ pull-consumer / pull-producer ]', () => {
     try {
       await w(r)
 
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
-      expect(spy.calls).deep.eq([])
+      assert.deepStrictEqual(spy.calls, [])
     }
   })
 
@@ -94,12 +94,9 @@ describe('[ pull-consumer / pull-producer ]', () => {
     try {
       await w(r)
 
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
-      expect(spy.calls).deep.eq([
-        [{ value: 0, done: false }],
-        [{ value: 1, done: false }],
-      ])
+      assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }], [{ value: 1, done: false }]])
     }
   })
 
@@ -112,9 +109,9 @@ describe('[ pull-consumer / pull-producer ]', () => {
     try {
       await w(r)
 
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
-      expect(spy.calls).deep.eq([])
+      assert.deepStrictEqual(spy.calls, [])
     }
   })
 
@@ -127,12 +124,9 @@ describe('[ pull-consumer / pull-producer ]', () => {
     try {
       await w(r)
 
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
-      expect(spy.calls).deep.eq([
-        [{ value: 0, done: false }],
-        [{ value: 1, done: false }],
-      ])
+      assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }], [{ value: 1, done: false }]])
     }
   })
 
@@ -145,9 +139,9 @@ describe('[ pull-consumer / pull-producer ]', () => {
     try {
       await w(r)
 
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
-      expect(spy.calls).deep.eq([])
+      assert.deepStrictEqual(spy.calls, [])
     }
   })
 
@@ -159,7 +153,7 @@ describe('[ pull-consumer / pull-producer ]', () => {
 
     await w(r)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 1, done: false }],
       [{ value: undefined, done: true }],
     ])

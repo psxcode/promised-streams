@@ -1,14 +1,22 @@
-/* eslint-disable import/export */
-import { PushProducer } from './types'
-import { errorAsyncIteratorResult, asyncIteratorResult } from './helpers'
-import { noop } from './noop'
+import type { PushProducer } from './types.ts'
+import { errorAsyncIteratorResult, asyncIteratorResult } from './helpers.ts'
+import { noop } from './noop.ts'
 
-export function pushWithLatest (): <T>(main: PushProducer<T>) => PushProducer<[T]>
-export function pushWithLatest <T1>(p1: PushProducer<T1>): <T>(main: PushProducer<T>) => PushProducer<[T, T1]>
-export function pushWithLatest <T1, T2>(p1: PushProducer<T1>, p2: PushProducer<T2>): <T>(main: PushProducer<T>) => PushProducer<[T, T1, T2]>
-export function pushWithLatest <T1, T2, T3>(p1: PushProducer<T1>, p2: PushProducer<T2>, p3: PushProducer<T3>): <T>(main: PushProducer<T>) => PushProducer<[T, T1, T2, T3]>
+export function pushWithLatest(): <T>(main: PushProducer<T>) => PushProducer<[T]>
+export function pushWithLatest<T1>(
+  p1: PushProducer<T1>,
+): <T>(main: PushProducer<T>) => PushProducer<[T, T1]>
+export function pushWithLatest<T1, T2>(
+  p1: PushProducer<T1>,
+  p2: PushProducer<T2>,
+): <T>(main: PushProducer<T>) => PushProducer<[T, T1, T2]>
+export function pushWithLatest<T1, T2, T3>(
+  p1: PushProducer<T1>,
+  p2: PushProducer<T2>,
+  p3: PushProducer<T3>,
+): <T>(main: PushProducer<T>) => PushProducer<[T, T1, T2, T3]>
 
-export function pushWithLatest (...producers: PushProducer<any>[]) {
+export function pushWithLatest(...producers: PushProducer<any>[]) {
   return (mainProducer: PushProducer<any>): PushProducer<any[]> => {
     const latest: any[] = producers.map(() => undefined)
     let consumerResult: Promise<void> = Promise.resolve()
@@ -16,8 +24,8 @@ export function pushWithLatest (...producers: PushProducer<any>[]) {
 
     return async (consumer) => {
       await Promise.all([
-        ...producers.map((p, i) => p(
-          async (result) => {
+        ...producers.map((p, i) =>
+          p(async (result) => {
             if (consumerCancel) {
               return consumerCancel
             }
@@ -27,7 +35,9 @@ export function pushWithLatest (...producers: PushProducer<any>[]) {
               ir = await result
             } catch (e) {
               try {
-                await (consumerResult = consumerResult.then(() => consumer(errorAsyncIteratorResult(e))))
+                await (consumerResult = consumerResult.then(() =>
+                  consumer(errorAsyncIteratorResult(e)),
+                ))
               } catch {
                 consumerCancel = consumerResult
               }
@@ -38,8 +48,8 @@ export function pushWithLatest (...producers: PushProducer<any>[]) {
             if (!ir.done) {
               latest[i] = ir.value
             }
-          }
-        )),
+          }),
+        ),
         mainProducer(async (result) => {
           if (consumerCancel) {
             return consumerCancel
@@ -50,7 +60,9 @@ export function pushWithLatest (...producers: PushProducer<any>[]) {
             ir = await result
           } catch (e) {
             try {
-              await (consumerResult = consumerResult.then(() => consumer(errorAsyncIteratorResult(e))))
+              await (consumerResult = consumerResult.then(() =>
+                consumer(errorAsyncIteratorResult(e)),
+              ))
             } catch {
               consumerCancel = consumerResult
             }
@@ -63,13 +75,15 @@ export function pushWithLatest (...producers: PushProducer<any>[]) {
               await (consumerResult = consumerResult.then(() => consumer(result)))
             } catch {}
 
-            (consumerCancel = Promise.reject()).catch(noop)
+            ;(consumerCancel = Promise.reject()).catch(noop)
 
             return consumerResult
           }
 
           try {
-            await (consumerResult = consumerResult.then(() => consumer(asyncIteratorResult([ir.value, ...latest]))))
+            await (consumerResult = consumerResult.then(() =>
+              consumer(asyncIteratorResult([ir.value, ...latest])),
+            ))
           } catch {
             consumerCancel = consumerResult
           }

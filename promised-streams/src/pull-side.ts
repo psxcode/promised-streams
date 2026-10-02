@@ -1,7 +1,9 @@
-import { PullProducer } from './types'
-import { errorAsyncIteratorResult } from './helpers'
+import type { PullProducer } from './types.ts'
+import { errorAsyncIteratorResult } from './helpers.ts'
 
-export const pullSide = <T> (sideFn: (value: T) => Promise<void> | void) => (producer: PullProducer<T>): PullProducer<T> =>
+export const pullSide =
+  <T>(sideFn: (value: T) => Promise<void> | void) =>
+  (producer: PullProducer<T>): PullProducer<T> =>
   async () => {
     const air = producer()
     const ir = await air

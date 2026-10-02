@@ -1,8 +1,9 @@
-import { PushProducer } from './types'
-import { doneAsyncIteratorResult } from './helpers'
-import { noop } from './noop'
+import type { PushProducer } from './types.ts'
+import { doneAsyncIteratorResult } from './helpers.ts'
+import { noop } from './noop.ts'
 
-export const pushConcat = <T> (...producers: PushProducer<T>[]): PushProducer<T> =>
+export const pushConcat =
+  <T>(...producers: PushProducer<T>[]): PushProducer<T> =>
   async (consumer) => {
     let consumerError: Promise<void> | undefined
 
@@ -28,7 +29,7 @@ export const pushConcat = <T> (...producers: PushProducer<T>[]): PushProducer<T>
           return await (consumerResult = consumer(result))
         } catch (e) {
           if (!consumerResult) {
-            (consumerResult = Promise.reject(e)).catch(noop)
+            ;(consumerResult = Promise.reject(e)).catch(noop)
           }
           /* store cancelation for next producers */
           consumerError = consumerResult

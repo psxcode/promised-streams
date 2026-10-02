@@ -1,13 +1,15 @@
-export const iteratorResult = <T> (value: T): IteratorResult<T> => ({ value, done: false })
+export const iteratorResult = <T>(value: T): IteratorResult<T> => ({ value, done: false })
 
 export const doneIteratorResult = () => ({ value: undefined, done: true }) as IteratorResult<any>
 
-export const asyncIteratorResult = <T> (value: T): Promise<IteratorResult<T>> =>
+export const asyncIteratorResult = <T>(value: T): Promise<IteratorResult<T>> =>
   Promise.resolve({ value, done: false })
 
-export const errorAsyncIteratorResult = (err?: any): Promise<IteratorResult<any>> => Promise.reject(err)
+export const errorAsyncIteratorResult = (err?: any): Promise<IteratorResult<any>> =>
+  Promise.reject(err)
 
-export const doneAsyncIteratorResult = (): Promise<IteratorResult<any>> => Promise.resolve(doneIteratorResult())
+export const doneAsyncIteratorResult = (): Promise<IteratorResult<any>> =>
+  Promise.resolve(doneIteratorResult())
 
 export const racePromises = () => {
   /* rotate index offset to prevent promise index lock */
@@ -22,7 +24,7 @@ export const racePromises = () => {
         if (promise) {
           promise.then(
             (res) => resolve([res, promiseIndex]),
-            (reason) => reject([reason, promiseIndex])
+            (reason) => reject([reason, promiseIndex]),
           )
         }
       }

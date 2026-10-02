@@ -1,6 +1,6 @@
-import { PullProducer } from './types'
+import type { PullProducer } from './types.ts'
 
-export const pullHoFlatten = <T> (producer: PullProducer<PullProducer<T>>): PullProducer<T> => {
+export const pullHoFlatten = <T>(producer: PullProducer<PullProducer<T>>): PullProducer<T> => {
   let p: PullProducer<T> | null
 
   const get: PullProducer<T> = async (): Promise<IteratorResult<T>> => {

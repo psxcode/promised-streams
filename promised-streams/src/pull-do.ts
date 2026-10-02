@@ -1,17 +1,18 @@
-import { PullProducer } from './types'
+import type { PullProducer } from './types.ts'
 
-export const pullDo = <T> (doFunction: (arg: T) => Promise<void> | void) =>
+export const pullDo =
+  <T>(doFunction: (arg: T) => Promise<void> | void) =>
   (producer: PullProducer<T>): PullProducer<T> =>
-    async () => {
-      const ir = await producer()
+  async () => {
+    const ir = await producer()
 
-      if (ir.done) {
-        return ir as any
-      }
-
-      try {
-        await doFunction(ir.value)
-      } catch {}
-
-      return ir
+    if (ir.done) {
+      return ir as any
     }
+
+    try {
+      await doFunction(ir.value)
+    } catch {}
+
+    return ir
+  }

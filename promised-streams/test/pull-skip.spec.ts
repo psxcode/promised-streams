@@ -1,10 +1,10 @@
-import { describe, it } from 'mocha'
-import { expect } from 'chai'
-import debug from 'debug'
-import fn from 'test-fn'
-import { pullConsumer, pullProducer } from 'promised-streams-test/src'
-import { pullSkip } from '../src'
-import { makeNumbers } from './make-numbers'
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
+import { debug } from './helpers/debug.ts'
+import { fn } from './helpers/fn.ts'
+import { pullConsumer, pullProducer } from '../../promised-streams-test/src/index.ts'
+import { pullSkip } from '../src/index.ts'
+import { makeNumbers } from './make-numbers.ts'
 
 const producerLog = debug('ai:producer')
 const consumerLog = debug('ai:consumer')
@@ -20,7 +20,7 @@ describe('[ pullSkip ]', () => {
 
     await w(t(r))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 2, done: false }],
       [{ value: 3, done: false }],
       [{ value: undefined, done: true }],
@@ -36,9 +36,7 @@ describe('[ pullSkip ]', () => {
 
     await w(t(r))
 
-    expect(spy.calls).deep.eq([
-      [{ value: undefined, done: true }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: undefined, done: true }]])
   })
 
   it('should work with negative numbers', async () => {
@@ -50,7 +48,7 @@ describe('[ pullSkip ]', () => {
 
     await w(t(r))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: undefined, done: true }],
@@ -66,9 +64,7 @@ describe('[ pullSkip ]', () => {
 
     await w(t(r))
 
-    expect(spy.calls).deep.eq([
-      [{ value: undefined, done: true }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: undefined, done: true }]])
   })
 
   it('should work with 0 skip', async () => {
@@ -80,7 +76,7 @@ describe('[ pullSkip ]', () => {
 
     await w(t(r))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: 2, done: false }],
@@ -98,11 +94,9 @@ describe('[ pullSkip ]', () => {
 
     try {
       await w(t(r))
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
-      expect(spy.calls).deep.eq([
-        [{ value: 2, done: false }],
-      ])
+      assert.deepStrictEqual(spy.calls, [[{ value: 2, done: false }]])
     }
   })
 
@@ -115,12 +109,9 @@ describe('[ pullSkip ]', () => {
 
     try {
       await w(t(r))
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
-      expect(spy.calls).deep.eq([
-        [{ value: 2, done: false }],
-        [{ value: 3, done: false }],
-      ])
+      assert.deepStrictEqual(spy.calls, [[{ value: 2, done: false }], [{ value: 3, done: false }]])
     }
   })
 
@@ -133,10 +124,10 @@ describe('[ pullSkip ]', () => {
 
     try {
       await w(t(r))
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
       /* cannot get 'done' value */
-      expect(spy.calls).deep.eq([])
+      assert.deepStrictEqual(spy.calls, [])
     }
   })
 
@@ -149,10 +140,10 @@ describe('[ pullSkip ]', () => {
 
     try {
       await w(t(r))
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
       /* cannot get 'done' value */
-      expect(spy.calls).deep.eq([])
+      assert.deepStrictEqual(spy.calls, [])
     }
   })
 
@@ -165,11 +156,9 @@ describe('[ pullSkip ]', () => {
 
     try {
       await w(t(r))
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
-      expect(spy.calls).deep.eq([
-        [{ value: 1, done: false }],
-      ])
+      assert.deepStrictEqual(spy.calls, [[{ value: 1, done: false }]])
     }
   })
 
@@ -182,12 +171,9 @@ describe('[ pullSkip ]', () => {
 
     try {
       await w(t(r))
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
-      expect(spy.calls).deep.eq([
-        [{ value: 2, done: false }],
-        [{ value: 3, done: false }],
-      ])
+      assert.deepStrictEqual(spy.calls, [[{ value: 2, done: false }], [{ value: 3, done: false }]])
     }
   })
 
@@ -200,11 +186,9 @@ describe('[ pullSkip ]', () => {
 
     try {
       await w(t(r))
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
-      expect(spy.calls).deep.eq([
-        [{ value: 0, done: false }],
-      ])
+      assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }]])
     }
   })
 
@@ -217,12 +201,9 @@ describe('[ pullSkip ]', () => {
 
     try {
       await w(t(r))
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
-      expect(spy.calls).deep.eq([
-        [{ value: 0, done: false }],
-        [{ value: 1, done: false }],
-      ])
+      assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }], [{ value: 1, done: false }]])
     }
   })
 
@@ -235,7 +216,7 @@ describe('[ pullSkip ]', () => {
 
     await w(t(r))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 2, done: false }],
       [{ value: 3, done: false }],
       [{ value: undefined, done: true }],
@@ -251,11 +232,9 @@ describe('[ pullSkip ]', () => {
 
     try {
       await w(t(r))
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
-      expect(spy.calls).deep.eq([
-        [{ value: 0, done: false }],
-      ])
+      assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }]])
     }
   })
 
@@ -268,9 +247,9 @@ describe('[ pullSkip ]', () => {
 
     try {
       await w(t(r))
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
-      expect(spy.calls).deep.eq([])
+      assert.deepStrictEqual(spy.calls, [])
     }
   })
 })

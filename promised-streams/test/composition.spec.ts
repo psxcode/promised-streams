@@ -1,11 +1,17 @@
-import { describe, it } from 'mocha'
-import { expect } from 'chai'
-import debug from 'debug'
-import fn from 'test-fn'
-import { pipe, compose } from '@psxcode/compose'
-import { pullConsumer, pullProducer, pushConsumer, pushProducer } from 'promised-streams-test/src'
-import { pullMap, pullReduce, pushMap, pushReduce, PushConsumer } from '../src'
-import { makeNumbers } from './make-numbers'
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
+import { debug } from './helpers/debug.ts'
+import { fn } from './helpers/fn.ts'
+import { pipe, compose } from './helpers/compose.ts'
+import {
+  pullConsumer,
+  pullProducer,
+  pushConsumer,
+  pushProducer,
+} from '../../promised-streams-test/src/index.ts'
+import { pullMap, pullReduce, pushMap, pushReduce } from '../src/index.ts'
+import type { PushConsumer } from '../src/index.ts'
+import { makeNumbers } from './make-numbers.ts'
 
 const producerLog = debug('ai:producer')
 const consumerLog = debug('ai:consumer')
@@ -17,10 +23,10 @@ const mult2 = (value: number) => {
 
   return value * 2
 }
-const addReducer = (state: string, value: number) => {
+const addReducer = (state?: string, value?: number) => {
   reducerLog(value)
 
-  return state !== undefined ? state + value : ''
+  return state !== undefined ? state + (value as number) : ''
 }
 
 describe('[ composition ]', () => {
@@ -37,7 +43,7 @@ describe('[ composition ]', () => {
 
     await pipedConsumer(r)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: '04812', done: false }],
       [{ value: undefined, done: true }],
     ])
@@ -56,7 +62,7 @@ describe('[ composition ]', () => {
 
     await w(pipedProducer)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: '04812', done: false }],
       [{ value: undefined, done: true }],
     ])
@@ -75,7 +81,7 @@ describe('[ composition ]', () => {
 
     await composedProducer(w)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: '04812', done: false }],
       [{ value: undefined, done: true }],
     ])
@@ -94,7 +100,7 @@ describe('[ composition ]', () => {
 
     await r(composedConsumer)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: '04812', done: false }],
       [{ value: undefined, done: true }],
     ])

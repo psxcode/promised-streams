@@ -1,6 +1,6 @@
-import { PushConsumer } from './types'
+import type { PushConsumer } from './types.ts'
 
-export const pushUnique = <T> (consumer: PushConsumer<T>): PushConsumer<T> => {
+export const pushUnique = <T>(consumer: PushConsumer<T>): PushConsumer<T> => {
   const last = new Set<T>()
 
   return async (result) => {

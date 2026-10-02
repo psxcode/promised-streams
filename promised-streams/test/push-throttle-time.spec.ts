@@ -1,11 +1,11 @@
-import { describe, it } from 'mocha'
-import { expect } from 'chai'
-import debug from 'debug'
-import fn from 'test-fn'
-import { waitTimePromise as wait } from '@psxcode/wait'
-import { pushConsumer, pushProducer } from 'promised-streams-test/src'
-import { pushThrottleTime } from '../src'
-import { makeNumbers } from './make-numbers'
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
+import { debug } from './helpers/debug.ts'
+import { fn } from './helpers/fn.ts'
+import { waitTimePromise as wait } from '../src/internal.ts'
+import { pushConsumer, pushProducer } from '../../promised-streams-test/src/index.ts'
+import { pushThrottleTime } from '../src/index.ts'
+import { makeNumbers } from './make-numbers.ts'
 
 const producerLog = debug('ai:producer')
 const consumerLog = debug('ai:consumer')
@@ -24,7 +24,7 @@ describe('[ pushThrottleTime ]', () => {
     /* wait additional time to drain throttle */
     await wait(20)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 3, done: false }],
       [{ value: undefined, done: true }],
     ])
@@ -42,9 +42,7 @@ describe('[ pushThrottleTime ]', () => {
     /* wait additional time to drain throttle */
     await wait(20)
 
-    expect(spy.calls).deep.eq([
-      [{ value: 3, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 3, done: false }]])
   })
 
   it('should handle immediate done', async () => {
@@ -59,9 +57,7 @@ describe('[ pushThrottleTime ]', () => {
     /* wait additional time to drain throttle */
     await wait(20)
 
-    expect(spy.calls).deep.eq([
-      [{ value: undefined, done: true }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: undefined, done: true }]])
   })
 
   it('should deliver consumer cancel', async () => {
@@ -76,9 +72,7 @@ describe('[ pushThrottleTime ]', () => {
     /* wait additional time to drain throttle */
     await wait(20)
 
-    expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }]])
   })
 
   it('should handle consumer crash', async () => {
@@ -93,9 +87,7 @@ describe('[ pushThrottleTime ]', () => {
     /* wait additional time to drain throttle */
     await wait(20)
 
-    expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }]])
   })
 
   it('should deliver producer error to consumer', async () => {
@@ -110,9 +102,7 @@ describe('[ pushThrottleTime ]', () => {
     /* wait additional time to drain throttle */
     await wait(20)
 
-    expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }]])
   })
 
   it('should be able to continue after producer error', async () => {
@@ -127,7 +117,7 @@ describe('[ pushThrottleTime ]', () => {
     /* wait additional time to drain throttle */
     await wait(20)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 2, done: false }],
       [{ value: 3, done: false }],

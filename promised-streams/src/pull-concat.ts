@@ -1,7 +1,7 @@
-import { PullProducer } from './types'
-import { doneIteratorResult } from './helpers'
+import type { PullProducer } from './types.ts'
+import { doneIteratorResult } from './helpers.ts'
 
-export const pullConcat = <T> (...producers: PullProducer<T>[]): PullProducer<T> => {
+export const pullConcat = <T>(...producers: PullProducer<T>[]): PullProducer<T> => {
   let i = 0
 
   return async () => {

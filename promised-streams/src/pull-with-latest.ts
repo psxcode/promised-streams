@@ -1,16 +1,24 @@
-/* eslint-disable import/export */
-import { PullProducer } from './types'
-import { racePromises, asyncIteratorResult, errorAsyncIteratorResult } from './helpers'
-import { noop } from './noop'
+import type { PullProducer } from './types.ts'
+import { racePromises, asyncIteratorResult, errorAsyncIteratorResult } from './helpers.ts'
+import { noop } from './noop.ts'
 
 const isValid = (obj: any) => !!obj
 
-export function pullWithLatest (): <T>(main: PullProducer<T>) => PullProducer<[T]>
-export function pullWithLatest <T1>(p1: PullProducer<T1>): <T>(main: PullProducer<T>) => PullProducer<[T, T1]>
-export function pullWithLatest <T1, T2>(p1: PullProducer<T1>, p2: PullProducer<T2>): <T>(main: PullProducer<T>) => PullProducer<[T, T1, T2]>
-export function pullWithLatest <T1, T2, T3>(p1: PullProducer<T1>, p2: PullProducer<T2>, p3: PullProducer<T3>): <T>(main: PullProducer<T>) => PullProducer<[T, T1, T2, T3]>
+export function pullWithLatest(): <T>(main: PullProducer<T>) => PullProducer<[T]>
+export function pullWithLatest<T1>(
+  p1: PullProducer<T1>,
+): <T>(main: PullProducer<T>) => PullProducer<[T, T1]>
+export function pullWithLatest<T1, T2>(
+  p1: PullProducer<T1>,
+  p2: PullProducer<T2>,
+): <T>(main: PullProducer<T>) => PullProducer<[T, T1, T2]>
+export function pullWithLatest<T1, T2, T3>(
+  p1: PullProducer<T1>,
+  p2: PullProducer<T2>,
+  p3: PullProducer<T3>,
+): <T>(main: PullProducer<T>) => PullProducer<[T, T1, T2, T3]>
 
-export function pullWithLatest (...producers: PullProducer<any>[]) {
+export function pullWithLatest(...producers: PullProducer<any>[]) {
   return (mainProducer: PullProducer<any>): PullProducer<any[]> => {
     const activeProducers: (PullProducer<any> | null)[] = producers.slice()
     const values: any[] = producers.map(() => undefined)
@@ -21,7 +29,11 @@ export function pullWithLatest (...producers: PullProducer<any>[]) {
     const race = racePromises()
 
     const pullFromProducers = async () => {
-      while (!done && activeProducers.some(isValid)) {
+      while (activeProducers.some(isValid)) {
+        if (done) {
+          break
+        }
+
         let ir: IteratorResult<any>
         let index: number
 
@@ -32,7 +44,7 @@ export function pullWithLatest (...producers: PullProducer<any>[]) {
               promises[i] = producer()
             } catch (e) {
               let err: Promise<IteratorResult<any>>
-              (err = errorAsyncIteratorResult(e)).catch(noop)
+              ;(err = errorAsyncIteratorResult(e)).catch(noop)
               producerErrors.push(err)
               activeProducers[i] = null
               promises[i] = null
@@ -43,11 +55,12 @@ export function pullWithLatest (...producers: PullProducer<any>[]) {
         }
 
         try {
-          [ir, index] = await race(promises)
-        } catch ([e, index]) {
-          producerErrors.push(promises[index]!)
-          activeProducers[index] = null
-          promises[index] = null
+          ;[ir, index] = await race(promises)
+        } catch (error) {
+          const [, winnerIndex] = error as [unknown, number]
+          producerErrors.push(promises[winnerIndex]!)
+          activeProducers[winnerIndex] = null
+          promises[winnerIndex] = null
 
           continue
         }

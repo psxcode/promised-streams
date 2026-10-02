@@ -1,22 +1,23 @@
-import { waitTimePromise as wait } from '@psxcode/wait'
-import { PullProducer } from 'promised-streams/src'
-import { noop } from './noop'
-import { isPositiveNumber } from './is-positive-number'
+import { waitTimePromise as wait } from './internal.ts'
+import type { PullProducer } from 'promised-streams'
+import { noop } from './noop.ts'
+import { isPositiveNumber } from './is-positive-number.ts'
 
 const MAX_ERROR_RETRIES = 2
 
 export type AsyncPullConsumerOptions = {
-  log?: typeof console.log,
-  delay?: number,
-  continueOnError?: boolean,
+  log?: typeof console.log
+  delay?: number
+  continueOnError?: boolean
 }
 
-export const pullConsumer = ({ log = noop, delay, continueOnError }: AsyncPullConsumerOptions = {}) =>
+export const pullConsumer =
+  ({ log = noop, delay, continueOnError }: AsyncPullConsumerOptions = {}) =>
   (sink: (chunk: IteratorResult<any>) => void) => {
     let i = 0
     let errorRetries = 0
 
-    return async <T> (producer: PullProducer<T>) => {
+    return async <T>(producer: PullProducer<T>) => {
       while (true) {
         if (isPositiveNumber(delay)) {
           await wait(delay)
@@ -58,9 +59,7 @@ export const pullConsumer = ({ log = noop, delay, continueOnError }: AsyncPullCo
           throw e
         }
 
-        log(ir.done
-          ? `resolved to done at step ${i}`
-          : `resolved value at step ${i}`)
+        log(ir.done ? `resolved to done at step ${i}` : `resolved value at step ${i}`)
 
         sink(ir)
 

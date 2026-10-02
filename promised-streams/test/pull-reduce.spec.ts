@@ -1,10 +1,10 @@
-import { describe, it } from 'mocha'
-import { expect } from 'chai'
-import debug from 'debug'
-import fn from 'test-fn'
-import { pullConsumer, pullProducer } from 'promised-streams-test/src'
-import { pullReduce } from '../src'
-import { makeNumbers } from './make-numbers'
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
+import { debug } from './helpers/debug.ts'
+import { fn } from './helpers/fn.ts'
+import { pullConsumer, pullProducer } from '../../promised-streams-test/src/index.ts'
+import { pullReduce } from '../src/index.ts'
+import { makeNumbers } from './make-numbers.ts'
 
 const producerLog = debug('ai:producer')
 const consumerLog = debug('ai:consumer')
@@ -13,7 +13,7 @@ const reducerLog = debug('ai:reducer')
 const reducer = (state?: number, value?: number) => {
   reducerLog(`received state: ${state}, value: ${value}`)
 
-  return (state == null ? 0 : state + value!)
+  return state == null ? 0 : state + value!
 }
 const asyncReducer = async (state?: number, value?: number) => {
   reducerLog(`received state: ${state}, value: ${value}`)
@@ -36,7 +36,6 @@ const errReducer2 = (state?: number, value?: number) => {
   throw new Error('reducer error')
 }
 
-
 describe('[ pullReduce ]', () => {
   it('should work', async () => {
     const data = makeNumbers(4)
@@ -47,7 +46,7 @@ describe('[ pullReduce ]', () => {
 
     await w(t(r))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 6, done: false }],
       [{ value: undefined, done: true }],
     ])
@@ -62,7 +61,7 @@ describe('[ pullReduce ]', () => {
 
     await w(t(r))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 6, done: false }],
       [{ value: undefined, done: true }],
     ])
@@ -77,9 +76,9 @@ describe('[ pullReduce ]', () => {
 
     try {
       await w(t(r))
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
-      expect(spy.calls).deep.eq([])
+      assert.deepStrictEqual(spy.calls, [])
     }
   })
 
@@ -92,9 +91,9 @@ describe('[ pullReduce ]', () => {
 
     try {
       await w(t(r))
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
-      expect(spy.calls).deep.eq([])
+      assert.deepStrictEqual(spy.calls, [])
     }
   })
 
@@ -107,9 +106,9 @@ describe('[ pullReduce ]', () => {
 
     try {
       await w(t(r))
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
-      expect(spy.calls).deep.eq([])
+      assert.deepStrictEqual(spy.calls, [])
     }
   })
 
@@ -122,7 +121,7 @@ describe('[ pullReduce ]', () => {
 
     await w(t(r))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 4, done: false }],
       [{ value: undefined, done: true }],
     ])
@@ -137,9 +136,9 @@ describe('[ pullReduce ]', () => {
 
     try {
       await w(t(r))
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
-      expect(spy.calls).deep.eq([])
+      assert.deepStrictEqual(spy.calls, [])
     }
   })
 })

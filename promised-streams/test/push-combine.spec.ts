@@ -1,10 +1,10 @@
-import { describe, it } from 'mocha'
-import { expect } from 'chai'
-import debug from 'debug'
-import fn from 'test-fn'
-import { pushConsumer, pushProducer } from 'promised-streams-test/src'
-import { pushCombine } from '../src'
-import { makeNumbers } from './make-numbers'
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
+import { debug } from './helpers/debug.ts'
+import { fn } from './helpers/fn.ts'
+import { pushConsumer, pushProducer } from '../../promised-streams-test/src/index.ts'
+import { pushCombine } from '../src/index.ts'
+import { makeNumbers } from './make-numbers.ts'
 
 const consumerLog = debug('ai:consumer')
 const sinkLog = debug('ai:sink')
@@ -19,12 +19,12 @@ describe('[ pushCombine ]', () => {
     const w = pushConsumer({ log: consumerLog })(spy)
     const r = pushCombine(
       pushProducer({ log: producerLog() })(data0),
-      pushProducer({ log: producerLog() })(data1)
+      pushProducer({ log: producerLog() })(data1),
     )
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: [0, undefined], done: false }],
       [{ value: [0, 0], done: false }],
       [{ value: [1, 0], done: false }],
@@ -41,9 +41,7 @@ describe('[ pushCombine ]', () => {
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
-      [{ value: undefined, done: true }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: undefined, done: true }]])
   })
 
   it('should handle consumer delay', async () => {
@@ -53,12 +51,12 @@ describe('[ pushCombine ]', () => {
     const w = pushConsumer({ log: consumerLog, delay: 30 })(spy)
     const r = pushCombine(
       pushProducer({ log: producerLog(), dataPrepareDelay: 5 })(data0),
-      pushProducer({ log: producerLog(), dataPrepareDelay: 8 })(data1)
+      pushProducer({ log: producerLog(), dataPrepareDelay: 8 })(data1),
     )
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: [0, undefined], done: false }],
       [{ value: [0, 0], done: false }],
       [{ value: [1, 0], done: false }],
@@ -75,12 +73,12 @@ describe('[ pushCombine ]', () => {
     const w = pushConsumer({ log: consumerLog, cancelAtStep: 1 })(spy)
     const r = pushCombine(
       pushProducer({ log: producerLog(), dataPrepareDelay: 5 })(data0),
-      pushProducer({ log: producerLog(), dataPrepareDelay: 8 })(data1)
+      pushProducer({ log: producerLog(), dataPrepareDelay: 8 })(data1),
     )
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: [0, undefined], done: false }],
       [{ value: [0, 0], done: false }],
     ])
@@ -93,14 +91,12 @@ describe('[ pushCombine ]', () => {
     const w = pushConsumer({ log: consumerLog, crashAtStep: 1 })(spy)
     const r = pushCombine(
       pushProducer({ log: producerLog(), dataPrepareDelay: 5 })(data0),
-      pushProducer({ log: producerLog(), dataPrepareDelay: 8 })(data1)
+      pushProducer({ log: producerLog(), dataPrepareDelay: 8 })(data1),
     )
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
-      [{ value: [0, undefined], done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: [0, undefined], done: false }]])
   })
 
   it('should propagate producer error to consumer', async () => {
@@ -110,12 +106,12 @@ describe('[ pushCombine ]', () => {
     const w = pushConsumer({ log: consumerLog })(spy)
     const r = pushCombine(
       pushProducer({ log: producerLog() })(data0),
-      pushProducer({ log: producerLog(), errorAtStep: 1 })(data1)
+      pushProducer({ log: producerLog(), errorAtStep: 1 })(data1),
     )
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: [0, undefined], done: false }],
       [{ value: [0, 0], done: false }],
       [{ value: [1, 0], done: false }],
@@ -129,12 +125,12 @@ describe('[ pushCombine ]', () => {
     const w = pushConsumer({ log: consumerLog, continueOnError: true })(spy)
     const r = pushCombine(
       pushProducer({ log: producerLog() })(data0),
-      pushProducer({ log: producerLog(), errorAtStep: 1 })(data1)
+      pushProducer({ log: producerLog(), errorAtStep: 1 })(data1),
     )
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: [0, undefined], done: false }],
       [{ value: [0, 0], done: false }],
       [{ value: [1, 0], done: false }],

@@ -1,21 +1,30 @@
 {
   "name": "promised-streams-test",
   "version": "0.2.0",
-  "main": "index.js",
-  "module": "index",
-  "typings": "index.d.ts",
+  "description": "Test helpers for promised-streams",
+  "homepage": "https://github.com/psxcode/promise-streams",
   "license": "MIT",
   "author": "psxcode <psxcode@gmail.com> (https://github.com/psxcode)",
-  "homepage": "https://github.com/psxcode/promise-streams",
-  "engines": {
-    "node": ">=8"
+  "files": [
+    "build"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./build/index.js",
+  "types": "./build/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js"
+    }
   },
-  "dependencies": {
-    "@babel/runtime": "^7.4.5",
-    "@psxcode/wait": "^0.1.1",
-    "iterama": "^0.1.1"
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json"
   },
   "peerDependencies": {
     "promised-streams": "^0.2.0"
+  },
+  "engines": {
+    "node": ">=24"
   }
 }

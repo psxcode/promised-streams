@@ -1,13 +1,12 @@
 {
-  "extends": "../tsconfig",
+  "extends": "../tsconfig.json",
   "compilerOptions": {
-    "module": "commonjs",
+    "noEmit": false,
+    "rootDir": "src",
     "outDir": "build",
     "declaration": true,
-    "emitDeclarationOnly": true,
-    "noEmit": false,
+    "rewriteRelativeImportExtensions": true,
+    "paths": {}
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }

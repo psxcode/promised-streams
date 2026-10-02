@@ -1,18 +1,19 @@
-import { waitTimePromise as wait } from '@psxcode/wait'
-import { PushProducer } from 'promised-streams/src'
-import { iteratorResult, doneAsyncIteratorResult, errorAsyncIteratorResult } from './helpers'
-import { noop } from './noop'
-import { isPositiveNumber } from './is-positive-number'
+import { waitTimePromise as wait } from './internal.ts'
+import type { PushProducer } from 'promised-streams'
+import { iteratorResult, doneAsyncIteratorResult, errorAsyncIteratorResult } from './helpers.ts'
+import { noop } from './noop.ts'
+import { isPositiveNumber } from './is-positive-number.ts'
 
 export type PushProducerOptions = {
   log?: typeof console.log
-  dataResolveDelay?: number,
-  dataPrepareDelay?: number,
-  errorAtStep?: number,
+  dataResolveDelay?: number
+  dataPrepareDelay?: number
+  errorAtStep?: number
 }
 
-export const pushProducer = ({ log = noop, dataResolveDelay, dataPrepareDelay, errorAtStep }: PushProducerOptions = {}) =>
-  <T> (data: Iterable<T>): PushProducer<T> => {
+export const pushProducer =
+  ({ log = noop, dataResolveDelay, dataPrepareDelay, errorAtStep }: PushProducerOptions = {}) =>
+  <T>(data: Iterable<T>): PushProducer<T> => {
     let i = 0
 
     return async (consumer) => {
@@ -23,19 +24,23 @@ export const pushProducer = ({ log = noop, dataResolveDelay, dataPrepareDelay, e
             await wait(dataPrepareDelay)
           }
 
-          await consumer(new Promise(async (resolve, reject) => {
-            if (isPositiveNumber(dataResolveDelay)) {
-              await wait(dataResolveDelay)
-            }
+          await consumer(
+            (async () => {
+              if (isPositiveNumber(dataResolveDelay)) {
+                await wait(dataResolveDelay)
+              }
 
-            if (errorAtStep === i) {
-              log(`pushing error at ${i}`)
-              reject(new Error(`error at step ${i}`))
-            } else {
+              if (errorAtStep === i) {
+                log(`pushing error at ${i}`)
+
+                throw new Error(`error at step ${i}`)
+              }
+
               log(`pushing data ${i}`)
-              resolve(iteratorResult(chunk))
-            }
-          }))
+
+              return iteratorResult(chunk)
+            })(),
+          )
         } catch (e) {
           log(`consumer rejected at step ${i}`)
           log(e)
@@ -46,19 +51,18 @@ export const pushProducer = ({ log = noop, dataResolveDelay, dataPrepareDelay, e
       }
 
       /* done */
-      log(i === errorAtStep
-        ? 'pushing error at complete'
-        : 'pushing complete')
+      log(i === errorAtStep ? 'pushing error at complete' : 'pushing complete')
 
       let result: Promise<IteratorResult<T>>
-      (result = i === errorAtStep
-        ? errorAsyncIteratorResult(new Error(`error at complete`))
-        : doneAsyncIteratorResult()).catch(noop)
+      ;(result =
+        i === errorAtStep
+          ? errorAsyncIteratorResult(new Error(`error at complete`))
+          : doneAsyncIteratorResult()).catch(noop)
 
       let consumerResult: Promise<void> | undefined = undefined
       try {
         consumerResult = consumer(result)
-      } catch (e) {
+      } catch {
         log(`consumer crashed at complete`)
 
         return
@@ -66,7 +70,7 @@ export const pushProducer = ({ log = noop, dataResolveDelay, dataPrepareDelay, e
 
       try {
         await consumerResult
-      } catch (e) {
+      } catch {
         log(`consumer rejected at complete`)
 
         return

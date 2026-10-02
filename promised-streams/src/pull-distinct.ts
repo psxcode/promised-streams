@@ -1,6 +1,7 @@
-import { PullProducer } from './types'
+import type { PullProducer } from './types.ts'
 
-export const pullDistinct = <T> (isAllowed: (prev: T, next: T) => Promise<boolean> | boolean) =>
+export const pullDistinct =
+  <T>(isAllowed: (prev: T, next: T) => Promise<boolean> | boolean) =>
   (producer: PullProducer<T>): PullProducer<T> => {
     let prevValue: T = producer as any
 
@@ -8,7 +9,7 @@ export const pullDistinct = <T> (isAllowed: (prev: T, next: T) => Promise<boolea
       while (true) {
         const ir = await producer()
 
-        if (ir.done || await isAllowed(prevValue, ir.value)) {
+        if (ir.done || (await isAllowed(prevValue, ir.value))) {
           prevValue = ir.value
 
           return ir

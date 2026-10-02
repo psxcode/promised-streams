@@ -1,20 +1,32 @@
-/* eslint-disable import/export */
-import { PushProducer } from './types'
-import { errorAsyncIteratorResult, asyncIteratorResult, doneAsyncIteratorResult } from './helpers'
-import { noop } from './noop'
+import type { PushProducer } from './types.ts'
+import {
+  errorAsyncIteratorResult,
+  asyncIteratorResult,
+  doneAsyncIteratorResult,
+} from './helpers.ts'
+import { noop } from './noop.ts'
 
 type ProducerValue = {
-  result: Promise<IteratorResult<any>>,
+  result: Promise<IteratorResult<any>>
   resolve: (arg: any) => void
 }
 
-export function pushZip (): PushProducer<[]>
-export function pushZip<T0> (p0: PushProducer<T0>): PushProducer<[T0]>
-export function pushZip<T0, T1> (p0: PushProducer<T0>, p1: PushProducer<T1>): PushProducer<[T0, T1]>
-export function pushZip<T0, T1, T2> (p0: PushProducer<T0>, p1: PushProducer<T1>, p2: PushProducer<T2>): PushProducer<[T0, T1, T2]>
-export function pushZip<T0, T1, T2, T3> (p0: PushProducer<T0>, p1: PushProducer<T1>, p2: PushProducer<T2>, p3: PushProducer<T3>): PushProducer<[T0, T1, T2, T3]>
+export function pushZip(): PushProducer<[]>
+export function pushZip<T0>(p0: PushProducer<T0>): PushProducer<[T0]>
+export function pushZip<T0, T1>(p0: PushProducer<T0>, p1: PushProducer<T1>): PushProducer<[T0, T1]>
+export function pushZip<T0, T1, T2>(
+  p0: PushProducer<T0>,
+  p1: PushProducer<T1>,
+  p2: PushProducer<T2>,
+): PushProducer<[T0, T1, T2]>
+export function pushZip<T0, T1, T2, T3>(
+  p0: PushProducer<T0>,
+  p1: PushProducer<T1>,
+  p2: PushProducer<T2>,
+  p3: PushProducer<T3>,
+): PushProducer<[T0, T1, T2, T3]>
 
-export function pushZip (...producers: PushProducer<any>[]): PushProducer<any> {
+export function pushZip(...producers: PushProducer<any>[]): PushProducer<any> {
   const values: ProducerValue[][] = producers.map(() => [])
 
   return async (consumer): Promise<void> => {
@@ -47,8 +59,8 @@ export function pushZip (...producers: PushProducer<any>[]): PushProducer<any> {
         let consumerResult: Promise<void> | undefined = undefined
         try {
           await (consumerResult = consumer(errorAsyncIteratorResult(e)))
-        } catch (e) {
-          (consumerResult = Promise.reject(e)).catch(noop)
+        } catch (rejection) {
+          ;(consumerResult = Promise.reject(rejection)).catch(noop)
         }
 
         nextValues.forEach(({ resolve }) => resolve(consumerResult))
@@ -60,27 +72,31 @@ export function pushZip (...producers: PushProducer<any>[]): PushProducer<any> {
       }
 
       /* find done producer index */
-      const doneIndices = irs.reduce((indices, { done }, i) => (done && indices.push(i), indices), [] as number[])
+      const doneIndices: number[] = []
+
+      for (let i = 0; i < irs.length; ++i) {
+        if (irs[i]!.done) {
+          doneIndices.push(i)
+        }
+      }
 
       /* solve done state */
       if (doneIndices.length > 0) {
         let consumerResult: Promise<void> | undefined = undefined
         try {
           consumerResult = consumer(doneAsyncIteratorResult())
-        } catch (e) {
-          (consumerResult = Promise.reject(e)).catch(noop)
+        } catch (rejection) {
+          ;(consumerResult = Promise.reject(rejection)).catch(noop)
         }
 
         /* prepare cancel promise to stop other producers */
         let consumerCancel: Promise<void>
-        (consumerCancel = Promise.reject()).catch(noop)
+        ;(consumerCancel = Promise.reject()).catch(noop)
 
         /* resolve done producer */
-        nextValues.forEach(({ resolve }, i) => resolve(
-          doneIndices.includes(i)
-            ? consumerResult
-            : consumerCancel
-        ))
+        nextValues.forEach(({ resolve }, i) =>
+          resolve(doneIndices.includes(i) ? consumerResult : consumerCancel),
+        )
 
         consumeInProgress = false
         setImmediate(consumeValue)
@@ -94,7 +110,7 @@ export function pushZip (...producers: PushProducer<any>[]): PushProducer<any> {
       try {
         await (consumerResult = consumer(asyncIteratorResult(resultValues)))
       } catch (e) {
-        (consumerResult = Promise.reject(e)).catch(noop)
+        ;(consumerResult = Promise.reject(e)).catch(noop)
       }
 
       /* pass consumer result to provider */
@@ -104,11 +120,16 @@ export function pushZip (...producers: PushProducer<any>[]): PushProducer<any> {
       setImmediate(consumeValue)
     }
 
-    await Promise.all(producers.map((p, i) => p(
-      (result) => new Promise((resolve) => {
-        values[i].push({ result, resolve })
-        consumeValue()
-      })
-    )))
+    await Promise.all(
+      producers.map((p, i) =>
+        p(
+          (result) =>
+            new Promise((resolve) => {
+              values[i].push({ result, resolve })
+              consumeValue()
+            }),
+        ),
+      ),
+    )
   }
 }

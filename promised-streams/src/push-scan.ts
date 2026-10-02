@@ -1,7 +1,12 @@
-import { PushConsumer } from './types'
-import { doneAsyncIteratorResult, errorAsyncIteratorResult, asyncIteratorResult } from './helpers'
+import type { PushConsumer } from './types.ts'
+import {
+  doneAsyncIteratorResult,
+  errorAsyncIteratorResult,
+  asyncIteratorResult,
+} from './helpers.ts'
 
-export const pushScan = <S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) =>
+export const pushScan =
+  <S, T>(reducer: (state?: S, value?: T) => Promise<S> | S) =>
   (consumer: PushConsumer<S>): PushConsumer<T> => {
     let isInit = false
     let state: S
@@ -29,7 +34,7 @@ export const pushScan = <S, T> (reducer: (state?: S, value?: T) => Promise<S> | 
         return consumer(doneAsyncIteratorResult())
       } else {
         try {
-          state = await (reducer(state, ir.value))
+          state = await reducer(state, ir.value)
         } catch (e) {
           return consumer(errorAsyncIteratorResult(e))
         }

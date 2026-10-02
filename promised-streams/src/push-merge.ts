@@ -1,16 +1,24 @@
-/* eslint-disable import/export */
-import { PushProducer } from './types'
-import { doneAsyncIteratorResult } from './helpers'
+import type { PushProducer } from './types.ts'
+import { doneAsyncIteratorResult } from './helpers.ts'
 
-export function pushMerge (): PushProducer<any>
-export function pushMerge <T0> (p0: PushProducer<T0>): PushProducer<T0>
-export function pushMerge <T0, T1> (p0: PushProducer<T0>, p1: PushProducer<T1>): PushProducer<T0 | T1>
-export function pushMerge <T0, T1, T2> (p0: PushProducer<T0>, p1: PushProducer<T1>, p2: PushProducer<T2>): PushProducer<T0 | T1 | T2>
-export function pushMerge <T0, T1, T2, T3> (p0: PushProducer<T0>, p1: PushProducer<T1>, p2: PushProducer<T2>, p3: PushProducer<T3>): PushProducer<T0 | T1 | T2 | T3>
+export function pushMerge(): PushProducer<any>
+export function pushMerge<T0>(p0: PushProducer<T0>): PushProducer<T0>
+export function pushMerge<T0, T1>(p0: PushProducer<T0>, p1: PushProducer<T1>): PushProducer<T0 | T1>
+export function pushMerge<T0, T1, T2>(
+  p0: PushProducer<T0>,
+  p1: PushProducer<T1>,
+  p2: PushProducer<T2>,
+): PushProducer<T0 | T1 | T2>
+export function pushMerge<T0, T1, T2, T3>(
+  p0: PushProducer<T0>,
+  p1: PushProducer<T1>,
+  p2: PushProducer<T2>,
+  p3: PushProducer<T3>,
+): PushProducer<T0 | T1 | T2 | T3>
 
-export function pushMerge (...producers: PushProducer<any>[]): PushProducer<any> {
+export function pushMerge(...producers: PushProducer<any>[]): PushProducer<any> {
   let numDoneProducers = 0
-  const values: {result: Promise<IteratorResult<any>>, resolve: (arg?: any) => void}[] = []
+  const values: { result: Promise<IteratorResult<any>>; resolve: (arg?: any) => void }[] = []
   let consumerCancel: Promise<void> | undefined = undefined
 
   return async (consumer) => {
@@ -47,7 +55,7 @@ export function pushMerge (...producers: PushProducer<any>[]): PushProducer<any>
       }
 
       /* unwrap result to check if done */
-      let done = false
+      let done: boolean | undefined = false
       try {
         done = (await result).done
       } catch {}
@@ -55,11 +63,7 @@ export function pushMerge (...producers: PushProducer<any>[]): PushProducer<any>
       if (done) {
         ++numDoneProducers
 
-        resolve(
-          numDoneProducers === producers.length
-            ? consumer(result)
-            : undefined
-        )
+        resolve(numDoneProducers === producers.length ? consumer(result) : undefined)
 
         consumingInProgress = false
         setImmediate(consumeNextValue)
@@ -81,12 +85,15 @@ export function pushMerge (...producers: PushProducer<any>[]): PushProducer<any>
     }
 
     await Promise.all(
-      producers.map((p) => p(
-        (result) => new Promise((resolve) => {
-          values.push({ result, resolve })
-          consumeNextValue()
-        })
-      ))
+      producers.map((p) =>
+        p(
+          (result) =>
+            new Promise((resolve) => {
+              values.push({ result, resolve })
+              consumeNextValue()
+            }),
+        ),
+      ),
     )
   }
 }

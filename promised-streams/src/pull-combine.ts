@@ -1,17 +1,33 @@
-/* eslint-disable import/export */
-import { PullProducer } from './types'
-import { racePromises, asyncIteratorResult, errorAsyncIteratorResult, doneAsyncIteratorResult } from './helpers'
-import { noop } from './noop'
+import type { PullProducer } from './types.ts'
+import {
+  racePromises,
+  asyncIteratorResult,
+  errorAsyncIteratorResult,
+  doneAsyncIteratorResult,
+} from './helpers.ts'
+import { noop } from './noop.ts'
 
 const isValid = (obj: any) => !!obj
 
-export function pullCombine (): PullProducer<[]>
-export function pullCombine <T1>(p1: PullProducer<T1>): PullProducer<[T1]>
-export function pullCombine <T1, T2>(p1: PullProducer<T1>, p2: PullProducer<T2>): PullProducer<[T1, T2]>
-export function pullCombine <T1, T2, T3>(p1: PullProducer<T1>, p2: PullProducer<T2>, p3: PullProducer<T3>): PullProducer<[T1, T2, T3]>
-export function pullCombine <T1, T2, T3, T4>(p1: PullProducer<T1>, p2: PullProducer<T2>, p3: PullProducer<T3>, p4: PullProducer<T4>): PullProducer<[T1, T2, T3, T4]>
+export function pullCombine(): PullProducer<[]>
+export function pullCombine<T1>(p1: PullProducer<T1>): PullProducer<[T1]>
+export function pullCombine<T1, T2>(
+  p1: PullProducer<T1>,
+  p2: PullProducer<T2>,
+): PullProducer<[T1, T2]>
+export function pullCombine<T1, T2, T3>(
+  p1: PullProducer<T1>,
+  p2: PullProducer<T2>,
+  p3: PullProducer<T3>,
+): PullProducer<[T1, T2, T3]>
+export function pullCombine<T1, T2, T3, T4>(
+  p1: PullProducer<T1>,
+  p2: PullProducer<T2>,
+  p3: PullProducer<T3>,
+  p4: PullProducer<T4>,
+): PullProducer<[T1, T2, T3, T4]>
 
-export function pullCombine (...producers: PullProducer<any>[]): PullProducer<any[]> {
+export function pullCombine(...producers: PullProducer<any>[]): PullProducer<any[]> {
   const activeProducers: (PullProducer<any> | null)[] = producers.slice()
   const values: any[] = producers.map(() => undefined)
   const promises: (Promise<IteratorResult<any>> | null)[] = producers.map(() => null)
@@ -30,7 +46,7 @@ export function pullCombine (...producers: PullProducer<any>[]): PullProducer<an
           } catch (e) {
             let err: Promise<IteratorResult<any>>
             /* prevent unhandled promise warning */
-            (err = errorAsyncIteratorResult(e)).catch(noop)
+            ;(err = errorAsyncIteratorResult(e)).catch(noop)
 
             activeProducers[i] = null
             promises[i] = null
@@ -41,12 +57,13 @@ export function pullCombine (...producers: PullProducer<any>[]): PullProducer<an
       }
 
       try {
-        [ir, index] = await race(promises)
-      } catch ([e, index]) {
-        const err = promises[index]!
+        ;[ir, index] = await race(promises)
+      } catch (error) {
+        const [, winnerIndex] = error as [unknown, number]
+        const err = promises[winnerIndex]!
 
-        activeProducers[index] = null
-        promises[index] = null
+        activeProducers[winnerIndex] = null
+        promises[winnerIndex] = null
 
         return err
       }

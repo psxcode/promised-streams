@@ -1,10 +1,10 @@
-import { describe, it } from 'mocha'
-import { expect } from 'chai'
-import debug from 'debug'
-import fn from 'test-fn'
-import { pullConsumer, pullProducer } from 'promised-streams-test/src'
-import { pullTake } from '../src'
-import { makeNumbers } from './make-numbers'
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
+import { debug } from './helpers/debug.ts'
+import { fn } from './helpers/fn.ts'
+import { pullConsumer, pullProducer } from '../../promised-streams-test/src/index.ts'
+import { pullTake } from '../src/index.ts'
+import { makeNumbers } from './make-numbers.ts'
 
 const producerLog = debug('ai:producer')
 const consumerLog = debug('ai:consumer')
@@ -20,7 +20,7 @@ describe('[ pullTake ]', () => {
 
     await w(t(r))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: undefined, done: true }],
@@ -36,7 +36,7 @@ describe('[ pullTake ]', () => {
 
     await w(t(r))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: 2, done: false }],
@@ -54,7 +54,7 @@ describe('[ pullTake ]', () => {
 
     await w(t(r))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 2, done: false }],
       [{ value: 3, done: false }],
       [{ value: undefined, done: true }],
@@ -70,7 +70,7 @@ describe('[ pullTake ]', () => {
 
     await w(t(r))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: 2, done: false }],
@@ -88,9 +88,7 @@ describe('[ pullTake ]', () => {
 
     await w(t(r))
 
-    expect(spy.calls).deep.eq([
-      [{ value: undefined, done: true }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: undefined, done: true }]])
   })
 
   it('should handle producer crash', async () => {
@@ -102,11 +100,9 @@ describe('[ pullTake ]', () => {
 
     try {
       await w(t(r))
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
-      expect(spy.calls).deep.eq([
-        [{ value: 0, done: false }],
-      ])
+      assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }]])
     }
   })
 
@@ -119,7 +115,7 @@ describe('[ pullTake ]', () => {
 
     await w(t(r))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: undefined, done: true }],
@@ -135,10 +131,10 @@ describe('[ pullTake ]', () => {
 
     try {
       await w(t(r))
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
       /* cannot get 'done' value */
-      expect(spy.calls).deep.eq([])
+      assert.deepStrictEqual(spy.calls, [])
     }
   })
 
@@ -151,10 +147,10 @@ describe('[ pullTake ]', () => {
 
     try {
       await w(t(r))
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
       /* cannot get 'done' value */
-      expect(spy.calls).deep.eq([])
+      assert.deepStrictEqual(spy.calls, [])
     }
   })
 
@@ -167,11 +163,9 @@ describe('[ pullTake ]', () => {
 
     try {
       await w(t(r))
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
-      expect(spy.calls).deep.eq([
-        [{ value: 0, done: false }],
-      ])
+      assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }]])
     }
   })
 
@@ -184,7 +178,7 @@ describe('[ pullTake ]', () => {
 
     await w(t(r))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: undefined, done: true }],
@@ -200,7 +194,7 @@ describe('[ pullTake ]', () => {
 
     await w(t(r))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: undefined, done: true }],
@@ -216,10 +210,10 @@ describe('[ pullTake ]', () => {
 
     try {
       await w(t(r))
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
       /* cannot find 'done' value */
-      expect(spy.calls).deep.eq([])
+      assert.deepStrictEqual(spy.calls, [])
     }
   })
 
@@ -232,10 +226,10 @@ describe('[ pullTake ]', () => {
 
     try {
       await w(t(r))
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
       /* cannot find 'done' value */
-      expect(spy.calls).deep.eq([])
+      assert.deepStrictEqual(spy.calls, [])
     }
   })
 
@@ -248,10 +242,10 @@ describe('[ pullTake ]', () => {
 
     try {
       await w(t(r))
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
       /* cannot get 'done' value */
-      expect(spy.calls).deep.eq([])
+      assert.deepStrictEqual(spy.calls, [])
     }
   })
 
@@ -264,7 +258,7 @@ describe('[ pullTake ]', () => {
 
     await w(t(r))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 1, done: false }],
       [{ value: undefined, done: true }],
     ])
@@ -279,10 +273,10 @@ describe('[ pullTake ]', () => {
 
     try {
       await w(t(r))
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
       /* cannot get 'done' value */
-      expect(spy.calls).deep.eq([])
+      assert.deepStrictEqual(spy.calls, [])
     }
   })
 
@@ -295,11 +289,9 @@ describe('[ pullTake ]', () => {
 
     try {
       await w(t(r))
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
-      expect(spy.calls).deep.eq([
-        [{ value: 0, done: false }],
-      ])
+      assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }]])
     }
   })
 
@@ -312,9 +304,9 @@ describe('[ pullTake ]', () => {
 
     try {
       await w(t(r))
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
-      expect(spy.calls).deep.eq([])
+      assert.deepStrictEqual(spy.calls, [])
     }
   })
 })

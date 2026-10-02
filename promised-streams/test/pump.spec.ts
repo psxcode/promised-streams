@@ -1,10 +1,10 @@
-import { describe, it } from 'mocha'
-import { expect } from 'chai'
-import debug from 'debug'
-import fn from 'test-fn'
-import { pushConsumer, pullProducer } from 'promised-streams-test/src'
-import { pump } from '../src'
-import { makeNumbers } from './make-numbers'
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
+import { debug } from './helpers/debug.ts'
+import { fn } from './helpers/fn.ts'
+import { pushConsumer, pullProducer } from '../../promised-streams-test/src/index.ts'
+import { pump } from '../src/index.ts'
+import { makeNumbers } from './make-numbers.ts'
 
 const producerLog = debug('ai:producer')
 const consumerLog = debug('ai:consumer')
@@ -19,7 +19,7 @@ describe('[ pump ]', () => {
 
     await pump(r)(w)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: 2, done: false }],
@@ -36,10 +36,7 @@ describe('[ pump ]', () => {
 
     await pump(r)(w)
 
-    expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-      [{ value: 1, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }], [{ value: 1, done: false }]])
   })
 
   it('should handle consumer crash', async () => {
@@ -50,9 +47,7 @@ describe('[ pump ]', () => {
 
     await pump(r)(w)
 
-    expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }]])
   })
 
   it('should handle producer crash', async () => {
@@ -63,9 +58,7 @@ describe('[ pump ]', () => {
 
     await pump(r)(w)
 
-    expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }]])
   })
 
   it('should deliver producer error to consumer', async () => {
@@ -76,10 +69,7 @@ describe('[ pump ]', () => {
 
     await pump(r)(w)
 
-    expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-      [{ value: 1, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }], [{ value: 1, done: false }]])
   })
 
   it('should deliver producer error to consumer and continue', async () => {
@@ -90,7 +80,7 @@ describe('[ pump ]', () => {
 
     await pump(r)(w)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: 3, done: false }],

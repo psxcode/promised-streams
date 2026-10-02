@@ -1,7 +1,12 @@
-import { PushConsumer } from './types'
-import { doneAsyncIteratorResult, errorAsyncIteratorResult, asyncIteratorResult } from './helpers'
+import type { PushConsumer } from './types.ts'
+import {
+  doneAsyncIteratorResult,
+  errorAsyncIteratorResult,
+  asyncIteratorResult,
+} from './helpers.ts'
 
-export const pushReduce = <S, T> (reducer: (state?: S, value?: T) => Promise<S> | S) =>
+export const pushReduce =
+  <S, T>(reducer: (state?: S, value?: T) => Promise<S> | S) =>
   (consumer: PushConsumer<S>): PushConsumer<T> => {
     let isInit = false
     let state: S

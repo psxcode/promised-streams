@@ -1,48 +1,49 @@
-import FixedArray from 'circularr'
-import { PushConsumer } from './types'
-import { doneAsyncIteratorResult } from './helpers'
-import { noop } from './noop'
+import { FixedArray } from './internal.ts'
+import type { PushConsumer } from './types.ts'
+import { doneAsyncIteratorResult } from './helpers.ts'
+import { noop } from './noop.ts'
 
-const pushTakeFirst = (numTake: number) => <T> (consumer: PushConsumer<T>): PushConsumer<T> => {
-  let i = 0
+const pushTakeFirst =
+  (numTake: number) =>
+  <T>(consumer: PushConsumer<T>): PushConsumer<T> => {
+    let i = 0
 
-  return async (result) => {
-    if (i++ < numTake) {
-      return consumer(result)
-    } else {
-      /* prevent unhandled promise warning */
-      result.catch(noop)
+    return async (result) => {
+      if (i++ < numTake) {
+        return consumer(result)
+      } else {
+        /* prevent unhandled promise warning */
+        result.catch(noop)
 
-      await consumer(doneAsyncIteratorResult())
+        await consumer(doneAsyncIteratorResult())
 
-      return Promise.reject()
+        return Promise.reject()
+      }
     }
   }
-}
 
-const pushTakeLast = (numTake: number) => <T> (consumer: PushConsumer<T>): PushConsumer<T> => {
-  const values = new FixedArray<Promise<IteratorResult<T>>>(numTake)
+const pushTakeLast =
+  (numTake: number) =>
+  <T>(consumer: PushConsumer<T>): PushConsumer<T> => {
+    const values = new FixedArray<Promise<IteratorResult<T>>>(numTake)
 
-  return async (result) => {
-    let done = false
-    try {
-      done = (await result).done
-    } catch {}
+    return async (result) => {
+      let done: boolean | undefined = false
+      try {
+        done = (await result).done
+      } catch {}
 
-    if (done) {
-      for (const value of values.trim()) {
-        await consumer(value)
+      if (done) {
+        for (const value of values.trim()) {
+          await consumer(value)
+        }
+
+        return consumer(result)
       }
 
-      return consumer(result)
+      values.shift(result)
     }
-
-    values.shift(result)
   }
-}
 
-export const pushTake = (numTake: number) => (
-  numTake < 0
-    ? pushTakeLast(-numTake)
-    : pushTakeFirst(numTake)
-)
+export const pushTake = (numTake: number) =>
+  numTake < 0 ? pushTakeLast(-numTake) : pushTakeFirst(numTake)

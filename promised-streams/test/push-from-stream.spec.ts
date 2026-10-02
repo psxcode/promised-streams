@@ -1,11 +1,11 @@
-import { describe, it } from 'mocha'
-import { expect } from 'chai'
-import debug from 'debug'
-import fn from 'test-fn'
-import { pushConsumer } from 'promised-streams-test/src'
-import { readable } from 'node-stream-test'
-import { pushFromStream } from '../src'
-import { makeNumbers } from './make-numbers'
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
+import { debug } from './helpers/debug.ts'
+import { fn } from './helpers/fn.ts'
+import { pushConsumer } from '../../promised-streams-test/src/index.ts'
+import { readable } from './helpers/readable.ts'
+import { pushFromStream } from '../src/index.ts'
+import { makeNumbers } from './make-numbers.ts'
 
 const producerLog = debug('ai:producer')
 const consumerLog = debug('ai:consumer')
@@ -17,12 +17,12 @@ describe('[ pushFromStream ]', () => {
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog })(spy)
     const r = pushFromStream(
-      readable({ log: producerLog, eager: true })({ objectMode: true })(data)
+      readable({ log: producerLog, eager: true })({ objectMode: true })(data),
     )
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: 2, done: false }],
@@ -36,12 +36,12 @@ describe('[ pushFromStream ]', () => {
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog })(spy)
     const r = pushFromStream(
-      readable({ log: producerLog, eager: false, delayMs: 50 })({ objectMode: true })(data)
+      readable({ log: producerLog, eager: false, delayMs: 50 })({ objectMode: true })(data),
     )
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: 2, done: false }],
@@ -55,12 +55,12 @@ describe('[ pushFromStream ]', () => {
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog, delay: 50 })(spy)
     const r = pushFromStream(
-      readable({ log: producerLog, eager: false })({ objectMode: true })(data)
+      readable({ log: producerLog, eager: false })({ objectMode: true })(data),
     )
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: 2, done: false }],
@@ -74,13 +74,13 @@ describe('[ pushFromStream ]', () => {
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog })(spy)
     const r = pushFromStream(
-      readable({ log: producerLog, eager: true, errorAtStep: 2 })({ objectMode: true })(data)
+      readable({ log: producerLog, eager: true, errorAtStep: 2 })({ objectMode: true })(data),
     )
 
     await r(w)
 
     /* stream does not deliver data immediately, but error does */
-    expect(spy.calls).deep.eq([])
+    assert.deepStrictEqual(spy.calls, [])
   })
 
   it('error handling - consumer break / stream continue', async () => {
@@ -88,13 +88,15 @@ describe('[ pushFromStream ]', () => {
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog })(spy)
     const r = pushFromStream(
-      readable({ log: producerLog, eager: true, errorAtStep: 2, continueOnError: true })({ objectMode: true })(data)
+      readable({ log: producerLog, eager: true, errorAtStep: 2, continueOnError: true })({
+        objectMode: true,
+      })(data),
     )
 
     await r(w)
 
     /* stream does not deliver data immediately, but error does */
-    expect(spy.calls).deep.eq([])
+    assert.deepStrictEqual(spy.calls, [])
   })
 
   it('error handling - consumer continue / stream break', async () => {
@@ -102,12 +104,12 @@ describe('[ pushFromStream ]', () => {
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog, continueOnError: true })(spy)
     const r = pushFromStream(
-      readable({ log: producerLog, eager: true, errorAtStep: 2 })({ objectMode: true })(data)
+      readable({ log: producerLog, eager: true, errorAtStep: 2 })({ objectMode: true })(data),
     )
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: undefined, done: true }],
@@ -119,12 +121,14 @@ describe('[ pushFromStream ]', () => {
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog, continueOnError: true })(spy)
     const r = pushFromStream(
-      readable({ log: producerLog, eager: true, errorAtStep: 2, continueOnError: true })({ objectMode: true })(data)
+      readable({ log: producerLog, eager: true, errorAtStep: 2, continueOnError: true })({
+        objectMode: true,
+      })(data),
     )
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: 2, done: false }],
@@ -138,15 +142,12 @@ describe('[ pushFromStream ]', () => {
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog, cancelAtStep: 1 })(spy)
     const r = pushFromStream(
-      readable({ log: producerLog, eager: true })({ objectMode: true })(data)
+      readable({ log: producerLog, eager: true })({ objectMode: true })(data),
     )
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-      [{ value: 1, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }], [{ value: 1, done: false }]])
   })
 
   it('consumer crash', async () => {
@@ -154,13 +155,11 @@ describe('[ pushFromStream ]', () => {
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog, crashAtStep: 1 })(spy)
     const r = pushFromStream(
-      readable({ log: producerLog, eager: true })({ objectMode: true })(data)
+      readable({ log: producerLog, eager: true })({ objectMode: true })(data),
     )
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }]])
   })
 })

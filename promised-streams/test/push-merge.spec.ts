@@ -1,11 +1,11 @@
-import { describe, it } from 'mocha'
-import { expect } from 'chai'
-import debug from 'debug'
-import fn from 'test-fn'
-import { pushConsumer, pushProducer } from 'promised-streams-test/src'
-import { pushMerge } from '../src'
-import { makeNumbers } from './make-numbers'
-import { makeStrings } from './make-strings'
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
+import { debug } from './helpers/debug.ts'
+import { fn } from './helpers/fn.ts'
+import { pushConsumer, pushProducer } from '../../promised-streams-test/src/index.ts'
+import { pushMerge } from '../src/index.ts'
+import { makeNumbers } from './make-numbers.ts'
+import { makeStrings } from './make-strings.ts'
 
 const consumerLog = debug('ai:consumer')
 const sinkLog = debug('ai:sink')
@@ -20,12 +20,12 @@ describe('[ pushMerge ]', () => {
     const w = pushConsumer({ log: consumerLog })(spy)
     const r = pushMerge(
       pushProducer({ log: producerLog() })(data0),
-      pushProducer({ log: producerLog() })(data1)
+      pushProducer({ log: producerLog() })(data1),
     )
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: '0', done: false }],
       [{ value: 1, done: false }],
@@ -38,13 +38,11 @@ describe('[ pushMerge ]', () => {
     const data0 = makeNumbers(2)
     const spy = fn(sinkLog)
     const w = pushConsumer({ log: consumerLog })(spy)
-    const r = pushMerge(
-      pushProducer({ log: producerLog() })(data0)
-    )
+    const r = pushMerge(pushProducer({ log: producerLog() })(data0))
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: undefined, done: true }],
@@ -58,9 +56,7 @@ describe('[ pushMerge ]', () => {
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
-      [{ value: undefined, done: true }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: undefined, done: true }]])
   })
 
   it('should handle consumer delay', async () => {
@@ -70,12 +66,12 @@ describe('[ pushMerge ]', () => {
     const w = pushConsumer({ log: consumerLog, delay: 30 })(spy)
     const r = pushMerge(
       pushProducer({ log: producerLog() })(data0),
-      pushProducer({ log: producerLog() })(data1)
+      pushProducer({ log: producerLog() })(data1),
     )
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
@@ -91,14 +87,12 @@ describe('[ pushMerge ]', () => {
     const w = pushConsumer({ log: consumerLog, cancelAtStep: 0 })(spy)
     const r = pushMerge(
       pushProducer({ log: producerLog() })(data0),
-      pushProducer({ log: producerLog() })(data1)
+      pushProducer({ log: producerLog() })(data1),
     )
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }]])
   })
 
   it('should propagate consumer crash to all producers', async () => {
@@ -108,14 +102,12 @@ describe('[ pushMerge ]', () => {
     const w = pushConsumer({ log: consumerLog, crashAtStep: 1 })(spy)
     const r = pushMerge(
       pushProducer({ log: producerLog() })(data0),
-      pushProducer({ log: producerLog() })(data1)
+      pushProducer({ log: producerLog() })(data1),
     )
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }]])
   })
 
   it('should propagate producer error to consumer', async () => {
@@ -125,14 +117,12 @@ describe('[ pushMerge ]', () => {
     const w = pushConsumer({ log: consumerLog })(spy)
     const r = pushMerge(
       pushProducer({ log: producerLog() })(data0),
-      pushProducer({ log: producerLog(), errorAtStep: 0 })(data1)
+      pushProducer({ log: producerLog(), errorAtStep: 0 })(data1),
     )
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }]])
   })
 
   it('should propagate producer error to consumer and continue', async () => {
@@ -142,12 +132,12 @@ describe('[ pushMerge ]', () => {
     const w = pushConsumer({ log: consumerLog, continueOnError: true })(spy)
     const r = pushMerge(
       pushProducer({ log: producerLog() })(data0),
-      pushProducer({ log: producerLog(), errorAtStep: 0 })(data1)
+      pushProducer({ log: producerLog(), errorAtStep: 0 })(data1),
     )
 
     await r(w)
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: 1, done: false }],

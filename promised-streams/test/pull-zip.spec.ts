@@ -1,10 +1,10 @@
-import { describe, it } from 'mocha'
-import { expect } from 'chai'
-import debug from 'debug'
-import fn from 'test-fn'
-import { pullConsumer, pullProducer } from 'promised-streams-test/src'
-import { pullZip } from '../src'
-import { makeNumbers } from './make-numbers'
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
+import { debug } from './helpers/debug.ts'
+import { fn } from './helpers/fn.ts'
+import { pullConsumer, pullProducer } from '../../promised-streams-test/src/index.ts'
+import { pullZip } from '../src/index.ts'
+import { makeNumbers } from './make-numbers.ts'
 
 const consumerLog = debug('ai:consumer')
 const sinkLog = debug('ai:sink')
@@ -23,7 +23,7 @@ describe('[ pullZip ]', () => {
 
     await w(t(r0, r1))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: [0, 0], done: false }],
       [{ value: [1, 1], done: false }],
       [{ value: undefined, done: true }],
@@ -39,7 +39,7 @@ describe('[ pullZip ]', () => {
 
     await w(t(r))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: [0], done: false }],
       [{ value: [1], done: false }],
       [{ value: undefined, done: true }],
@@ -53,9 +53,7 @@ describe('[ pullZip ]', () => {
 
     await w(t())
 
-    expect(spy.calls).deep.eq([
-      [{ value: undefined, done: true }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: undefined, done: true }]])
   })
 
   it('should handle consumer delay', async () => {
@@ -69,7 +67,7 @@ describe('[ pullZip ]', () => {
 
     await w(t(r0, r1))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: [0, 0], done: false }],
       [{ value: [1, 1], done: false }],
       [{ value: undefined, done: true }],
@@ -88,9 +86,9 @@ describe('[ pullZip ]', () => {
     try {
       await w(t(r0, r1))
 
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
-      expect(spy.calls).deep.eq([])
+      assert.deepStrictEqual(spy.calls, [])
     }
   })
 
@@ -105,7 +103,7 @@ describe('[ pullZip ]', () => {
 
     await w(t(r0, r1))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: [1, 1], done: false }],
       [{ value: undefined, done: true }],
     ])
@@ -123,9 +121,9 @@ describe('[ pullZip ]', () => {
     try {
       await w(t(r0, r1))
 
-      expect.fail('should not get here')
+      assert.fail('should not get here')
     } catch {
-      expect(spy.calls).deep.eq([])
+      assert.deepStrictEqual(spy.calls, [])
     }
   })
 })

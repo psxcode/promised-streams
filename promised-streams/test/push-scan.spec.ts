@@ -1,10 +1,10 @@
-import { describe, it } from 'mocha'
-import { expect } from 'chai'
-import debug from 'debug'
-import fn from 'test-fn'
-import { pushConsumer, pushProducer } from 'promised-streams-test/src'
-import { pushScan } from '../src'
-import { makeNumbers } from './make-numbers'
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
+import { debug } from './helpers/debug.ts'
+import { fn } from './helpers/fn.ts'
+import { pushConsumer, pushProducer } from '../../promised-streams-test/src/index.ts'
+import { pushScan } from '../src/index.ts'
+import { makeNumbers } from './make-numbers.ts'
 
 const producerLog = debug('ai:producer')
 const consumerLog = debug('ai:consumer')
@@ -13,7 +13,7 @@ const reducerLog = debug('ai:reducer')
 const reducer = (state?: number, value?: number) => {
   reducerLog(`received state: ${state}, value: ${value}`)
 
-  return (state == null ? 0 : state + value!)
+  return state == null ? 0 : state + value!
 }
 const areducer = async (state?: number, value?: number) => {
   reducerLog(`received state: ${state}, value: ${value}`)
@@ -36,7 +36,6 @@ const ereducer2 = (state?: number, value?: number) => {
   throw new Error('reducer error')
 }
 
-
 describe('[ pushScan ]', () => {
   it('should work', async () => {
     const data = makeNumbers(4)
@@ -47,7 +46,7 @@ describe('[ pushScan ]', () => {
 
     await r(t(w))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: 3, done: false }],
@@ -65,7 +64,7 @@ describe('[ pushScan ]', () => {
 
     await r(t(w))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: 3, done: false }],
@@ -83,9 +82,7 @@ describe('[ pushScan ]', () => {
 
     await r(t(w))
 
-    expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }]])
   })
 
   it('should deliver consumer crash', async () => {
@@ -97,9 +94,7 @@ describe('[ pushScan ]', () => {
 
     await r(t(w))
 
-    expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }]])
   })
 
   it('should deliver producer error to consumer', async () => {
@@ -111,10 +106,7 @@ describe('[ pushScan ]', () => {
 
     await r(t(w))
 
-    expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-      [{ value: 1, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }], [{ value: 1, done: false }]])
   })
 
   it('should be able to continue on producer error', async () => {
@@ -126,7 +118,7 @@ describe('[ pushScan ]', () => {
 
     await r(t(w))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: 4, done: false }],
@@ -143,7 +135,7 @@ describe('[ pushScan ]', () => {
 
     await r(t(w))
 
-    expect(spy.calls).deep.eq([])
+    assert.deepStrictEqual(spy.calls, [])
   })
 
   it('should deliver reducer error to consumer', async () => {
@@ -155,6 +147,6 @@ describe('[ pushScan ]', () => {
 
     await r(t(w))
 
-    expect(spy.calls).deep.eq([])
+    assert.deepStrictEqual(spy.calls, [])
   })
 })

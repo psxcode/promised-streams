@@ -1,11 +1,11 @@
-import { describe, it } from 'mocha'
-import { expect } from 'chai'
-import debug from 'debug'
-import fn from 'test-fn'
-import { waitTimePromise as wait } from '@psxcode/wait'
-import { pushConsumer, pushProducer } from 'promised-streams-test/src'
-import { pushDo } from '../src'
-import { makeNumbers } from './make-numbers'
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
+import { debug } from './helpers/debug.ts'
+import { fn } from './helpers/fn.ts'
+import { waitTimePromise as wait } from '../src/internal.ts'
+import { pushConsumer, pushProducer } from '../../promised-streams-test/src/index.ts'
+import { pushDo } from '../src/index.ts'
+import { makeNumbers } from './make-numbers.ts'
 
 const producerLog = debug('ai:producer')
 const consumerLog = debug('ai:consumer')
@@ -25,7 +25,6 @@ const errorDoFunc = () => {
   throw new Error('error')
 }
 
-
 describe('[ pushDo ]', () => {
   it('should work', async () => {
     const data = makeNumbers(4)
@@ -37,7 +36,7 @@ describe('[ pushDo ]', () => {
 
     await r(t(w))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: 2, done: false }],
@@ -45,12 +44,7 @@ describe('[ pushDo ]', () => {
       [{ value: undefined, done: true }],
     ])
 
-    expect(doSpy.calls).deep.eq([
-      [0],
-      [1],
-      [2],
-      [3],
-    ])
+    assert.deepStrictEqual(doSpy.calls, [[0], [1], [2], [3]])
   })
 
   it('should work with async dofunc', async () => {
@@ -63,7 +57,7 @@ describe('[ pushDo ]', () => {
 
     await r(t(w))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: 2, done: false }],
@@ -71,12 +65,7 @@ describe('[ pushDo ]', () => {
       [{ value: undefined, done: true }],
     ])
 
-    expect(doSpy.calls).deep.eq([
-      [0],
-      [1],
-      [2],
-      [3],
-    ])
+    assert.deepStrictEqual(doSpy.calls, [[0], [1], [2], [3]])
   })
 
   it('should deliver consumer cancel', async () => {
@@ -89,15 +78,9 @@ describe('[ pushDo ]', () => {
 
     await r(t(w))
 
-    expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-      [{ value: 1, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }], [{ value: 1, done: false }]])
 
-    expect(doSpy.calls).deep.eq([
-      [0],
-      [1],
-    ])
+    assert.deepStrictEqual(doSpy.calls, [[0], [1]])
   })
 
   it('should handle consumer crash', async () => {
@@ -110,14 +93,9 @@ describe('[ pushDo ]', () => {
 
     await r(t(w))
 
-    expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }]])
 
-    expect(doSpy.calls).deep.eq([
-      [0],
-      [1],
-    ])
+    assert.deepStrictEqual(doSpy.calls, [[0], [1]])
   })
 
   it('should deliver producer error to consumer', async () => {
@@ -130,15 +108,9 @@ describe('[ pushDo ]', () => {
 
     await r(t(w))
 
-    expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-      [{ value: 1, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }], [{ value: 1, done: false }]])
 
-    expect(doSpy.calls).deep.eq([
-      [0],
-      [1],
-    ])
+    assert.deepStrictEqual(doSpy.calls, [[0], [1]])
   })
 
   it('should not deliver dofunc error to consumer', async () => {
@@ -150,7 +122,7 @@ describe('[ pushDo ]', () => {
 
     await r(t(w))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: 2, done: false }],

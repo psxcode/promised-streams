@@ -1,10 +1,11 @@
-import { PullProducer, PushProducer } from './types'
-import { errorAsyncIteratorResult } from './helpers'
-import { noop } from './noop'
+import type { PullProducer, PushProducer } from './types.ts'
+import { errorAsyncIteratorResult } from './helpers.ts'
+import { noop } from './noop.ts'
 
-export const pump = <T> (producer: PullProducer<T>): PushProducer<T> =>
+export const pump =
+  <T>(producer: PullProducer<T>): PushProducer<T> =>
   async (consumer) => {
-    let done = false
+    let done: boolean | undefined = false
 
     while (!done) {
       let air: Promise<IteratorResult<T>> | undefined = undefined
@@ -12,7 +13,7 @@ export const pump = <T> (producer: PullProducer<T>): PushProducer<T> =>
         done = (await (air = producer())).done
       } catch (e) {
         if (!air) {
-          (air = errorAsyncIteratorResult(e)).catch(noop)
+          ;(air = errorAsyncIteratorResult(e)).catch(noop)
         }
       }
 

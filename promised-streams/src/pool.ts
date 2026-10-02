@@ -1,24 +1,24 @@
-import { IPool, IPoolOptions } from './types'
-import { noop } from './noop'
-import { isPositiveNumber } from './is-positive-number'
+import type { IPool, IPoolOptions } from './types.ts'
+import { noop } from './noop.ts'
+import { isPositiveNumber } from './is-positive-number.ts'
 
 const defaultOptions = {
   highWatermark: -1,
 }
 
-export const pool = <T> ({ highWatermark }: IPoolOptions = defaultOptions): IPool<T> => {
+export const pool = <T>({ highWatermark }: IPoolOptions = defaultOptions): IPool<T> => {
   const values: Promise<IteratorResult<T>>[] = []
   let consumerCancel: Promise<void> | undefined = undefined
   let producerResolve: ((arg?: any) => void) | undefined = undefined
   let consumerResolve: ((arg?: any) => void) | undefined = undefined
 
   return {
-    async push (result) {
+    async push(result) {
       try {
         await result
       } catch {
         /* cancel producer immediately */
-        (consumerCancel = Promise.reject()).catch(noop)
+        ;(consumerCancel = Promise.reject()).catch(noop)
       }
 
       values.push(result)
@@ -38,7 +38,7 @@ export const pool = <T> ({ highWatermark }: IPoolOptions = defaultOptions): IPoo
         })
       }
     },
-    pull () {
+    pull() {
       if (values.length > 0) {
         if (producerResolve) {
           setImmediate(producerResolve)

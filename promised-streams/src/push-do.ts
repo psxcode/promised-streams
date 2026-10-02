@@ -1,6 +1,8 @@
-import { PushConsumer } from './types'
+import type { PushConsumer } from './types.ts'
 
-export const pushDo = <T> (doFunction: (result: T) => void | Promise<void>) => (consumer: PushConsumer<T>): PushConsumer<T> =>
+export const pushDo =
+  <T>(doFunction: (result: T) => void | Promise<void>) =>
+  (consumer: PushConsumer<T>): PushConsumer<T> =>
   async (result) => {
     let ir: IteratorResult<T>
     try {
@@ -15,9 +17,7 @@ export const pushDo = <T> (doFunction: (result: T) => void | Promise<void>) => (
 
     try {
       await doFunction(ir.value)
-    } catch {
-    }
+    } catch {}
 
     return consumer(result)
   }
-

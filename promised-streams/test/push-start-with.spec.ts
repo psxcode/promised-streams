@@ -1,10 +1,10 @@
-import { describe, it } from 'mocha'
-import { expect } from 'chai'
-import debug from 'debug'
-import fn from 'test-fn'
-import { pushConsumer, pushProducer } from 'promised-streams-test/src'
-import { pushStartWith } from '../src'
-import { makeNumbers } from './make-numbers'
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
+import { debug } from './helpers/debug.ts'
+import { fn } from './helpers/fn.ts'
+import { pushConsumer, pushProducer } from '../../promised-streams-test/src/index.ts'
+import { pushStartWith } from '../src/index.ts'
+import { makeNumbers } from './make-numbers.ts'
 
 const producerLog = debug('ai:producer')
 const consumerLog = debug('ai:consumer')
@@ -20,7 +20,7 @@ describe('[ pushStartWith ]', () => {
 
     await r(t(w))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: -1, done: false }],
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
@@ -39,7 +39,7 @@ describe('[ pushStartWith ]', () => {
 
     await r(t(w))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: -3, done: false }],
       [{ value: -2, done: false }],
       [{ value: -1, done: false }],
@@ -60,7 +60,7 @@ describe('[ pushStartWith ]', () => {
 
     await r(t(w))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: 2, done: false }],
@@ -78,10 +78,7 @@ describe('[ pushStartWith ]', () => {
 
     await r(t(w))
 
-    expect(spy.calls).deep.eq([
-      [{ value: 3, done: false }],
-      [{ value: 4, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 3, done: false }], [{ value: 4, done: false }]])
   })
 
   it('should handle consumer crash', async () => {
@@ -93,9 +90,7 @@ describe('[ pushStartWith ]', () => {
 
     await r(t(w))
 
-    expect(spy.calls).deep.eq([
-      [{ value: 3, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 3, done: false }]])
   })
 
   it('should deliver producer error to consumer', async () => {
@@ -107,7 +102,7 @@ describe('[ pushStartWith ]', () => {
 
     await r(t(w))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 32, done: false }],
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
@@ -123,7 +118,7 @@ describe('[ pushStartWith ]', () => {
 
     await r(t(w))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 32, done: false }],
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],

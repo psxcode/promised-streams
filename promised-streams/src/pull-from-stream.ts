@@ -1,37 +1,54 @@
-import { subscribeAsync } from 'node-streams'
-import { PullProducer } from './types'
-import { doneAsyncIteratorResult, errorAsyncIteratorResult, asyncIteratorResult } from './helpers'
+import { subscribeAsync } from './internal.ts'
+import type { PullProducer } from './types.ts'
+import {
+  doneAsyncIteratorResult,
+  errorAsyncIteratorResult,
+  asyncIteratorResult,
+} from './helpers.ts'
 
-export const pullFromStream = <T> (stream: NodeJS.ReadableStream): PullProducer<T> => {
+export const pullFromStream = <T>(stream: NodeJS.ReadableStream): PullProducer<T> => {
   let hasValue: (() => void) | undefined = undefined
   const values: (() => Promise<IteratorResult<T>>)[] = []
 
-  subscribeAsync({
-    next (value) {
-      return new Promise((resolve) => {
-        values.push(() => (resolve(), asyncIteratorResult(value)))
-        hasValue && hasValue()
+  subscribeAsync<T>({
+    next(value) {
+      return new Promise<void>((resolve) => {
+        values.push(() => {
+          resolve()
+
+          return asyncIteratorResult(value)
+        })
+        hasValue?.()
       })
     },
-    error (e) {
-      return new Promise((resolve) => {
-        values.push(() => (resolve(), errorAsyncIteratorResult(e)))
-        hasValue && hasValue()
+    error(e) {
+      return new Promise<void>((resolve) => {
+        values.push(() => {
+          resolve()
+
+          return errorAsyncIteratorResult(e)
+        })
+        hasValue?.()
       })
     },
-    complete () {
-      return new Promise((resolve) => {
-        values.push(() => (resolve(), doneAsyncIteratorResult()))
-        hasValue && hasValue()
+    complete() {
+      return new Promise<void>((resolve) => {
+        values.push(() => {
+          resolve()
+
+          return doneAsyncIteratorResult()
+        })
+        hasValue?.()
       })
     },
   })(stream)
 
-  return () => new Promise((resolve) => {
-    if (values.length > 0) {
-      resolve()
-    } else {
-      hasValue = resolve
-    }
-  }).then(() => values.shift()!())
+  return () =>
+    new Promise<void>((resolve) => {
+      if (values.length > 0) {
+        resolve()
+      } else {
+        hasValue = () => resolve()
+      }
+    }).then(() => values.shift()!())
 }

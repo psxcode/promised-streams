@@ -1,11 +1,11 @@
-import { describe, it } from 'mocha'
-import { expect } from 'chai'
-import debug from 'debug'
-import fn from 'test-fn'
-import { waitTimePromise as wait } from '@psxcode/wait'
-import { pushConsumer, pushProducer } from 'promised-streams-test/src'
-import { pushMap, pushHoFlatten } from '../src'
-import { makeNumbers } from './make-numbers'
+import { describe, it } from 'node:test'
+import assert from 'node:assert/strict'
+import { debug } from './helpers/debug.ts'
+import { fn } from './helpers/fn.ts'
+import { waitTimePromise as wait } from '../src/internal.ts'
+import { pushConsumer, pushProducer } from '../../promised-streams-test/src/index.ts'
+import { pushMap, pushHoFlatten } from '../src/index.ts'
+import { makeNumbers } from './make-numbers.ts'
 
 const producerLog = debug('ai:producer')
 const hoproducerLog = debug('ai:hoproducer')
@@ -34,7 +34,6 @@ const emult2 = (value: number) => {
   return pushProducer({ log: hoproducerLog })([value, value])
 }
 
-
 describe('[ pushHoFlatten ]', () => {
   it('should work', async () => {
     const data = makeNumbers(4)
@@ -46,7 +45,7 @@ describe('[ pushHoFlatten ]', () => {
 
     await r(t0(t1(w)))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
@@ -69,7 +68,7 @@ describe('[ pushHoFlatten ]', () => {
 
     await r(t0(t1(w)))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
@@ -92,10 +91,7 @@ describe('[ pushHoFlatten ]', () => {
 
     await r(t0(t1(w)))
 
-    expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-      [{ value: 0, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }], [{ value: 0, done: false }]])
   })
 
   it('should handle consumer crash', async () => {
@@ -108,9 +104,7 @@ describe('[ pushHoFlatten ]', () => {
 
     await r(t0(t1(w)))
 
-    expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }]])
   })
 
   it('should deliver producer error to consumer', async () => {
@@ -123,7 +117,7 @@ describe('[ pushHoFlatten ]', () => {
 
     await r(t0(t1(w)))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
@@ -145,9 +139,7 @@ describe('[ pushHoFlatten ]', () => {
 
     await r(t0(t1(w)))
 
-    expect(spy.calls).deep.eq([
-      [{ value: 0, done: false }],
-    ])
+    assert.deepStrictEqual(spy.calls, [[{ value: 0, done: false }]])
   })
 
   it('should deliver mapper error to consumer', async () => {
@@ -160,7 +152,7 @@ describe('[ pushHoFlatten ]', () => {
 
     await r(t0(t1(w)))
 
-    expect(spy.calls).deep.eq([])
+    assert.deepStrictEqual(spy.calls, [])
   })
 
   it('should deliver sub-producer error to consumer and continue', async () => {
@@ -177,7 +169,7 @@ describe('[ pushHoFlatten ]', () => {
 
     await r(t0(t1(w)))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 0, done: false }],
       [{ value: 1, done: false }],
       [{ value: 2, done: false }],
@@ -196,11 +188,10 @@ describe('[ pushHoFlatten ]', () => {
 
     await r(t0(t1(w)))
 
-    expect(spy.calls).deep.eq([
+    assert.deepStrictEqual(spy.calls, [
       [{ value: 1, done: false }],
       [{ value: 1, done: false }],
       [{ value: undefined, done: true }],
     ])
   })
 })
-
