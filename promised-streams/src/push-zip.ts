@@ -34,9 +34,11 @@ export function pushZip(...producers: PushProducer<any>[]): PushProducer<any> {
       return consumer(doneAsyncIteratorResult())
     }
 
+    const finished: boolean[] = producers.map(() => false)
     let consumeInProgress = false
+    let terminated = false
     const consumeValue = async (): Promise<void> => {
-      if (consumeInProgress) {
+      if (consumeInProgress || terminated) {
         return
       }
       consumeInProgress = true
@@ -60,6 +62,7 @@ export function pushZip(...producers: PushProducer<any>[]): PushProducer<any> {
         try {
           await (consumerResult = consumer(errorAsyncIteratorResult(e)))
         } catch (rejection) {
+          terminated = true
           ;(consumerResult = Promise.reject(rejection)).catch(noop)
         }
 
@@ -82,12 +85,19 @@ export function pushZip(...producers: PushProducer<any>[]): PushProducer<any> {
 
       /* solve done state */
       if (doneIndices.length > 0) {
+        terminated = true
+
         let consumerResult: Promise<void> | undefined = undefined
         try {
           consumerResult = consumer(doneAsyncIteratorResult())
         } catch (rejection) {
           ;(consumerResult = Promise.reject(rejection)).catch(noop)
         }
+
+        /* do not emit a second done when these producers settle */
+        doneIndices.forEach((i) => {
+          finished[i] = true
+        })
 
         /* prepare cancel promise to stop other producers */
         let consumerCancel: Promise<void>
@@ -110,6 +120,7 @@ export function pushZip(...producers: PushProducer<any>[]): PushProducer<any> {
       try {
         await (consumerResult = consumer(asyncIteratorResult(resultValues)))
       } catch (e) {
+        terminated = true
         ;(consumerResult = Promise.reject(e)).catch(noop)
       }
 
@@ -120,16 +131,33 @@ export function pushZip(...producers: PushProducer<any>[]): PushProducer<any> {
       setImmediate(consumeValue)
     }
 
+    /*
+     * A producer is allowed to settle without ever pushing a done chunk (for
+     * example after forwarding an error). Feed a synthetic done chunk for such
+     * producers, otherwise their peers block forever on a slot nobody fills.
+     */
+    const endProducer = (index: number): void => {
+      if (finished[index] || terminated) {
+        return
+      }
+
+      finished[index] = true
+      values[index].push({ result: doneAsyncIteratorResult(), resolve: noop })
+      consumeValue()
+    }
+
     await Promise.all(
-      producers.map((p, i) =>
-        p(
+      producers.map((p, i) => {
+        const onSettled = (): void => endProducer(i)
+
+        return p(
           (result) =>
             new Promise((resolve) => {
               values[i].push({ result, resolve })
               consumeValue()
             }),
-        ),
-      ),
+        ).then(onSettled, onSettled)
+      }),
     )
   }
 }

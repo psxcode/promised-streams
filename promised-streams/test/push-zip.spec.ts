@@ -3,13 +3,19 @@ import assert from 'node:assert/strict'
 import { debug } from './helpers/debug.ts'
 import { fn } from './helpers/fn.ts'
 import { pushConsumer, pushProducer } from '../../promised-streams-test/src/index.ts'
-import { pushZip } from '../src/index.ts'
+import { pushFromIterable, pushZip } from '../src/index.ts'
+import type { PushProducer } from '../src/index.ts'
 import { makeNumbers } from './make-numbers.ts'
 
 const consumerLog = debug('ai:consumer')
 const sinkLog = debug('ai:sink')
 let logIndex = 0
 const producerLog = () => debug(`ai:producer${logIndex++}`)
+
+/* forwards an error and returns without ever pushing a done chunk */
+const errorThenStop: PushProducer<number> = async (consumer) => {
+  await consumer(Promise.reject(new Error('boom')))
+}
 
 describe('[ pushZip ]', () => {
   it('should work', async () => {
@@ -167,6 +173,35 @@ describe('[ pushZip ]', () => {
 
     assert.deepStrictEqual(spy.calls, [
       [{ value: [1, 1], done: false }],
+      [{ value: undefined, done: true }],
+    ])
+  })
+
+  it('should complete when a producer ends without a done chunk', async () => {
+    const seen: unknown[] = []
+    const r = pushZip(errorThenStop, pushFromIterable(makeNumbers(3)))
+
+    await r(async (result) => {
+      try {
+        const ir = await result
+        seen.push(ir.done ? 'DONE' : ir.value)
+      } catch (e) {
+        seen.push((e as Error).message)
+      }
+    })
+
+    assert.deepStrictEqual(seen, ['boom', 'DONE'])
+  })
+
+  it('should complete with pushFromIterable sources of different length', async () => {
+    const spy = fn(sinkLog)
+    const w = pushConsumer({ log: consumerLog })(spy)
+    const r = pushZip(pushFromIterable(makeNumbers(3)), pushFromIterable(makeNumbers(1)))
+
+    await r(w)
+
+    assert.deepStrictEqual(spy.calls, [
+      [{ value: [0, 0], done: false }],
       [{ value: undefined, done: true }],
     ])
   })
