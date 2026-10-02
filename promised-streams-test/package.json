@@ -2,7 +2,7 @@
   "name": "promised-streams-test",
   "version": "0.2.0",
   "description": "Test helpers for promised-streams",
-  "homepage": "https://github.com/psxcode/promise-streams",
+  "homepage": "https://github.com/psxcode/promised-streams",
   "license": "MIT",
   "author": "psxcode <psxcode@gmail.com> (https://github.com/psxcode)",
   "files": [

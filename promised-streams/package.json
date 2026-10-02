@@ -2,7 +2,7 @@
   "name": "promised-streams",
   "version": "0.2.0",
   "description": "Composable push/pull streams built on promises and async iterators",
-  "homepage": "https://github.com/psxcode/promise-streams",
+  "homepage": "https://github.com/psxcode/promised-streams",
   "license": "MIT",
   "author": "psxcode <psxcode@gmail.com> (https://github.com/psxcode)",
   "files": [
