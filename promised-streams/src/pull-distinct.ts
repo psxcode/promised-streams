@@ -1,9 +1,10 @@
 import type { PullProducer } from './types.ts'
 
 export const pullDistinct =
-  <T>(isAllowed: (prev: T, next: T) => Promise<boolean> | boolean) =>
+  <T>(isAllowed: (prev: T | undefined, next: T) => Promise<boolean> | boolean) =>
   (producer: PullProducer<T>): PullProducer<T> => {
-    let prevValue: T = producer as any
+    /* there is no previous chunk before the first one */
+    let prevValue: T | undefined = undefined
 
     return async () => {
       while (true) {

@@ -10,13 +10,13 @@ const producerLog = debug('ai:producer')
 const consumerLog = debug('ai:consumer')
 const mapLog = debug('ai:filter')
 const sinkLog = debug('ai:sink')
-const notEqual = (a: number, b: number) => {
+const notEqual = (a: number | undefined, b: number) => {
   mapLog('filtering value')
 
   return a !== b
 }
 
-const asyncNotEqual = async (a: number, b: number) => {
+const asyncNotEqual = async (a: number | undefined, b: number) => {
   mapLog('filtering value begin')
   await wait(50)
   mapLog('filtering value done')
@@ -61,6 +61,24 @@ describe('[ pushDistinct ]', () => {
       [{ value: 1, done: false }],
       [{ value: 2, done: false }],
       [{ value: 3, done: false }],
+      [{ value: undefined, done: true }],
+    ])
+  })
+
+  it('should pass the previous value to isAllowed', async () => {
+    const data = [3, 1, 2, 4]
+    const spy = fn(sinkLog)
+    const w = pushConsumer({ log: consumerLog })(spy)
+    const t = pushDistinct(
+      (prev: number | undefined, next: number) => prev === undefined || next > prev,
+    )
+    const r = pushProducer({ log: producerLog })(data)
+
+    await r(t(w))
+
+    assert.deepStrictEqual(spy.calls, [
+      [{ value: 3, done: false }],
+      [{ value: 4, done: false }],
       [{ value: undefined, done: true }],
     ])
   })

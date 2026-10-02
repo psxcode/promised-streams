@@ -2,9 +2,10 @@ import type { PushConsumer } from './types.ts'
 import { errorAsyncIteratorResult } from './helpers.ts'
 
 export const pushDistinct =
-  <T>(isAllowed: (prev: T, next: T) => Promise<boolean> | boolean) =>
+  <T>(isAllowed: (prev: T | undefined, next: T) => Promise<boolean> | boolean) =>
   (consumer: PushConsumer<T>): PushConsumer<T> => {
-    let last: any = consumer
+    /* there is no previous chunk before the first one */
+    let last: T | undefined = undefined
 
     return async (result) => {
       let ir: IteratorResult<T>

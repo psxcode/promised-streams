@@ -936,7 +936,9 @@ await filteredProducer(async (result) => {
 
 ## `pullDistinct`
 Creates `Pull` producer, which streams data, filtered by provided `isAllowed` function.
-> `<T> (isAllowed: (prev: T, next: T) => Promise<boolean> | boolean) => (producer: PullProducer<T>) => PullProducer<T>`
+> `<T> (isAllowed: (prev: T | undefined, next: T) => Promise<boolean> | boolean) => (producer: PullProducer<T>) => PullProducer<T>`
+
+For the very first chunk `prev` is `undefined`.
 ```js
 import { pullDistinct, pullFromIterable } from 'promised-streams'
 
@@ -970,7 +972,9 @@ try {
 
 ## `pushDistinct`
 Creates `Push` producer, which streams data, filtered by provided `isAllowed` function.
-> `<T> (isAllowed: (prev: T, next: T) => Promise<boolean> | boolean) => (consumer: PushConsumer<T>) => PushConsumer<T>`
+> `<T> (isAllowed: (prev: T | undefined, next: T) => Promise<boolean> | boolean) => (consumer: PushConsumer<T>) => PushConsumer<T>`
+
+For the very first chunk `prev` is `undefined`.
 ```js
 import { pushDistinct, pushFromIterable } from 'promised-streams'
 
